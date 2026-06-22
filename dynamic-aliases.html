@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiseporter – Dynamic Aliases</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --blue:#00539a;
+  --blue-border:#1770c8;
+  --blue-lt:#e6f7ff;
+  --t1:#212121;
+  --t2:#525252;
+  --bd:#dfdfdf;
+  --bg:#f0f0f0;
+  --white:#fff;
+  --hh:45px;
+  --sw:240px;
+  --ease:300ms cubic-bezier(.4,0,.2,1);
+  /* CSS filter to tint black icon PNG → #00539a */
+  --icon-active:invert(25%) sepia(75%) saturate(685%) hue-rotate(181deg) brightness(95%) contrast(103%);
+}
+body{font-family:'Roboto',system-ui,sans-serif;font-size:14px;color:var(--t1);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+/* ── HEADER ── */
+.hdr{height:var(--hh);background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:stretch;flex-shrink:0;z-index:100;position:relative;}
+.logo{display:flex;align-items:center;padding:0 12px 0 24px;flex-shrink:0;}
+.logo img{height:26px;width:117px;display:block;object-fit:contain;}
+.l1-nav{display:flex;align-items:stretch;}
+.l1t{display:flex;align-items:center;padding:0 16px;font-size:14px;line-height:20px;color:var(--t2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;position:relative;top:1px;white-space:nowrap;font-family:'Roboto',sans-serif;}
+.l1t:hover{color:var(--t1);}
+.l1t.on{color:var(--blue);border-bottom-color:var(--blue-border);}
+.hdr-r{margin-left:auto;display:flex;align-items:center;padding:0 16px;gap:0;}
+.ibtn{width:32px;height:32px;border:none;background:none;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:6px;flex-shrink:0;}
+.ibtn:hover{background:#f5f5f5;}
+.ibtn img{width:20px;height:20px;display:block;object-fit:contain;}
+
+/* ── BODY ── */
+.app-body{display:flex;flex:1;overflow:hidden;position:relative;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;z-index:10;}
+.sb-nav{flex:1;padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+.ni{display:flex;align-items:center;padding:4px 16px 4px 8px;gap:8px;cursor:pointer;color:var(--t2);border-radius:4px;transition:background .1s,color .1s;user-select:none;font-size:14px;line-height:20px;}
+.ni:hover{background:#f5f5f5;color:var(--t1);}
+.ni.on{background:var(--blue-lt);color:var(--blue);}
+.ni .ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;flex-shrink:0;}
+.ni .ico img{width:20px;height:20px;display:block;object-fit:contain;}
+.ni.on .ico img{filter:var(--icon-active);}
+.sb-foot{padding:4px 16px 4px 8px;height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t2);font-size:14px;flex-shrink:0;margin:0 8px 8px;}
+.sb-foot:hover{color:var(--t1);}
+.sb-foot img{width:20px;height:20px;object-fit:contain;}
+
+/* ── CANVAS ── */
+.canvas{flex:1;overflow-y:auto;padding:14px 24px 24px;position:relative;}
+.pg-title{font-size:28px;font-weight:700;margin-bottom:14px;line-height:1.2;color:var(--t1);}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.btn-p{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 14px;background:#1770c8;color:#fff;border:none;border-radius:4px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;}
+.btn-p:hover{background:#1565b0;}
+.btn-s{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#fff;color:var(--t1);border:1px solid var(--bd);border-radius:4px;font-size:14px;cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;}
+.btn-s:hover{background:#f5f5f5;}
+.sbox{display:flex;align-items:center;height:32px;border:1px solid var(--bd);border-radius:4px;padding:0 10px;gap:6px;background:#fff;}
+.sbox input{border:none;outline:none;font-size:14px;color:var(--t1);width:160px;background:transparent;font-family:'Roboto',sans-serif;}
+.sep-v{width:1px;height:18px;background:var(--bd);}
+
+/* ── TABLE ── */
+.tbl-wrap{background:#fff;border:1px solid var(--bd);border-radius:4px;overflow:hidden;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{height:48px;padding:0 16px;text-align:left;font-size:14px;font-weight:500;color:var(--t1);border-bottom:1px solid var(--bd);white-space:nowrap;}
+.tbl td{height:40px;padding:0 16px;font-size:14px;color:var(--t1);border-bottom:1px solid var(--bd);white-space:nowrap;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr{cursor:pointer;transition:background .08s;}
+.tbl tbody tr:hover{background:#f5f9ff;}
+.tbl tbody tr.sel{background:var(--blue-lt);}
+.tbl td.dim{color:var(--t2);}
+.chip{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:10px;background:#eee;color:#424242;font-size:12px;white-space:nowrap;margin-right:3px;}
+.chip-dk{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;background:#424242;color:#fff;font-size:12px;gap:4px;white-space:nowrap;}
+.chip-dk .cx{cursor:pointer;opacity:.7;}
+.fi{display:inline-flex;align-items:center;height:32px;padding:0 10px;border:1px solid var(--bd);border-radius:4px;background:#fff;font-size:13px;gap:5px;cursor:pointer;}
+.fi:hover{background:#f5f5f5;}
+.cb{width:16px;height:16px;border:1.5px solid #bdbdbd;border-radius:2px;cursor:pointer;flex-shrink:0;}
+.state-b{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:4px;background:#424242;color:#fff;font-size:12px;gap:4px;cursor:pointer;border:none;font-family:'Roboto',sans-serif;white-space:nowrap;}
+.label-chip{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:10px;background:#e8e8e8;color:#424242;font-size:12px;white-space:nowrap;}
+.pg-bar{display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px;border-top:1px solid var(--bd);font-size:13px;color:var(--t2);}
+.pg-nums{display:flex;align-items:center;gap:2px;}
+.pg-n{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12.5px;border-radius:3px;cursor:pointer;}
+.pg-n.cur{background:var(--blue-border);color:#fff;}
+.pg-n:not(.cur):hover{background:#f5f5f5;}
+.pg-sel{height:28px;border:1px solid var(--bd);border-radius:4px;font-size:13px;padding:0 6px;font-family:'Roboto',sans-serif;color:var(--t1);background:#fff;}
+
+/* ── DRAWER ── */
+.dr-host{position:absolute;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+.dr-host.open{pointer-events:auto;}
+.drawer{position:absolute;top:0;right:0;width:900px;max-width:100%;height:100%;background:#fff;border-left:1px solid var(--bd);display:flex;flex-direction:column;transform:translateX(100%);transition:transform var(--ease);box-shadow:-3px 0 24px rgba(0,0,0,.10);}
+.drawer.open{transform:translateX(0);}
+/* top action bar - NO border below */
+.dr-top{height:46px;display:flex;align-items:center;padding:0 16px;gap:2px;flex-shrink:0;}
+.dr-top .sp{flex:1;}
+.dr-title{font-size:26px;font-weight:700;padding:10px 24px 0;color:var(--t1);line-height:1.25;}
+.dr-tabs{display:flex;align-items:stretch;height:42px;padding:0 24px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.dr-tab{display:flex;align-items:center;padding:0 16px;font-size:14px;color:var(--t2);border:none;background:none;border-bottom:2px solid transparent;cursor:pointer;position:relative;top:1px;white-space:nowrap;font-family:'Roboto',sans-serif;}
+.dr-tab:hover{color:var(--t1);}
+.dr-tab.on{color:var(--blue);border-bottom-color:var(--blue-border);}
+.dr-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.dr-foot{display:flex;align-items:center;height:60px;padding:0 24px;gap:8px;border-top:1px solid var(--bd);flex-shrink:0;}
+
+/* FORM INSIDE DRAWERS */
+.sec{font-size:14px;font-weight:600;margin:20px 0 8px;color:var(--t1);}
+.sec:first-child{margin-top:0;}
+.subsec{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--t1);}
+.field{display:flex;align-items:flex-start;padding:5px 0;gap:16px;min-height:36px;}
+.fl{width:241px;flex-shrink:0;font-size:14px;color:var(--t2);padding-top:7px;line-height:20px;}
+.fv{flex:1;}
+.inp{width:100%;height:32px;background:#f5f5f5;border:1px solid transparent;border-radius:4px;padding:0 12px;font-size:14px;color:var(--t1);font-family:'Roboto',sans-serif;outline:none;}
+.inp:focus{border-color:var(--blue-border);background:#fff;}
+.dd-fake{width:100%;height:32px;background:#f5f5f5;border:1px solid var(--bd);border-radius:4px;padding:0 10px 0 12px;font-size:14px;color:var(--t1);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;}
+.tog{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;position:absolute;}
+.tsl{position:absolute;inset:0;background:#9e9e9e;border-radius:22px;transition:background .2s;}
+.tsl:before{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;left:2px;top:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tog input:checked+.tsl{background:var(--blue-border);}
+.tog input:checked+.tsl:before{transform:translateX(18px);}
+
+/* VALUE FORMAT DROPDOWN */
+.dd{position:relative;width:100%;}
+.dd-t{width:100%;height:32px;background:#f5f5f5;border:1px solid var(--bd);border-radius:4px;padding:0 10px 0 12px;font-size:14px;color:var(--t1);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.dd-t.open{border-color:var(--blue-border);background:#fff;}
+.dd-menu{position:absolute;left:0;right:0;background:#fff;border:1px solid var(--bd);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:300;overflow:hidden;margin-top:2px;}
+.dd-opt,.dd-opt-it{display:flex;align-items:center;height:36px;padding:0 12px;font-size:14px;cursor:pointer;gap:8px;}
+.dd-opt:hover,.dd-opt-it:hover{background:#f5f9ff;}
+.dd-opt.cur,.dd-opt-it.cur{color:var(--blue);}
+
+/* PRODUCT DRAWER */
+.dr-meta{display:flex;align-items:center;gap:14px;padding:2px 24px 0;flex-wrap:wrap;}
+.dr-meta-tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);}
+/* Fragment cards */
+.frag{border:1px solid var(--bd);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+.frag-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:36px;font-size:14px;font-weight:500;cursor:pointer;}
+.frag-hdr svg{width:16px;height:16px;color:var(--t2);flex-shrink:0;}
+.frag-body{padding:8px 0;}
+.attr-row{display:flex;align-items:center;min-height:32px;padding:0 16px;gap:12px;}
+.attr-lbl{width:212px;flex-shrink:0;font-size:14px;color:var(--t2);}
+.attr-val{flex:1;display:flex;align-items:center;gap:6px;}
+.attr-inp{flex:1;height:32px;background:#f5f5f5;border:1px solid transparent;border-radius:4px;padding:0 10px;font-size:14px;color:var(--t1);font-family:'Roboto',sans-serif;outline:none;}
+.attr-inp:focus{border-color:var(--blue-border);background:#fff;}
+.lang-tag{display:inline-flex;align-items:center;height:20px;padding:0 5px;background:#e0e0e0;border-radius:2px;font-size:11px;font-weight:500;color:#424242;flex-shrink:0;}
+/* Identifiers */
+.id-row{display:flex;align-items:center;min-height:32px;padding:0 16px;gap:8px;}
+.id-lbl{font-size:14px;color:var(--t2);flex:1;}
+.id-lbl.bold{color:var(--t1);font-weight:500;}
+.id-chip{display:inline-flex;align-items:center;height:24px;padding:0 8px;background:#f0f0f0;border-radius:4px;font-size:12px;gap:4px;flex-shrink:0;}
+.id-chip .cx{color:#757575;cursor:pointer;font-size:13px;}
+.add-btn{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:16px;flex-shrink:0;}
+.id-child{padding-left:28px;}
+.frag-sec-title{font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px;}
+.draft-badge{display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid var(--bd);border-radius:4px;font-size:13px;gap:5px;cursor:pointer;white-space:nowrap;}
+
+/* HINT (below input) */
+.hint{font-size:12px;color:var(--t2);padding:4px 0 2px;line-height:16px;}
+.hint strong{color:var(--t1);}
+
+/* TOOLTIP */
+.tt-wrap{position:relative;display:inline-flex;align-items:center;}
+.tt-icon{width:16px;height:16px;border-radius:50%;border:1.5px solid #9e9e9e;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#9e9e9e;cursor:help;flex-shrink:0;line-height:1;user-select:none;}
+.tt-box{display:none;position:absolute;left:22px;top:-4px;width:280px;background:#424242;color:#fff;font-size:12px;border-radius:4px;padding:10px 12px;line-height:1.6;z-index:400;white-space:normal;pointer-events:none;}
+.tt-box code{background:rgba(255,255,255,.18);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;}
+.tt-wrap:hover .tt-box{display:block;}
+
+/* PRODUCT DRAWER – fragment body uses standard field layout */
+.frag-body .field{padding:5px 16px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="hdr">
+  <div class="logo">
+    <img src="https://www.figma.com/api/mcp/asset/1f08ec57-664f-47e8-a282-b7e3552a1222" alt="wiseporter">
+  </div>
+  <nav class="l1-nav" id="l1Nav"></nav>
+  <div class="hdr-r">
+    <button class="ibtn" title="Bookmarks"><img src="https://www.figma.com/api/mcp/asset/013bac99-4af0-4025-81d8-051220d3f2c3" alt=""></button>
+    <button class="ibtn" title="User"><img src="https://www.figma.com/api/mcp/asset/3d8c70fc-b67b-4d5c-af20-a47acf08420f" alt=""></button>
+    <button class="ibtn" title="More"><img src="https://www.figma.com/api/mcp/asset/78ee65d3-1543-4dbc-9d84-7dd128aaea0a" alt=""></button>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar">
+    <nav class="sb-nav" id="sbNav"></nav>
+    <div class="sb-foot" id="sbFoot">
+      <div class="ico"><img id="collapseIcon" src="" alt=""></div>
+      <span>Collapse menu</span>
+    </div>
+  </aside>
+  <main class="canvas" id="canvas"></main>
+  <div class="dr-host" id="drHost">
+    <div class="drawer" id="drawer"></div>
+  </div>
+</div>
+
+<script>
+/* ══ FIGMA ASSET URLS (fresh from get_design_context, valid 7 days) ══ */
+const ICONS = {
+  /* Model sidebar */
+  'data-types':     'https://www.figma.com/api/mcp/asset/cdf2236f-eb2c-4fe6-8f2d-ccf3b94ad5ba',
+  'rel-types':      'https://www.figma.com/api/mcp/asset/c4077d51-8b0a-4fd5-b42a-3d64f9096a6f',
+  'item-types':     'https://www.figma.com/api/mcp/asset/ae476069-32a1-447d-b713-d515fdbd68aa',
+  'aliases':        'https://www.figma.com/api/mcp/asset/51226c09-6c49-41c3-aac7-c459cff0a4fe',
+  'variables':      'https://www.figma.com/api/mcp/asset/ed5238b0-ec25-42ec-924e-5bf8680fc608',
+  'business-rules': 'https://www.figma.com/api/mcp/asset/16e46a34-26b8-4638-9e18-76fb4ec70a84',
+  'gui-editor':     'https://www.figma.com/api/mcp/asset/6707bd8d-17f4-4cef-952d-960bca55d6a0',
+  'collapse-model': 'https://www.figma.com/api/mcp/asset/2cb47420-6523-42d3-ade1-48b7cb76aab0',
+  /* Catalogue sidebar */
+  'all-products':   'https://www.figma.com/api/mcp/asset/86373191-ba97-4336-b716-741dbc13cd89',
+  'cosmetics':      'https://www.figma.com/api/mcp/asset/2a04db8a-9d68-494c-9d69-693829e84214',
+  'perfumes':       'https://www.figma.com/api/mcp/asset/ac2c84ef-1067-45ca-ae86-cd013475f3de',
+  'brands':         'https://www.figma.com/api/mcp/asset/2a1f8e41-828a-457e-829a-712d0e3b97c5',
+  'vendors':        'https://www.figma.com/api/mcp/asset/618cc169-979e-49dc-9887-d8271c5d54cf',
+  'collapse-cat':   'https://www.figma.com/api/mcp/asset/fdbff2cc-db43-46b5-8aec-7e576f30a238',
+};
+
+/* ══ STATE ══ */
+const S = {
+  l1:'model', l2:'item-types',
+  drawerOpen:false, selectedId:null,
+  itTab:'general', vfmt:'not-active', vfmtOpen:false, vfmtInput:'',
+  itVfmt:'not-active', itVfmtOpen:false, itVfmtInput:'', itOverride:false,
+};
+
+/* ══ DATA ══ */
+const L1 = ['Catalogue','Administration','Model','Processes'];
+const MODEL_NAV = [
+  {id:'data-types',     label:'Data types'},
+  {id:'rel-types',      label:'Relationship types'},
+  {id:'item-types',     label:'Item types'},
+  {id:'aliases',        label:'Aliases'},
+  {id:'variables',      label:'Variables'},
+  {id:'business-rules', label:'Business rules'},
+  {id:'gui-editor',     label:'GUI Editor'},
+];
+const CAT_NAV = [
+  {id:'all-products', label:'All products'},
+  {id:'cosmetics',    label:'Cosmetics'},
+  {id:'perfumes',     label:'Perfumes'},
+  {id:'brands',       label:'Brands'},
+  {id:'vendors',      label:'Vendors'},
+];
+const IT_ROWS = [
+  {id:'cat', name:'Category',         code:'CATEGORY',      modifier:'System'},
+  {id:'cos', name:'Cosmetic product', code:'TYPE_COSMETIC',  modifier:'Common'},
+  {id:'per', name:'Perfume',          code:'TYPE_PERFUME',   modifier:'Common, Business entity'},
+  {id:'ven', name:'Vendor',           code:'TYPE_VENDOR',    modifier:'Common'},
+];
+const AL_ROWS = [
+  {id:'ce',  name:'Cosmetic Product', code:'ALIAS_COSMETIC_EAN',  usedFor:['Cosmetic product'], scope:'Unique for item type ...', pub:'Yes'},
+  {id:'cs',  name:'Cosmetic SKU',     code:'ALIAS_COSMETIC_SKU',  usedFor:['Cosmetic product'], scope:'Unique for item type ...', pub:'Yes'},
+  {id:'ean', name:'EAN',              code:'ALIAS_EAN',           usedFor:['Perfume'],          scope:'Unique for item type ...', pub:'Yes'},
+  {id:'vc',  name:'Vendor code',      code:'ALIAS_VENDOR_CODE',   usedFor:['Perfume'],          scope:'Unique for item type ...', pub:'Yes'},
+];
+const VFMT = [
+  {v:'not-active',  lbl:'Not active',           fieldLabel:null},
+  {v:'prefix-mc',   lbl:'Prefix_masterCardCode', fieldLabel:'Prefix'},
+  {v:'prefix-vc',   lbl:'Prefix_variantCode',    fieldLabel:'Prefix'},
+  {v:'mc-suffix',   lbl:'MasterCardCode_suffix', fieldLabel:'Suffix'},
+  {v:'vc-suffix',   lbl:'variantCode_suffix',    fieldLabel:'Suffix'},
+  {v:'custom',      lbl:'Custom',                fieldLabel:'Custom'},
+];
+const PRD_ROWS = [
+  {id:'p1',  name:'Premium Concealers',                      code:'COSMETIC_5000200', brand:'Aurora Skincare',         labels:['New'],           state:'Active'},
+  {id:'p2',  name:'Hydrating Cream',                         code:'COSMETIC_5000000', brand:'Lumina Glow',             labels:['New'],           state:'Active'},
+  {id:'p3',  name:'Essential Concealers',                    code:'COSMETIC_5000201', brand:'Silk Cosmetics',          labels:[],                state:'Active'},
+  {id:'p4',  name:'Earth Inspired Essential Concealers',     code:'COSMETIC_5000202', brand:'Natural Muse',            labels:[],                state:'Active'},
+  {id:'p5',  name:'Rich Cream',                              code:'COSMETIC_5000002', brand:'Crystal Beauty',          labels:["Valentine's day"],state:'Reopened'},
+  {id:'p6',  name:'Sacred Beauty Premium Concealers',        code:'COSMETIC_5000203', brand:'Essence Divine',          labels:[],                state:'Active'},
+  {id:'p7',  name:'Botanical Beauty Premium Eyebrow Shaper', code:'COSMETIC_5000398', brand:'Natural Muse',            labels:['Black friday'],  state:'Reopened'},
+  {id:'p8',  name:'Pure Eternal Absolute 360',               code:'PERFUME_4039025',  brand:'Bergamotto Milano',       labels:['Summer sale'],   state:'Reopened'},
+  {id:'p9',  name:'Silver Amore Mio Absolute 24',            code:'PERFUME_4039078',  brand:'Stéphane Humbert Lucas',  labels:['Black friday'],  state:'Reopened'},
+  {id:'p10', name:'Black Goddess Premium II',                code:'PERFUME_4039080',  brand:'Vilhelm Parfumerie',      labels:[],                state:'Active'},
+  {id:'p11', name:'White Symbiose Collection III',           code:'PERFUME_4039348',  brand:'Acqua di Genova',         labels:[],                state:'Active'},
+  {id:'p12', name:'Pure Karma Luxe',                         code:'PERFUME_4039337',  brand:'Montblanc Parfums',       labels:['New'],           state:'Active'},
+  {id:'p13', name:'Legend',                                  code:'PERFUME_4039083',  brand:'Boadicea the Victorious', labels:['New'],           state:'Active'},
+  {id:'p14', name:'Momentum',                                code:'PERFUME_4039085',  brand:'Grasse Perfumery',        labels:['New'],           state:'Active'},
+];
+
+/* ══ HELPERS ══ */
+function getHintPreview(v, input){
+  const mc='TYPE_PERFUME', vc='VAR_001', val=input||'…';
+  if(v==='prefix-mc') return val==='…'?`…_${mc}`:`${val}_${mc}`;
+  if(v==='prefix-vc') return val==='…'?`…_${vc}`:`${val}_${vc}`;
+  if(v==='mc-suffix') return val==='…'?`${mc}_…`:`${mc}_${val}`;
+  if(v==='vc-suffix') return val==='…'?`${vc}_…`:`${vc}_${val}`;
+  if(v==='custom')    return (input||'').replace(/\{masterCardCode\}/g,mc).replace(/\{variantCode\}/g,vc)||'…';
+  return '';
+}
+
+/* ══ SVG HELPERS (only for UI chrome not from WiseIcons) ══ */
+const SVG = {
+  chev:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><polyline points="4,6 8,10 12,6"/></svg>`,
+  chevR:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><polyline points="6,4 10,8 6,12"/></svg>`,
+  chevD:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><polyline points="4,6 8,10 12,6"/></svg>`,
+  check:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3,8 7,12 13,4"/></svg>`,
+  x:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><line x1="15" y1="5" x2="5" y2="15"/><line x1="5" y1="5" x2="15" y2="15"/></svg>`,
+  panL:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="2" y="3" width="16" height="14" rx="1.5"/><line x1="7" y1="3" x2="7" y2="17"/><polyline points="5,8 2,10 5,12" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  panR:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="2" y="3" width="16" height="14" rx="1.5"/><line x1="13" y1="3" x2="13" y2="17"/><polyline points="15,8 18,10 15,12" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  dots:`<svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>`,
+  plus:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg>`,
+  search:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="17" y2="17"/></svg>`,
+  filter:`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polygon points="18,3 2,3 9,11 9,17 11,17 11,11"/></svg>`,
+  clock:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><circle cx="8" cy="8" r="6.5"/><polyline points="8,5 8,8 10,10"/></svg>`,
+  link:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M6 11H4a4 4 0 0 1 0-8h2"/><path d="M10 5h2a4 4 0 0 1 0 8h-2"/><line x1="5" y1="8" x2="11" y2="8"/></svg>`,
+  addC:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><circle cx="8" cy="8" r="7"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>`,
+};
+function ico(id){return `<img src="${ICONS[id]||''}" alt="" style="width:20px;height:20px;display:block;object-fit:contain;">`;}
+
+/* ══ RENDER L1 ══ */
+function renderL1(){
+  document.getElementById('l1Nav').innerHTML = L1.map(n=>{
+    const k=n.toLowerCase();
+    return `<button class="l1t ${S.l1===k?'on':''}" onclick="setL1('${k}')">${n}</button>`;
+  }).join('');
+}
+
+/* ══ RENDER SIDEBAR ══ */
+function renderSidebar(){
+  const nav = S.l1==='model' ? MODEL_NAV : CAT_NAV;
+  const colIcon = S.l1==='model' ? ICONS['collapse-model'] : ICONS['collapse-cat'];
+  document.getElementById('sbNav').innerHTML = nav.map(item=>`
+    <div class="ni ${S.l2===item.id?'on':''}" onclick="setL2('${item.id}')">
+      <div class="ico">${ico(item.id)}</div>
+      <span>${item.label}</span>
+    </div>`).join('');
+  const cf=document.getElementById('collapseIcon');
+  if(cf) cf.src=colIcon;
+}
+
+/* ══ RENDER CANVAS ══ */
+function renderCanvas(){
+  const el=document.getElementById('canvas');
+  if(S.l1==='model'){
+    if(S.l2==='item-types') el.innerHTML=htmlItemTypes();
+    else if(S.l2==='aliases') el.innerHTML=htmlAliases();
+    else el.innerHTML=htmlEmpty(MODEL_NAV.find(n=>n.id===S.l2)?.label||'');
+  } else {
+    if(S.l2==='all-products') el.innerHTML=htmlProducts();
+    else el.innerHTML=htmlEmpty(CAT_NAV.find(n=>n.id===S.l2)?.label||'');
+  }
+  document.querySelectorAll('.tbl tbody tr[data-id]').forEach(tr=>{
+    tr.addEventListener('click',()=>openDrawer(tr.dataset.id));
+  });
+}
+
+function htmlEmpty(label){
+  return `<p class="pg-title">${label}</p>
+    <div class="tbl-wrap" style="padding:40px;text-align:center;color:#9e9e9e;">No content to display</div>`;
+}
+
+function htmlItemTypes(){
+  return `<p class="pg-title">Item types</p>
+    <div class="toolbar">
+      <button class="btn-p">${SVG.plus} Item type</button>
+      <div class="sep-v"></div>
+      <div class="sbox">${SVG.search}<input placeholder=""></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Name</th><th>Code</th><th>Description</th><th>Modifier</th></tr></thead>
+      <tbody>${IT_ROWS.map(r=>`<tr class="${S.selectedId===r.id?'sel':''}" data-id="${r.id}">
+        <td>${r.name}</td><td class="dim">${r.code}</td><td></td><td class="dim">${r.modifier}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+function htmlAliases(){
+  return `<p class="pg-title">Aliases</p>
+    <div class="toolbar">
+      <button class="btn-p">${SVG.plus} Alias definition</button>
+      <div class="sep-v"></div>
+      <div class="sbox">${SVG.search}<input placeholder=""></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Name</th><th>Code</th><th>Description</th><th>Object type</th><th>Used for item types</th><th>Uniqueness scope</th><th>Publishable</th></tr></thead>
+      <tbody>${AL_ROWS.map(r=>`<tr class="${S.selectedId===r.id?'sel':''}" data-id="${r.id}">
+        <td>${r.name}</td><td class="dim">${r.code}</td><td class="dim">Description</td>
+        <td><span class="chip">Item business version</span></td>
+        <td>${r.usedFor.map(u=>`<span class="chip">${u}</span>`).join('')}</td>
+        <td class="dim">${r.scope}</td><td class="dim">${r.pub}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+function htmlProducts(){
+  return `<p class="pg-title">All products</p>
+    <div class="toolbar" style="margin-bottom:8px;">
+      <div class="sbox">${SVG.search}<input placeholder=""></div>
+      <div class="sep-v"></div>
+      <div class="fi">${SVG.filter} Hierarchie :</div>
+      <div class="fi">${SVG.filter} States :</div>
+      <div class="fi">${SVG.filter} Brand :</div>
+    </div>
+    <div class="toolbar">
+      <button class="btn-p">${SVG.plus} Přidat</button>
+      <button class="btn-s">Import</button>
+      <button class="btn-s">Export</button>
+      <button class="btn-s">Data changes ${SVG.chev}</button>
+      <button class="btn-s">Attachments ${SVG.chev}</button>
+      <button class="btn-s">Other ${SVG.chev}</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th style="width:40px;"><div class="cb"></div></th><th>Name</th><th>Code</th><th>Brand</th><th>Labels and promos</th><th>State</th></tr></thead>
+      <tbody>${PRD_ROWS.map(r=>`<tr class="${S.selectedId===r.id?'sel':''}" data-id="${r.id}">
+        <td><div class="cb"></div></td>
+        <td>${r.name}</td><td class="dim">${r.code}</td><td class="dim">${r.brand}</td>
+        <td>${r.labels.map(l=>`<span class="label-chip">${l}</span>`).join('')}</td>
+        <td><button class="state-b">${r.state} ${SVG.chev}</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <div class="pg-bar">
+      <div class="pg-nums">
+        <span style="cursor:pointer;padding:0 4px;color:var(--t2);">‹</span>
+        <div class="pg-n cur">1</div><div class="pg-n">2</div><div class="pg-n">3</div>
+        <div class="pg-n">4</div><div class="pg-n">5</div>
+        <span style="padding:0 2px;color:#9e9e9e">...</span><div class="pg-n">101</div>
+        <span style="cursor:pointer;padding:0 4px;color:var(--t2);">›</span>
+      </div>
+      <span>1-100 z 848</span>
+      <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2);">
+        <span>Počet řádků na stránku:</span>
+        <select class="pg-sel"><option>100</option></select>
+      </div>
+    </div></div>`;
+}
+
+/* ══ DRAWER ══ */
+function renderDrawer(){
+  const el=document.getElementById('drawer');
+  if(S.l1==='model'&&S.l2==='item-types') el.innerHTML=htmlITDrawer();
+  else if(S.l1==='model'&&S.l2==='aliases') el.innerHTML=htmlAliasDrawer();
+  else if(S.l1==='catalogue'&&S.l2==='all-products') el.innerHTML=htmlProductDrawer();
+  // bind events
+  document.querySelectorAll('.dr-tab[data-tab]').forEach(t=>t.addEventListener('click',()=>setITTab(t.dataset.tab)));
+  const vt=document.getElementById('vfmtTrig');
+  if(vt) vt.addEventListener('click',e=>{e.stopPropagation();S.vfmtOpen=!S.vfmtOpen;renderDrawer();});
+  document.querySelectorAll('.dd-opt[data-v]').forEach(o=>o.addEventListener('click',e=>{e.stopPropagation();setVfmt(o.dataset.v);}));
+  const ivt=document.getElementById('itvfmtTrig');
+  if(ivt) ivt.addEventListener('click',e=>{e.stopPropagation();S.itVfmtOpen=!S.itVfmtOpen;renderDrawer();});
+  document.querySelectorAll('.dd-opt-it[data-iv]').forEach(o=>o.addEventListener('click',e=>{e.stopPropagation();setITVfmt(o.dataset.iv);}));
+}
+
+function drTop(withDraft=false){
+  return `<div class="dr-top">
+    <button class="ibtn" onclick="closeDrawer()">${SVG.x}</button>
+    <button class="ibtn">${SVG.panL}</button>
+    <button class="ibtn">${SVG.panR}</button>
+    <div class="sp"></div>
+    ${withDraft?`<div class="draft-badge">Draft ${SVG.chev}</div>`:''}
+    <button class="ibtn">${SVG.dots}</button>
+  </div>`;
+}
+function inp(v,ph=''){return `<input class="inp" value="${v}" placeholder="${ph}">`;}
+function ddFake(v){return `<div class="dd-fake">${v} ${SVG.chev}</div>`;}
+function tog(on,onch=''){return `<label class="tog"><input type="checkbox"${on?' checked':''}${onch?` onchange="${onch}"`:''}><div class="tsl"></div></label>`;}
+
+/* ITEM TYPES DRAWER */
+function htmlITDrawer(){
+  const row=IT_ROWS.find(r=>r.id===S.selectedId)||IT_ROWS[2];
+  const tabs=['general','parameters','aliases'];
+  const tabsHtml=tabs.map(t=>`<button class="dr-tab ${S.itTab===t?'on':''}" data-tab="${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
+  let body='';
+  if(S.itTab==='general'){
+    body=`
+      <div class="sec">Item type definition</div>
+      <div class="subsec">Basic information</div>
+      <div class="field"><div class="fl">Name</div><div class="fv">${inp(row.name)}</div></div>
+      <div class="field"><div class="fl">Code</div><div class="fv">${inp(row.code)}</div></div>
+      <div class="field"><div class="fl">Description</div><div class="fv">${inp('')}</div></div>
+      <div class="sec">Code generation</div>
+      <div class="field"><div class="fl">Code format</div><div class="fv">${ddFake('Not active')}</div></div>
+      <div class="sec">Name generation for master card and variant</div>
+      <div class="field"><div class="fl">Name format</div><div class="fv">${ddFake('Not active')}</div></div>
+      <div class="sec" style="cursor:pointer;">Default categories ${SVG.chevR}</div>
+      <div class="sec">Behaviour modifiers</div>`;
+  } else if(S.itTab==='parameters'){
+    body=`<div class="sec">Parameters</div><p style="color:#9e9e9e;">No parameters configured.</p>`;
+  } else {
+    const ovr=S.itOverride;
+    const iCur=VFMT.find(o=>o.v===S.itVfmt)||VFMT[0];
+    const iOpen=S.itVfmtOpen&&ovr;
+    const iMenu=iOpen?`<div class="dd-menu">${VFMT.map(o=>`
+      <div class="dd-opt-it ${o.v===S.itVfmt?'cur':''}" data-iv="${o.v}">
+        <span style="width:16px;flex-shrink:0;">${o.v===S.itVfmt?SVG.check:''}</span>${o.lbl}
+      </div>`).join('')}</div>`:'';
+    let iExtra='';
+    if(ovr&&iCur.fieldLabel){
+      const iPrev=getHintPreview(S.itVfmt,S.itVfmtInput);
+      const iPh=iCur.v==='custom'?'e.g. {masterCardCode}_{variantCode}':'Enter '+iCur.fieldLabel.toLowerCase()+'…';
+      const iLbl=iCur.v==='custom'
+        ?`Custom&nbsp;<span class="tt-wrap"><span class="tt-icon">i</span><div class="tt-box">Build your format using two available variables:<br><br><code>{masterCardCode}</code> – master card code<br><code>{variantCode}</code> – variant code<br><br>What you put before or after is up to you.<br><br>Example: <code>{masterCardCode}_{variantCode}</code></div></span>`
+        :iCur.fieldLabel;
+      iExtra=`<div class="field">
+        <div class="fl" style="display:flex;align-items:flex-start;gap:4px;padding-top:7px;">${iLbl}</div>
+        <div class="fv">
+          <input class="inp" id="itvfmtInput" value="${S.itVfmtInput}" placeholder="${iPh}"
+                 oninput="S.itVfmtInput=this.value;const h=document.getElementById('itvfmtHint');if(h)h.innerHTML='Result: <strong>'+getHintPreview(S.itVfmt,this.value)+'</strong>'">
+          <div class="hint" id="itvfmtHint">Result: <strong>${iPrev||'…'}</strong></div>
+        </div>
+      </div>`;
+    }
+    const vfmtRow=ovr
+      ?`<div class="dd"><div class="dd-t ${iOpen?'open':''}" id="itvfmtTrig">${iCur.lbl} ${SVG.chev}</div>${iMenu}</div>`
+      :`<div class="dd-fake" style="opacity:.5;pointer-events:none;cursor:default;">Not active ${SVG.chev}</div>`;
+    body=`
+      <div class="sec">Aliases</div>
+      <p style="font-size:14px;font-weight:600;margin-bottom:10px;">EAN</p>
+      <div class="field"><div class="fl">Name</div><div class="fv">${inp('EAN')}</div></div>
+      <div class="field"><div class="fl">Code</div><div class="fv">${inp('EAN_ALIAS')}</div></div>
+      <div class="field"><div class="fl">Description</div><div class="fv">${inp('')}</div></div>
+      <div class="field"><div class="fl">Object type</div><div class="fv">${ddFake('Item business version')}</div></div>
+      <div class="field"><div class="fl">Used for item types</div><div class="fv">
+        <div class="dd-fake"><span class="chip-dk">Perfume<span class="cx"> ×</span></span> ${SVG.chev}</div>
+      </div></div>
+      <div class="sec">Value generation</div>
+      <div class="field"><div class="fl">Value format</div><div class="fv">${vfmtRow}</div></div>
+      ${iExtra}
+      <div class="field"><div class="fl"></div><div class="fv" style="display:flex;align-items:center;gap:8px;padding-top:4px;">${tog(ovr,'toggleITOverride()')}<span style="color:var(--t2);">Override</span></div></div>`;
+  }
+  return `${drTop()}
+    <div class="dr-title">${row.name}</div>
+    <div class="dr-tabs">${tabsHtml}</div>
+    <div class="dr-body">${body}</div>
+    <div class="dr-foot"><button class="btn-p">Save</button><button class="btn-s">Cancel</button></div>`;
+}
+
+/* ALIAS DRAWER */
+function htmlAliasDrawer(){
+  const row=AL_ROWS.find(r=>r.id===S.selectedId)||AL_ROWS[2];
+  const cur=VFMT.find(o=>o.v===S.vfmt)||VFMT[0];
+  const open=S.vfmtOpen;
+  const menu=open?`<div class="dd-menu">${VFMT.map(o=>`
+    <div class="dd-opt ${o.v===S.vfmt?'cur':''}" data-v="${o.v}">
+      <span style="width:16px;flex-shrink:0;">${o.v===S.vfmt?SVG.check:''}</span>${o.lbl}
+    </div>`).join('')}</div>`:'';
+  const usedChips=row.usedFor.map(u=>`<span class="chip-dk">${u}<span class="cx"> ×</span></span>`).join('');
+
+  let extraRow='';
+  if(cur.fieldLabel){
+    const preview=getHintPreview(S.vfmt,S.vfmtInput);
+    const ph=cur.v==='custom'?'e.g. {masterCardCode}_{variantCode}':'Enter '+cur.fieldLabel.toLowerCase()+'…';
+    const labelHtml=cur.v==='custom'
+      ?`Custom&nbsp;<span class="tt-wrap"><span class="tt-icon">i</span><div class="tt-box">Build your format using two available variables:<br><br><code>{masterCardCode}</code> – master card code<br><code>{variantCode}</code> – variant code<br><br>What you put before or after is up to you.<br><br>Example: <code>{masterCardCode}_{variantCode}</code></div></span>`
+      :cur.fieldLabel;
+    extraRow=`<div class="field">
+      <div class="fl" style="display:flex;align-items:flex-start;gap:4px;padding-top:7px;">${labelHtml}</div>
+      <div class="fv">
+        <input class="inp" id="vfmtInput" value="${S.vfmtInput}" placeholder="${ph}"
+               oninput="S.vfmtInput=this.value;const h=document.getElementById('vfmtHint');if(h)h.innerHTML='Result: <strong>'+getHintPreview(S.vfmt,this.value)+'</strong>'">
+        <div class="hint" id="vfmtHint">Result: <strong>${preview||'…'}</strong></div>
+      </div>
+    </div>`;
+  }
+
+  return `${drTop()}
+    <div class="dr-title">${row.name}</div>
+    <div class="dr-body">
+      <div class="sec">Alias definition</div>
+      <div class="subsec">Basic information</div>
+      <div class="field"><div class="fl">Name</div><div class="fv">${inp(row.usedFor[0]||row.name)}</div></div>
+      <div class="field"><div class="fl">Code</div><div class="fv">${inp('TYPE_'+(row.usedFor[0]||'').toUpperCase().replace(/ /g,'_'))}</div></div>
+      <div class="field"><div class="fl">Description</div><div class="fv">${inp('')}</div></div>
+      <div class="subsec">Detailed settings</div>
+      <div class="field"><div class="fl">Object type</div><div class="fv">${ddFake('Item business version')}</div></div>
+      <div class="field"><div class="fl">Used for item types</div><div class="fv">
+        <div class="dd-fake">${usedChips} ${SVG.chev}</div>
+      </div></div>
+      <div class="field"><div class="fl">Uniqueness scope</div><div class="fv">${ddFake('Unique for item type or concrete enumeration')}</div></div>
+      <div class="field"><div class="fl">Type for multialias</div><div class="fv">${ddFake('None')}</div></div>
+      <div class="field"><div class="fl">Publishable</div><div class="fv" style="padding-top:4px;">${tog(true)}</div></div>
+      <div class="field"><div class="fl">Mandatory</div><div class="fv" style="padding-top:4px;">${tog(false)}</div></div>
+      <div class="subsec">Value generation</div>
+      <div class="field"><div class="fl">Value format</div><div class="fv">
+        <div class="dd">
+          <div class="dd-t ${open?'open':''}" id="vfmtTrig">${cur.lbl} ${SVG.chev}</div>
+          ${menu}
+        </div>
+      </div></div>
+      ${extraRow}
+    </div>
+    <div class="dr-foot"><button class="btn-p">Save</button><button class="btn-s">Cancel</button></div>`;
+}
+
+/* PRODUCT DRAWER – matches Figma screenshot */
+function htmlProductDrawer(){
+  const row=PRD_ROWS.find(r=>r.id===S.selectedId)||PRD_ROWS[6];
+  const typeCode=row.code.split('_')[0]+'_PRODUCT';
+  const title=row.name+(row.id==='p7'?' - V2':'');
+  return `${drTop(true)}
+    <div class="dr-title" style="font-size:20px;">${title}</div>
+    <div class="dr-meta">
+      <span class="dr-meta-tag">${SVG.clock} ${row.code}</span>
+      <span class="dr-meta-tag">${SVG.link} ${typeCode}</span>
+    </div>
+    <div class="dr-tabs">
+      <button class="dr-tab on">Product card</button>
+      <button class="dr-tab">Product parameters</button>
+      <button class="dr-tab">Vendors</button>
+      <button class="dr-tab">All business versions</button>
+      <button class="dr-tab">History</button>
+    </div>
+    <div class="dr-body">
+      <!-- Section label -->
+      <div class="frag-sec-title">
+        <span>Product card</span>
+        <button class="ibtn">${SVG.dots}</button>
+      </div>
+
+      <!-- Basic information card -->
+      <div class="frag">
+        <div class="frag-hdr">
+          <span>Basic information</span>
+        </div>
+        <div class="frag-body" style="padding:4px 0;">
+          <div class="field">
+            <div class="fl">Name <span style="color:#e53935;">*</span></div>
+            <div class="fv" style="display:flex;align-items:center;gap:6px;">
+              <span class="lang-tag">EN</span>
+              <input class="inp" value="${row.name}" style="flex:1;">
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl">Code <span style="color:#e53935;">*</span></div>
+            <div class="fv"><input class="inp" value="${row.code}"></div>
+          </div>
+          <div class="field">
+            <div class="fl">Description</div>
+            <div class="fv" style="display:flex;align-items:center;gap:6px;">
+              <span class="lang-tag">EN</span>
+              <input class="inp" value="" placeholder="" style="flex:1;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identifiers card -->
+      <div class="frag">
+        <div class="frag-hdr">
+          <span>Identifiers</span>
+          <button class="ibtn">${SVG.dots}</button>
+        </div>
+        <div class="frag-body">
+          <div class="id-row">
+            <div class="id-lbl">EAN</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="id-chip">425103_987654 <span class="cx">×</span></span>
+              <button class="add-btn">${SVG.addC}</button>
+            </div>
+          </div>
+          <div class="id-row">
+            <div class="id-lbl bold" style="display:flex;align-items:center;gap:4px;">${SVG.chevD} Vendor code</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button class="add-btn">${SVG.addC}</button>
+            </div>
+          </div>
+          <div class="id-row id-child">
+            <div class="id-lbl" style="font-size:13px;">Central Fragrance Distribution s.r.o.</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="id-chip">EAN_425103 <span class="cx">×</span></span>
+              <button class="add-btn">${SVG.addC}</button>
+            </div>
+          </div>
+          <div class="id-row id-child">
+            <div class="id-lbl" style="font-size:13px;">EuroScent Logistics GmbH</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="id-chip">987654_EAN <span class="cx">×</span></span>
+              <button class="add-btn">${SVG.addC}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product info card -->
+      <div class="frag">
+        <div class="frag-hdr">
+          <span>Product info</span>
+        </div>
+        <div class="frag-body" style="padding:4px 0;">
+          <div class="field">
+            <div class="fl">Name</div>
+            <div class="fv"><input class="inp" value="${row.name}"></div>
+          </div>
+          <div class="field">
+            <div class="fl">Brand</div>
+            <div class="fv" style="padding-top:4px;"><span class="chip-dk">${row.brand}<span class="cx"> ×</span></span></div>
+          </div>
+          <div class="field">
+            <div class="fl">Line</div>
+            <div class="fv"><input class="inp" value="Botanical Beauty"></div>
+          </div>
+          <div class="field">
+            <div class="fl">Target</div>
+            <div class="fv" style="padding-top:4px;"><span class="chip-dk">Women<span class="cx"> ×</span></span></div>
+          </div>
+          <div class="field">
+            <div class="fl">Country of origin</div>
+            <div class="fv" style="padding-top:4px;"><span class="chip-dk">Spain<span class="cx"> ×</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dr-foot"><button class="btn-p">Save</button><button class="btn-s">Cancel</button></div>`;
+}
+
+/* ══ ACTIONS ══ */
+function setL1(k){
+  if(S.l1===k) return;
+  S.l1=k;S.drawerOpen=false;S.selectedId=null;S.vfmtOpen=false;
+  S.l2=k==='model'?'item-types':'all-products';
+  render();
+}
+function setL2(id){
+  if(S.l2===id) return;
+  S.l2=id;S.drawerOpen=false;S.selectedId=null;S.vfmtOpen=false;
+  render();
+}
+function openDrawer(id){
+  S.selectedId=id;S.drawerOpen=true;S.itTab='general';S.vfmtOpen=false;
+  renderCanvas();renderDrawer();
+  requestAnimationFrame(()=>{
+    document.getElementById('drHost').classList.add('open');
+    requestAnimationFrame(()=>document.getElementById('drawer').classList.add('open'));
+  });
+}
+function closeDrawer(){
+  S.drawerOpen=false;S.selectedId=null;S.vfmtOpen=false;
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drHost').classList.remove('open');
+  setTimeout(()=>renderCanvas(),310);
+}
+function setITTab(tab){S.itTab=tab;renderDrawer();}
+function setVfmt(v){S.vfmt=v;S.vfmtOpen=false;S.vfmtInput='';renderDrawer();}
+function setITVfmt(v){S.itVfmt=v;S.itVfmtOpen=false;S.itVfmtInput='';renderDrawer();}
+function toggleITOverride(){
+  S.itOverride=!S.itOverride;
+  if(!S.itOverride){S.itVfmt='not-active';S.itVfmtInput='';S.itVfmtOpen=false;}
+  renderDrawer();
+}
+function getEANChipValue(){
+  const v=S.itOverride?S.itVfmt:S.vfmt;
+  const i=S.itOverride?S.itVfmtInput:S.vfmtInput;
+  const p=getHintPreview(v,i);
+  return(p&&p!=='…')?p:'4012345678901';
+}
+document.addEventListener('click',()=>{
+  const was=S.vfmtOpen||S.itVfmtOpen;
+  S.vfmtOpen=false;S.itVfmtOpen=false;
+  if(was)renderDrawer();
+});
+
+/* ══ BOOT ══ */
+function render(){
+  renderL1();renderSidebar();renderCanvas();
+  if(S.drawerOpen){
+    renderDrawer();
+    document.getElementById('drHost').classList.add('open');
+    document.getElementById('drawer').classList.add('open');
+  } else {
+    document.getElementById('drHost').classList.remove('open');
+    document.getElementById('drawer').classList.remove('open');
+  }
+}
+render();
+</script>
+</body>
+</html>
