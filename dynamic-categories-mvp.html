@@ -122,8 +122,15 @@ table.table{width:100%;border-collapse:collapse;}
 .table tbody tr:hover{background:var(--selectable-hover);cursor:pointer;}
 .table tbody tr.selected{background:var(--selectable-selected);}
 .table tbody td{padding:0 16px;height:40px;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
-.cb{width:16px;height:16px;border:1px solid var(--border-default);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#fff;vertical-align:middle;font:700 11px/1 'Roboto';color:#fff;}
-.cb.on{background:var(--primary);border-color:var(--primary);}
+.cb{width:16px;height:16px;border:1px solid var(--border-default);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#fff;vertical-align:middle;font:700 11px/1 'Roboto';color:#fff;cursor:pointer;flex-shrink:0;}
+.cb.on,.cb.ind{background:var(--primary);border-color:var(--primary);}
+.cb.on::after{content:'✓';color:#fff;font:700 11px/1 'Roboto';}
+.cb.ind::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px;}
+/* hover row actions — always occupy space (reserved), just toggle visibility on hover */
+.row-acts{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;margin-left:6px;visibility:hidden;}
+.table tbody tr:hover .row-acts,.sub-table tr:hover .row-acts{visibility:visible;}
+.rowact{width:24px;height:24px;border:none;background:transparent;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.rowact:hover{background:#e0e0e0;}
 th.cbcol,td.cbcol{width:46px;}
 .name-cell{display:flex;align-items:center;gap:12px;color:var(--text-default);}
 .name-cell .ti{color:var(--text-disabled);display:flex;flex-shrink:0;}
@@ -338,6 +345,12 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .recompute{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#fff;color:var(--primary);border:1px solid var(--border-primary);
   border-radius:var(--radius-md);font:500 14px 'Roboto';cursor:pointer;}
 .count-chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 8px;background:#e0e0e0;border-radius:var(--radius-round);font:400 12px 'Roboto';color:var(--text-strong);}
+/* bulk actions dropdown */
+.bulk-wrap{position:relative;display:inline-block;}
+.bulk-menu{left:auto;right:0;min-width:210px;white-space:nowrap;}
+.bulk-menu div{gap:10px;}
+.bulk-btn svg{transition:transform .15s;}
+.bulk-wrap:has(.bulk-menu.open) .bulk-btn svg{transform:rotate(180deg);}
 </style>
 </head>
 <body>
@@ -466,7 +479,9 @@ const I = {
   dotsh:'<svg width="18" height="18" viewBox="0 0 24 24" fill="#8e8e8e"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   add:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1770c8" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
   caret:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>',
-  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>'
+  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  minus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>',
+  pencil:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13 5l4 4"/></svg>'
 };
 
 /* ============================================================= DATA */
@@ -508,9 +523,20 @@ const groupTableHead = '<th class="cbcol"><span class="cb"></span></th><th>Náze
 /* groups may contain only Balení (packages) or Master karta (products) — marketing items are hidden */
 const groupItems = itemsData.filter(d=>d.kind!=='item');
 function typLabel(d){return d.kind==='product'?'Master karta':(d.kind==='package'?'Balení':'Marketingový produkt');}
+/* bulk-actions dropdown (open/close to see options) */
+function bulkBtn(uid){
+  return `<div class="bulk-wrap"><button class="btn-secondary sm bulk-btn" onclick="event.stopPropagation();toggleDD('${uid}')">Hromadné akce ${I.chev}</button>
+    <div class="mode-menu bulk-menu" id="${uid}">
+      <div onclick="event.stopPropagation();toggleDD('${uid}')">${I.pencil} Změnit stav</div>
+      <div onclick="event.stopPropagation();toggleDD('${uid}')">${I.minus} Odebrat ze skupiny</div>
+    </div></div>`;
+}
+/* hover row actions: kebab + trash (canvas lists) or kebab + minus (detail member tables) */
+function actTrash(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Smazat" onclick="event.stopPropagation();this.closest('tr').remove()">${I.trash}</button></span>`;}
+function actMinus(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Odebrat ze skupiny" onclick="event.stopPropagation();this.closest('tr').remove()">${I.minus}</button></span>`;}
 
 function groupRow(n,type,onclick,rowId){
-  return `<tr ${rowId?`id="${rowId}"`:''} onclick="${onclick}"><td class="cbcol"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${type}</td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`;
+  return `<tr ${rowId?`id="${rowId}"`:''} onclick="${onclick}"><td class="cbcol"><span class="cb"></span>${actTrash()}</td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${type}</td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`;
 }
 
 /* ============================================================= COMMON FRAGMENTS */
@@ -543,7 +569,7 @@ function pager(inline){
 function view_katItems(){
   let rows = itemsData.map((d,i)=>`
     <tr onclick="rowItem(${i})" id="itrow-${i}" class="${i>10?'dead':''}">
-      <td class="cbcol"><span class="cb"></span></td>
+      <td class="cbcol"><span class="cb"></span>${actTrash()}</td>
       <td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td>
       <td>${d.code}</td><td>${typLabel(d)}</td>
       <td><span class="count-chip">21</span></td>
@@ -596,7 +622,7 @@ function view_katGroups(){
 
 function view_zakCustomers(){
   let rows = custs.map((c,i)=>`
-    <tr id="custrow-${i}" onclick="rowCustomer(${i})"><td class="cbcol"><span class="cb"></span></td>
+    <tr id="custrow-${i}" onclick="rowCustomer(${i})"><td class="cbcol"><span class="cb"></span>${actTrash()}</td>
     <td>${c}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td>
     <td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `
@@ -660,14 +686,17 @@ function tabbar(id,tabs){
 /* membership tab (shared) */
 function membershipTab(id,key){
   const names=['Produkty pro segment Veterináři','Produkty pro segment Vodaři','Produkty dostupné v ČR pro Petshop','Produkty v programu Cymedica+','Akční krmivo pro kočky Jaro 2026','Produkty dostupné pro ČR přímý prodej','Sale10','Sale20','Sale30','Sale40','Sale50','Sale60'];
-  const rows=names.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina produktů</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const rows=names.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina produktů</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="tabpanel" data-k="${key}" id="${id}-${key}">
     <div class="sub-head">Zařazení ve skupinách <span class="dots">${I.dotsh}</span></div>
     <div class="sub-tools">
-      <button class="btn-primary sm" onclick="openPicker('grpProd','mem-${id}')">${I.plusw} Přidat do skupiny</button>
       <div class="search-box sm"><span class="si">${I.search}</span><input></div>
       <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div>
       <button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button>
+    </div>
+    <div class="sub-tools">
+      <button class="btn-primary sm" onclick="openPicker('grpProd','mem-${id}')">${I.plusw} Přidat do skupiny</button>
+      ${bulkBtn(`${id}-membulk`)}
     </div>
     <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Vytvořeno</th><th>Vytvořil(a)</th><th>Typ skupiny</th><th>Stav</th></tr></thead><tbody id="${id}-membody">${rows}</tbody></table></div>
     ${pager(true)}
@@ -821,7 +850,7 @@ function drawer_prodGroup(){
   const id='dwProdGroup';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Produkty a balení ve skupině'},
     {k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
+  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Produkty pro segment Veterináři',code:'SKUGROUP_9470583',type:'SKUPINA BALENÍ',status:'Nová'})}
     ${tabbar(id,tabs)}
@@ -829,8 +858,9 @@ function drawer_prodGroup(){
       ${generalTab(id,'prodgrp','Produkty pro segment Veterináři','SKUGROUP_9470583')}
       <div class="tabpanel" data-k="prody" id="${id}-prody">
         <div class="sub-head">Produkty a balení ve skupině <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','prodgrpBody')">${I.plusw} Přidat do skupiny</button><div class="search-box sm"><span class="si">${I.search}</span><input></div>
+        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
           <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
+        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','prodgrpBody')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwProdGroup-bulk')}</div>
         <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody id="dwProdGroup-prodybody">${prodRows}</tbody></table></div>
         ${pager(true)}
       </div>
@@ -844,7 +874,7 @@ function drawer_customer(){
   const id='dwCustomer';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'dp',label:'Dostupné projekty'},{k:'zar',label:'Zařazení ve skupinách'},
     {k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const memRows=custGroups.map(g=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${g}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina zákazníků</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const memRows=custGroups.map(g=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${g}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina zákazníků</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Jan Novák',code:'CUST_00543',type:'ZÁKAZNÍK',status:'Nový'})}
     ${tabbar(id,tabs)}
@@ -876,8 +906,9 @@ function drawer_customer(){
       </div>
       <div class="tabpanel" data-k="zar" id="${id}-zar">
         <div class="sub-head">Zařazení ve skupinách <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('grpCust','memcust')">${I.plusw} Přidat do skupiny</button><div class="search-box sm"><span class="si">${I.search}</span><input></div>
+        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
           <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
+        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('grpCust','memcust')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwCustomer-zarbulk')}</div>
         <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Vytvořeno</th><th>Vytvořil(a)</th><th>Typ skupiny</th><th>Stav</th></tr></thead><tbody id="dwCustomer-zarbody">${memRows}</tbody></table></div>
         ${pager(true)}
       </div>
@@ -891,7 +922,7 @@ function drawer_custGroup(){
   const id='dwCustGroup';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'zaks',label:'Zákazníci ve skupině'},
     {k:'dp',label:'Dostupné produkty'},{k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const zakRows=custs.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const zakRows=custs.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Cymedica+',code:'CUSTGROUP_2192758',type:'SKUPINA ZÁKAZNÍKŮ',status:'Nová'})}
     ${tabbar(id,tabs)}
@@ -899,8 +930,9 @@ function drawer_custGroup(){
       ${generalTab(id,'custgrp','Cymedica+','CUSTGROUP_2192758')}
       <div class="tabpanel" data-k="zaks" id="${id}-zaks">
         <div class="sub-head">Zákazníci ve skupině <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','custgrpBody')">${I.plusw} Přidat do skupiny</button><div class="search-box sm"><span class="si">${I.search}</span><input></div>
+        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
           <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
+        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','custgrpBody')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwCustGroup-bulk')}</div>
         <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody id="dwCustGroup-zaksbody">${zakRows}</tbody></table></div>
         ${pager(true)}
       </div>
@@ -992,12 +1024,12 @@ function ngRender(){
   const host=document.getElementById('dwNewGroup-prody'); if(!host)return;
   const has=ng.products.length>0;
   let header=`<div class="sub-head">Produkty a balení ve skupině <span class="dots">${I.dotsh}</span></div>`;
-  let row1=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','newprod')">${I.plusw} Přidat do skupiny</button><div class="search-box sm"><span class="si">${I.search}</span><input></div>
+  let row1=`<div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
       <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>`;
-  let row2='';
+  let row2=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','newprod')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwNewGroup-bulk')}</div>`;
   let body;
   if(has){
-    const rows=ng.products.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
+    const rows=ng.products.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
     body=`<div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table></div>${pager(true)}`;
   } else {
     body=`<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">Žádné produkty nebo balení</div><div class="t2">Můžete začít přidávat zde</div></div></div>`;
@@ -1036,16 +1068,17 @@ function ngcRender(){
   const host=document.getElementById('dwNewCustGroup-zaks'); if(!host)return;
   const has=ngc.customers.length>0;
   let header=`<div class="sub-head">Zákazníci ve skupině <span class="dots">${I.dotsh}</span></div>`;
-  let row1=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','newcust')">${I.plusw} Přidat do skupiny</button><div class="search-box sm"><span class="si">${I.search}</span><input></div>
+  let row1=`<div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
       <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>`;
+  let row2=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','newcust')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwNewCustGroup-bulk')}</div>`;
   let body;
   if(has){
-    const rows=ngc.customers.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+    const rows=ngc.customers.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
     body=`<div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table></div>${pager(true)}`;
   } else {
     body=`<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">Žádní zákazníci</div><div class="t2">Můžete začít přidávat zde</div></div></div>`;
   }
-  host.innerHTML=header+row1+body;
+  host.innerHTML=header+row1+row2+body;
 }
 
 /* --- generic picker dialog (products / customers / groups) ---
@@ -1074,6 +1107,7 @@ function renderPicker(){
   const rows=pickerData(picker.kind);
   const cfg=pickerCfg(picker.kind);
   const allOn=rows.length>0 && picker.selected.size===rows.length;
+  const someOn=picker.selected.size>0 && !allOn;
   const isGrp=picker.kind.indexOf('grp')===0;
   let pill = picker.filterAdded ? `
     <div class="dpill-wrap">
@@ -1093,8 +1127,8 @@ function renderPicker(){
         ${cfg.fcat.map(f=>`<div class="fm-item" onclick="event.stopPropagation();pickAddFilter()"><div class="l1">${f[0]}</div><div class="l2">${f[1]}</div></div>`).join('')}</div></div>
       <div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button>
     </div>`;
-  const headCb=`<span class="cb ${allOn?'on':''}" style="cursor:pointer" onclick="event.stopPropagation();pickToggleAll()">${allOn?'✓':''}</span>`;
-  const rowStart=i=>{const on=picker.selected.has(i);return `<tr style="cursor:pointer" onclick="pickToggle(${i})" class="${on?'selected':''}"><td style="width:46px"><span class="cb ${on?'on':''}">${on?'✓':''}</span></td>`;};
+  const headCb=`<span class="cb ${allOn?'on':(someOn?'ind':'')}" onclick="event.stopPropagation();pickToggleAll()"></span>`;
+  const rowStart=i=>{const on=picker.selected.has(i);return `<tr style="cursor:pointer" onclick="pickToggle(${i})" class="${on?'selected':''}"><td style="width:46px"><span class="cb ${on?'on':''}"></span></td>`;};
   let head, bodyRows;
   if(picker.kind==='cust'){
     head=`<th style="width:46px">${headCb}</th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th>`;
@@ -1115,7 +1149,7 @@ function pickAddFilter(){picker.filterAdded=true;renderPicker();setTimeout(()=>{
 function pickToggleVal(v){if(picker.values.includes(v))picker.values=picker.values.filter(x=>x!==v);else picker.values.push(v);renderPicker();setTimeout(()=>{const m=document.getElementById('pk-valmenu');if(m)m.classList.add('open');},0);}
 function pickRemoveVal(v){picker.values=picker.values.filter(x=>x!==v);renderPicker();}
 function setBody(id,html){const e=document.getElementById(id);if(e)e.innerHTML=html;}
-function grpMemRows(names,gt){return names.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${gt}</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');}
+function grpMemRows(names,gt){return names.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${gt}</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');}
 function submitPicker(){
   const rows=pickerData(picker.kind);
   const chosen=[...picker.selected].sort((a,b)=>a-b).map(i=>rows[i]);
@@ -1123,8 +1157,8 @@ function submitPicker(){
   const t=picker.target;
   if(t==='newprod'){ng.products=chosen;ngRender();}
   else if(t==='newcust'){ngc.customers=chosen;ngcRender();}
-  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join(''));}
-  else if(t==='custgrpBody'){setBody('dwCustGroup-zaksbody',chosen.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join(''));}
+  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join(''));}
+  else if(t==='custgrpBody'){setBody('dwCustGroup-zaksbody',chosen.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join(''));}
   else if(t==='memcust'){setBody('dwCustomer-zarbody',grpMemRows(chosen,'Skupina zákazníků'));}
   else if(t.indexOf('mem-')===0){setBody(t.slice(4)+'-membody',grpMemRows(chosen,'Skupina produktů'));}
 }
@@ -1283,6 +1317,29 @@ document.addEventListener('click',e=>{
   if(e.target.closest('.dropdown-trigger')||e.target.closest('.mode-menu')||e.target.closest('.filter-menu')||e.target.closest('.animal-menu')||e.target.closest('.addfilter-wrap')||e.target.closest('.dpill')) return;
   document.querySelectorAll('.mode-menu.open,.filter-menu.open,.animal-menu.open').forEach(m=>m.classList.remove('open'));
 });
+
+/* tri-state checkboxes for tables (picker manages its own selection) */
+document.addEventListener('click',e=>{
+  const cb=e.target.closest('.cb'); if(!cb)return;
+  if(cb.closest('#manualBody'))return;
+  const table=cb.closest('table'); if(!table)return;
+  e.stopPropagation();
+  if(cb.closest('thead')){
+    const rows=[...table.querySelectorAll('tbody .cb')];
+    const makeOn=!(rows.length>0 && rows.every(c=>c.classList.contains('on')));
+    rows.forEach(c=>{c.classList.toggle('on',makeOn);c.classList.remove('ind');});
+    cb.classList.remove('ind');cb.classList.toggle('on',makeOn);
+  } else {
+    cb.classList.remove('ind');cb.classList.toggle('on');
+    const head=table.querySelector('thead .cb');
+    if(head){
+      const rows=[...table.querySelectorAll('tbody .cb')];
+      const n=rows.filter(c=>c.classList.contains('on')).length;
+      head.classList.toggle('on',n>0&&n===rows.length);
+      head.classList.toggle('ind',n>0&&n<rows.length);
+    }
+  }
+},true);
 
 /* init */
 showView('kat-items');
