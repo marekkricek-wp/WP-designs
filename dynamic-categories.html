@@ -22,6 +22,8 @@
 }
 
 *{box-sizing:border-box;}
+/* icons never intercept clicks — the whole button/row/tab stays clickable */
+svg{pointer-events:none;}
 html,body{margin:0;padding:0;}
 body{font-family:'Roboto',sans-serif;background:#2b2b2b;color:var(--text-default);}
 
@@ -120,8 +122,15 @@ table.table{width:100%;border-collapse:collapse;}
 .table tbody tr:hover{background:var(--selectable-hover);cursor:pointer;}
 .table tbody tr.selected{background:var(--selectable-selected);}
 .table tbody td{padding:0 16px;height:40px;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
-.cb{width:16px;height:16px;border:1px solid var(--border-default);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#fff;vertical-align:middle;font:700 11px/1 'Roboto';color:#fff;}
-.cb.on{background:var(--primary);border-color:var(--primary);}
+.cb{width:16px;height:16px;border:1px solid var(--border-default);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#fff;vertical-align:middle;font:700 11px/1 'Roboto';color:#fff;cursor:pointer;flex-shrink:0;}
+.cb.on,.cb.ind{background:var(--primary);border-color:var(--primary);}
+.cb.on::after{content:'✓';color:#fff;font:700 11px/1 'Roboto';}
+.cb.ind::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px;}
+/* hover row actions — always occupy space (reserved), just toggle visibility on hover */
+.row-acts{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;margin-left:6px;visibility:hidden;}
+.table tbody tr:hover .row-acts,.sub-table tr:hover .row-acts{visibility:visible;}
+.rowact{width:24px;height:24px;border:none;background:transparent;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.rowact:hover{background:#e0e0e0;}
 th.cbcol,td.cbcol{width:46px;}
 .name-cell{display:flex;align-items:center;gap:12px;color:var(--text-default);}
 .name-cell .ti{color:var(--text-disabled);display:flex;flex-shrink:0;}
@@ -142,9 +151,16 @@ td.r{text-align:right;}
 .mini-select{height:28px;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 8px;background:#fff;font:400 13px 'Roboto';color:var(--text-default);}
 
 /* ---------- Drawer ---------- */
-.drawer{position:absolute;top:0;right:0;bottom:0;width:902px;min-width:460px;max-width:100%;background:var(--surface-card);
+.drawer{position:absolute;top:0;right:0;bottom:0;width:66.67vw;min-width:460px;max-width:100%;background:var(--surface-card);
   border-left:1px solid var(--border-subtle);box-shadow:-8px 0 24px rgba(0,0,0,.08);display:none;flex-direction:column;z-index:50;}
-.drawer.open{display:flex;}
+.drawer.open{display:flex;z-index:100;}
+.drawer.open.stacked{z-index:85;left:0;right:auto;}
+/* overlay starts below the dev switcher (40px) + app header (44px) so neither is dimmed */
+#stack-backdrop{display:none;position:fixed;top:84px;left:0;right:0;bottom:0;background:rgba(255,255,255,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:500;cursor:pointer;}
+#stack-backdrop.on{display:block;}
+/* in stacked mode: active drawer above the overlay, the one behind is dimmed below it */
+body.stacked-mode .drawer.open{z-index:600;}
+body.stacked-mode .drawer.open.stacked{z-index:400;}
 .drawer .resizer{position:absolute;left:0;top:0;bottom:0;width:8px;margin-left:-4px;cursor:ew-resize;z-index:60;}
 .drawer .resizer:hover,.drawer .resizer.drag{background:var(--border-primary);}
 body.resizing{cursor:ew-resize;user-select:none;}
@@ -160,6 +176,9 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .dh-title .backbtn:hover{background:var(--primary-subtle);}
 .crumb-link{cursor:pointer;}
 .crumb-link:hover{text-decoration:underline;}
+.dh-top .crumb .crumb-code{color:var(--text-link);}
+.dh-title .dh-ti{display:inline-flex;align-items:center;flex-shrink:0;}
+.dh-title .dh-ti svg{width:26px;height:26px;}
 .dh-sub{display:flex;align-items:center;gap:18px;color:var(--text-default);font:400 13px/1 'Roboto',sans-serif;margin-bottom:10px;}
 .dh-sub .it{display:flex;align-items:center;gap:6px;}
 .dh-sub .typ{display:flex;align-items:center;gap:6px;color:var(--text-default);text-transform:uppercase;font-weight:500;letter-spacing:.3px;}
@@ -209,7 +228,7 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .sub-head{font:500 24px/32px 'Roboto',sans-serif;color:var(--text-strong);margin:0 0 16px;display:flex;align-items:center;}
 .sub-head .dots{margin-left:auto;color:var(--text-disabled);cursor:pointer;}
 .sub-tools{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
-.sub-table{border-top:1px solid var(--border-subtle);}
+.sub-table{border-top:1px solid var(--border-subtle);overflow-x:auto;}
 .sub-table table{width:100%;border-collapse:collapse;}
 .sub-table th{padding:0 12px;height:44px;text-align:left;font:700 14px/20px 'Roboto';color:var(--text-strong);border-bottom:1px solid var(--border-subtle);white-space:nowrap;}
 .sub-table td{padding:0 12px;height:48px;font:400 14px/20px 'Roboto';color:var(--text-default);border-bottom:1px solid var(--border-subtle);white-space:nowrap;}
@@ -275,7 +294,7 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .placeholder .t2{font:700 18px/24px 'Roboto';color:var(--text-default);margin-top:4px;}
 
 /* ---------- Modals ---------- */
-.modal-overlay{position:fixed;inset:0;background:rgba(50,50,50,.5);z-index:300;display:none;align-items:center;justify-content:center;}
+.modal-overlay{position:fixed;inset:0;background:rgba(50,50,50,.5);z-index:20000;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal{background:#fff;border-radius:var(--radius-lg);box-shadow:0 16px 56px rgba(0,0,0,.28);display:flex;flex-direction:column;max-height:92vh;}
 .modal.sm{width:700px;}
@@ -336,6 +355,50 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .recompute{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;background:#fff;color:var(--primary);border:1px solid var(--border-primary);
   border-radius:var(--radius-md);font:500 14px 'Roboto';cursor:pointer;}
 .count-chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 8px;background:#e0e0e0;border-radius:var(--radius-round);font:400 12px 'Roboto';color:var(--text-strong);}
+/* filter-definition toggle + save */
+.toggle{width:34px;height:18px;border-radius:var(--radius-round);background:var(--border-default);border:none;position:relative;padding:0;flex-shrink:0;cursor:pointer;transition:background .15s;}
+.toggle.on{background:var(--primary);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s;}
+.toggle.on::after{left:18px;}
+.toggle-wrap{display:flex;align-items:center;gap:8px;font:400 13px/1 'Roboto';color:var(--text-default);cursor:pointer;user-select:none;}
+.save-btn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:var(--radius-md);cursor:pointer;}
+.save-btn:disabled{background:#eee;border-color:var(--border-subtle);color:var(--text-disabled);cursor:not-allowed;}
+.pcolon{color:var(--text-disabled);}
+.fm-item.dead{opacity:.5;}
+.dpill .pico{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:var(--radius-md);color:var(--text-disabled);cursor:pointer;}
+.dpill .pico:hover{background:var(--selectable-hover);color:var(--text-default);}
+.dpill .pico.del:hover{background:var(--danger-subtle);color:var(--danger);}
+.finfo-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px;}
+.finfo{display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:var(--radius-round);font:400 13px/1 'Roboto',sans-serif;white-space:nowrap;}
+.finfo.grey{background:#e9edf0;color:var(--text-strong);}
+.finfo.teal{background:#c9efe6;color:#0a6b5f;}
+.showpill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
+.rc-info{display:inline-flex;align-items:center;gap:6px;color:var(--text-primary);background:var(--primary-subtle);padding:6px 10px;border-radius:var(--radius-round);font:400 13px/1 'Roboto',sans-serif;white-space:nowrap;}
+.rc-btn{color:var(--primary);border-color:var(--border-primary);}
+.rc-btn:hover{background:var(--primary-subtle);}
+.fdef-pills{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px;}
+.fdef-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:32px 0 8px;text-align:center;}
+.fdef-empty .t1{font:500 16px/24px 'Roboto',sans-serif;color:var(--text-strong);}
+.fdef-empty .t2{font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);margin-bottom:12px;}
+.gi-filler{pointer-events:none;}
+.gi-filler td{height:40px;}
+.viewbadge{display:inline-flex;align-items:center;height:24px;padding:0 10px;background:var(--info-subtle);color:var(--info);border-radius:var(--radius-round);font:500 12px/1 'Roboto';white-space:nowrap;}
+.ptext{font:400 14px/1 'Roboto';color:var(--text-strong);}
+.statusico{display:inline-flex;align-items:center;flex-shrink:0;cursor:help;}
+.hbadge{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:var(--radius-round);font:500 14px/1 'Roboto';margin-left:12px;vertical-align:middle;}
+.hbadge.actual{background:var(--success-subtle);color:#3f6b1c;}
+.hbadge.pending{background:var(--warning-subtle);color:var(--warning-text);}
+.opseg{display:flex;gap:6px;margin-bottom:8px;}
+.opbtn{width:34px;height:30px;border:1px solid var(--border-default);background:#fff;border-radius:var(--radius-md);cursor:pointer;font:600 14px/1 'Roboto';color:var(--text-default);}
+.opbtn.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+.tinput{width:100%;height:32px;padding:0 10px;border:1px solid var(--border-default);border-radius:var(--radius-md);font:400 14px/1 'Roboto';color:var(--text-default);outline:none;}
+.tinput:focus{border-color:var(--border-focus);}
+/* bulk actions dropdown */
+.bulk-wrap{position:relative;display:inline-block;}
+.bulk-menu{left:auto;right:0;min-width:210px;white-space:nowrap;}
+.bulk-menu div{gap:10px;}
+.bulk-btn svg{transition:transform .15s;}
+.bulk-wrap:has(.bulk-menu.open) .bulk-btn svg{transform:rotate(180deg);}
 </style>
 </head>
 <body>
@@ -425,6 +488,18 @@ body.resizing{cursor:ew-resize;user-select:none;}
   </div>
 </div>
 
+<!-- ===== Modal: unsaved filter definition guard ===== -->
+<div class="modal-overlay" id="mdlGuard">
+  <div class="modal sm" style="width:440px;">
+    <div class="modal-head"><span class="mt" style="font-size:18px;">Definice filtru má neuložené změny</span><span class="mx" onclick="closeModal('mdlGuard')">✕</span></div>
+    <div class="modal-body"><p style="font:400 14px/20px 'Roboto';color:var(--text-default);margin:0;">Opustíte detail skupiny bez uložení filtru. Chcete změny uložit a aplikovat filtr na skupinu?</p></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('mdlGuard')">Zrušit</button>
+      <button class="btn-primary" style="background:var(--danger);" onclick="ngGuardSave()">Uložit filtr skupiny</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Modal: manual add products ===== -->
 <div class="modal-overlay" id="mdlManualAdd">
   <div class="modal lg">
@@ -436,6 +511,19 @@ body.resizing{cursor:ew-resize;user-select:none;}
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="mdlGroupItems">
+  <div class="modal lg" style="height:95vh;max-height:95vh;">
+    <div class="modal-head"><span class="mt" id="giTitle">Nastavit filtr skupiny</span><span class="mx" onclick="closeModal('mdlGroupItems')">✕</span></div>
+    <div class="modal-body" id="giBody" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;"></div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="closeModal('mdlGroupItems')">Zrušit</button>
+      <button class="btn-primary" id="giSubmit" onclick="giSubmit()">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<div id="stack-backdrop" onclick="popTop()"></div>
 
 <script>
 /* ============================================================= ICONS */
@@ -464,7 +552,15 @@ const I = {
   dotsh:'<svg width="18" height="18" viewBox="0 0 24 24" fill="#8e8e8e"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   add:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1770c8" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
   caret:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>',
-  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>'
+  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  minus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>',
+  pencil:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13 5l4 4"/></svg>',
+  save:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7M8 21v-6h8v6"/></svg>',
+  stActual:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#597931" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+  stPending:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e0922f" stroke-width="1.8"><path d="M4 5v4h4"/><path d="M4.5 9a8 8 0 1 1-.5 5"/><path d="M12 9v3l2 2"/></svg>',
+  stManual:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007b88" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10V5.2a1.4 1.4 0 0 1 2.8 0V9"/><path d="M11.8 9V4.4a1.4 1.4 0 0 1 2.8 0V9"/><path d="M14.6 9.2V6a1.4 1.4 0 0 1 2.8 0v6.5a6 6 0 0 1-6 6h-1c-1.9 0-3.1-.6-4.2-1.8l-3-3.3a1.4 1.4 0 0 1 2.1-1.9L9 13"/><path d="M6.2 12.6V6.4a1.4 1.4 0 0 1 2.8 0V10"/><path d="M19 17.5v4M17 19.5h4"/></svg>',
+  check2:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+  warn:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l9 16H3z"/><path d="M12 9v5M12 17h.01"/></svg>'
 };
 
 /* ============================================================= DATA */
@@ -505,10 +601,21 @@ const custGroups = ['Cymedica+','Veterináři','Obrat > 20.000','Obrat > 40.000'
 const groupTableHead = '<th class="cbcol"><span class="cb"></span></th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Vytvořeno</th><th>Vytvořil(a)</th><th>Typ skupiny</th><th>Stav</th>';
 /* groups may contain only Balení (packages) or Master karta (products) — marketing items are hidden */
 const groupItems = itemsData.filter(d=>d.kind!=='item');
-function typLabel(d){return d.kind==='product'?'Master karta':(d.kind==='package'?'Balení':'Marketingový předmět');}
+function typLabel(d){return d.kind==='product'?'Master karta':(d.kind==='package'?'Balení':'Marketingový produkt');}
+/* bulk-actions dropdown (open/close to see options) */
+function bulkBtn(uid){
+  return `<div class="bulk-wrap"><button class="btn-secondary sm bulk-btn" onclick="event.stopPropagation();toggleDD('${uid}')">Hromadné akce ${I.chev}</button>
+    <div class="mode-menu bulk-menu" id="${uid}">
+      <div onclick="event.stopPropagation();toggleDD('${uid}')">${I.pencil} Změnit stav</div>
+      <div onclick="event.stopPropagation();toggleDD('${uid}')">${I.minus} Odebrat ze skupiny</div>
+    </div></div>`;
+}
+/* hover row actions: kebab + trash (canvas lists) or kebab + minus (detail member tables) */
+function actTrash(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Smazat" onclick="event.stopPropagation();this.closest('tr').remove()">${I.trash}</button></span>`;}
+function actMinus(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Odebrat ze skupiny" onclick="event.stopPropagation();this.closest('tr').remove()">${I.minus}</button></span>`;}
 
 function groupRow(n,type,onclick,rowId){
-  return `<tr ${rowId?`id="${rowId}"`:''} onclick="${onclick}"><td class="cbcol"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${type}</td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`;
+  return `<tr ${rowId?`id="${rowId}"`:''} onclick="${onclick}"><td class="cbcol"><span class="cb"></span>${actTrash()}</td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${type}</td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`;
 }
 
 /* ============================================================= COMMON FRAGMENTS */
@@ -541,9 +648,9 @@ function pager(inline){
 function view_katItems(){
   let rows = itemsData.map((d,i)=>`
     <tr onclick="rowItem(${i})" id="itrow-${i}" class="${i>10?'dead':''}">
-      <td class="cbcol"><span class="cb"></span></td>
-      <td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td>
-      <td>${d.code}</td><td>${d.type}</td>
+      <td class="cbcol"><span class="cb"></span>${actTrash()}</td>
+      <td><div class="name-cell">${d.n}</div></td>
+      <td>${d.code}</td><td>${typLabel(d)}</td>
       <td><span class="count-chip">21</span></td>
       <td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td>
     </tr>`).join('');
@@ -570,7 +677,9 @@ function view_katItems(){
   </table></div>
   ${pager()}
   ${drawer_product()}
-  ${drawer_package()}`;
+  ${drawer_package()}
+  ${drawer_prodGroup()}
+  ${drawer_newGroup()}`;
 }
 
 function view_katGroups(){
@@ -589,12 +698,14 @@ function view_katGroups(){
   </table></div>
   ${pager()}
   ${drawer_prodGroup()}
-  ${drawer_newGroup()}`;
+  ${drawer_newGroup()}
+  ${drawer_product()}
+  ${drawer_package()}`;
 }
 
 function view_zakCustomers(){
   let rows = custs.map((c,i)=>`
-    <tr id="custrow-${i}" onclick="rowCustomer(${i})"><td class="cbcol"><span class="cb"></span></td>
+    <tr id="custrow-${i}" onclick="rowCustomer(${i})"><td class="cbcol"><span class="cb"></span>${actTrash()}</td>
     <td>${c}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td>
     <td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `
@@ -606,7 +717,9 @@ function view_zakCustomers(){
     <tbody>${rows}</tbody>
   </table></div>
   ${pager()}
-  ${drawer_customer()}`;
+  ${drawer_customer()}
+  ${drawer_custGroup()}
+  ${drawer_newCustGroup()}`;
 }
 
 function view_zakGroups(){
@@ -625,7 +738,8 @@ function view_zakGroups(){
   </table></div>
   ${pager()}
   ${drawer_custGroup()}
-  ${drawer_newCustGroup()}`;
+  ${drawer_newCustGroup()}
+  ${drawer_customer()}`;
 }
 
 /* ============================================================= DRAWER PARTS */
@@ -642,10 +756,10 @@ function drawerHead(opts){
         <button class="icon-btn sq">${I.dotsh}</button>
       </div>
     </div>
-    <div class="dh-title">${opts.back?`<button class="icon-btn sq backbtn" id="${opts.id}-back" style="display:none" title="Zpět" onclick="${opts.back}">${I.arrowL}</button>`:''}<span id="${opts.id}-title">${opts.title}</span></div>
+    <div class="dh-title">${opts.back?`<button class="icon-btn sq backbtn" id="${opts.id}-back" style="display:none" title="Zpět" onclick="${opts.back}">${I.arrowL}</button>`:''}${opts.icon?`<span class="dh-ti">${opts.icon}</span>`:''}<span id="${opts.id}-title">${opts.title}</span><span id="${opts.id}-badge"></span></div>
     <div class="dh-sub">
       <span class="it">${I.info} <span id="${opts.id}-code">${opts.code}</span></span>
-      <span class="typ">${I.link} ${opts.type}</span>
+      <span class="typ">${I.link} <span id="${opts.id}-type">${opts.type}</span></span>
     </div>
   </div>`;
 }
@@ -658,19 +772,13 @@ function tabbar(id,tabs){
 /* membership tab (shared) */
 function membershipTab(id,key){
   const names=['Produkty pro segment Veterináři','Produkty pro segment Vodaři','Produkty dostupné v ČR pro Petshop','Produkty v programu Cymedica+','Akční krmivo pro kočky Jaro 2026','Produkty dostupné pro ČR přímý prodej','Sale10','Sale20','Sale30','Sale40','Sale50','Sale60'];
-  const rows=names.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina produktů</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const rows=names.map((n,i)=>`<tr style="cursor:pointer" onclick="openRefProdGroup('${n.replace(/'/g,"\\'")}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell">${memStatusIcon(i)}${n}</div></td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina produktů</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="tabpanel" data-k="${key}" id="${id}-${key}">
-    <div class="sub-head">Zařazení ve skupinách <span class="dots">${I.dotsh}</span></div>
+    <div class="sub-head">Zařazení ve skupinách${recomputeCtl()}</div>
     <div class="sub-tools">
+      <button class="btn-primary sm" onclick="openPicker('grpProd','mem-${id}')">${I.pencil} Upravit zařazení</button>
       <div class="search-box sm"><span class="si">${I.search}</span><input></div>
-      <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div>
-      <button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button>
-    </div>
-    <div class="sub-tools">
-      <button class="btn-primary sm" onclick="openPicker('grpProd','mem-${id}')">${I.plusw} Přidat do skupiny</button>
-      <button class="btn-secondary sm dead">${I.imp} Import</button>
-      <button class="btn-secondary sm dead">${I.exp} Export</button>
-      <button class="btn-secondary sm dead">Ostatní ${I.chev}</button>
+      <button class="icon-btn dead">${I.plus}</button>
     </div>
     <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Vytvořeno</th><th>Vytvořil(a)</th><th>Typ skupiny</th><th>Stav</th></tr></thead><tbody id="${id}-membody">${rows}</tbody></table></div>
     ${pager(true)}
@@ -688,9 +796,7 @@ const lysineVariants=[
 /* packages list (rowAction: 'drill' = master->package detail, 'select' = reselect variant) */
 function packagesTab(id,key,title,addLabel,rowAction){
   const rows=lysineVariants.map((v,i)=>{
-    const sel=(i===0&&key==='allpkg')?'selected':'';
-    const onclick=rowAction==='drill'?`drillToPackage(${i})`:(rowAction==='select'?`selectPackageVariant(${i})`:'');
-    return `<tr id="${id}-${key}-row-${i}" class="${sel}" onclick="${onclick}"><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I.pkg}</span>${v.name}</div></td><td>${v.code}</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nový produkt ${I.chevsm}</button></td></tr>`;
+    return `<tr id="${id}-${key}-row-${i}"><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell">${v.name}</div></td><td>${v.code}</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nový produkt ${I.chevsm}</button></td></tr>`;
   }).join('');
   return `<div class="tabpanel" data-k="${key}" id="${id}-${key}">
     <div class="sub-head">${title}</div>
@@ -706,14 +812,14 @@ function drawer_product(){
   const tabs=[{k:'produkt',label:'Produkt'},{k:'balprod',label:'Balení produktu'},{k:'zar',label:'Zařazení ve skupinách'},
     {k:'h',label:'Hierarchie'},{k:'sp',label:'Specifikace'},{k:'cr',label:'ČR'},{k:'sk',label:'SK'},{k:'pr',label:'Přílohy'},{k:'seo',label:'SEO'},{k:'val',label:'Validace'}];
   return `<div class="drawer" id="${id}">
-    ${drawerHead({id,title:'Lysine 100 pasta pro kočky',code:'C01275-01496',type:'MASTER KARTA',status:'Nový',back:'returnToPackage()'})}
+    ${drawerHead({id,icon:I.master,title:'Lysine 100 pasta pro kočky',code:'C01275',type:'MASTER KARTA',status:'Nový'})}
     ${tabbar(id,tabs)}
     <div class="drawer-body">
       <div class="tabpanel active" data-k="produkt" id="${id}-produkt">
         <div class="sec-title">Obecné <span class="dots">${I.dotsh}</span></div>
         <div class="card">
-          <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span>Lysine 100 pasta pro kočky</div></div></div>
-          <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line">C01275</div></div></div>
+          <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span><span id="dwProduct-oname">Lysine 100 pasta pro kočky</span></div></div></div>
+          <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line" id="dwProduct-ocode">C01275</div></div></div>
           <div class="form-row"><div class="form-label">Popis</div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span></div></div></div>
         </div>
       </div>
@@ -731,7 +837,7 @@ function drawer_package(){
     {k:'h',label:'Hierarchie'},{k:'sp',label:'Specifikace'},{k:'cr',label:'ČR'},{k:'sk',label:'SK'},
     {k:'pp',label:'Přílohy produkt'},{k:'pb',label:'Přílohy balení'},{k:'seo',label:'SEO'},{k:'skl',label:'Sklady'},{k:'more',label:'',chev:true}];
   return `<div class="drawer" id="${id}">
-    ${drawerHead({id,title:'Lysine 100 pasta pro kočky 30 ml',code:'C01275-01496',type:'BALENÍ',status:'Nový produkt',back:'returnToMaster()'})}
+    ${drawerHead({id,icon:I.pkg,title:'Lysine 100 pasta pro kočky 30 ml',code:'C01275-01496',type:'BALENÍ',status:'Nový produkt'})}
     ${tabbar(id,tabs)}
     <div class="drawer-body">
       <div class="tabpanel active" data-k="bal" id="${id}-bal">
@@ -768,7 +874,7 @@ function drawer_package(){
 /* ---------- GROUP DEFINITION (dynamic categories) ---------- */
 /* state per group instance */
 const groupState = {};
-function defState(id,entity){ if(!groupState[id]) groupState[id]={modes:['Výčtem'],includeFuture:'Ne',entity}; return groupState[id]; }
+function defState(id,entity){ if(!groupState[id]) groupState[id]={modes:['Výčtem'],includeFuture:'Ano',entity}; return groupState[id]; }
 
 function generalTab(id,entity,name,code,typeLabel){
   defState(id,entity);
@@ -777,8 +883,8 @@ function generalTab(id,entity,name,code,typeLabel){
       <div>
         <div class="sec-title">Obecné <span class="dots">${I.dotsh}</span></div>
         <div class="card">
-          <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span>${name}</div></div></div>
-          <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line">${code}</div></div></div>
+          <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span><span id="${id}-oname">${name}</span></div></div></div>
+          <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line" id="${id}-ocode">${code}</div></div></div>
           <div class="form-row"><div class="form-label">Popis</div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span></div></div></div>
         </div>
       </div>
@@ -805,10 +911,10 @@ function renderDefCard(id){
         </div>
       </div>
     </div>
-    <div class="form-row"><div class="form-label">Zahrnout budoucí záznamy <span class="req">*</span></div>
+    <div class="form-row"><div class="form-label">Zahrnout budoucí položky <span class="req">*</span></div>
       <div class="form-field">
         <div class="dropdown-trigger" onclick="event.stopPropagation();toggleDD('${id}-futuremenu')">
-          <div class="dt-val">${s.includeFuture}</div>
+          <div class="dt-val">${s.includeFuture||'<span class="dt-ph">Vyberte…</span>'}</div>
           <span class="dt-chev">${I.chev}</span>
           <div class="mode-menu" id="${id}-futuremenu">
             ${['Ano','Ne'].map(v=>`<div onclick="event.stopPropagation();setFuture('${id}','${v}')"><span class="mm-check">${s.includeFuture===v?'✓':''}</span>${v}</div>`).join('')}
@@ -822,22 +928,15 @@ function renderDefCard(id){
 /* ---------- PRODUCT GROUP drawer ---------- */
 function drawer_prodGroup(){
   const id='dwProdGroup';
-  const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Produkty ve skupině'},
+  const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Produkty a balení ve skupině'},
     {k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
+  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Produkty pro segment Veterináři',code:'SKUGROUP_9470583',type:'SKUPINA BALENÍ',status:'Nová'})}
     ${tabbar(id,tabs)}
     <div class="drawer-body">
       ${generalTab(id,'prodgrp','Produkty pro segment Veterináři','SKUGROUP_9470583')}
-      <div class="tabpanel" data-k="prody" id="${id}-prody">
-        <div class="sub-head">Produkty ve skupině <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
-          <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','prodgrpBody')">${I.plusw} Balení</button><button class="btn-secondary sm dead">${I.imp} Import</button><button class="btn-secondary sm dead">${I.exp} Export</button><button class="btn-secondary sm dead">Ostatní ${I.chev}</button></div>
-        <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody id="dwProdGroup-prodybody">${prodRows}</tbody></table></div>
-        ${pager(true)}
-      </div>
+      <div class="tabpanel" data-k="prody" id="${id}-prody"></div>
       ${['ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
     </div>
   </div>`;
@@ -848,7 +947,7 @@ function drawer_customer(){
   const id='dwCustomer';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'dp',label:'Dostupné projekty'},{k:'zar',label:'Zařazení ve skupinách'},
     {k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const memRows=custGroups.map(g=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${g}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina zákazníků</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const memRows=custGroups.map((g,i)=>`<tr style="cursor:pointer" onclick="openRefCustGroup('${g.replace(/'/g,"\\'")}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell">${memStatusIcon(i)}${g}</div></td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>Skupina zákazníků</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Jan Novák',code:'CUST_00543',type:'ZÁKAZNÍK',status:'Nový'})}
     ${tabbar(id,tabs)}
@@ -858,8 +957,8 @@ function drawer_customer(){
           <div>
             <div class="sec-title">Obecné <span class="dots">${I.dotsh}</span></div>
             <div class="card">
-              <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span>Jan Novák</div></div></div>
-              <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line">CUST_00543</div></div></div>
+              <div class="form-row"><div class="form-label">Název <span class="req">*</span></div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span><span id="dwCustomer-oname">Jan Novák</span></div></div></div>
+              <div class="form-row"><div class="form-label">Kód</div><div class="form-field"><div class="input-line" id="dwCustomer-ocode">CUST_00543</div></div></div>
               <div class="form-row"><div class="form-label">Popis</div><div class="form-field"><div class="input-fill"><span class="cz">CZ</span></div></div></div>
             </div>
           </div>
@@ -879,10 +978,12 @@ function drawer_customer(){
         </div>
       </div>
       <div class="tabpanel" data-k="zar" id="${id}-zar">
-        <div class="sub-head">Zařazení ve skupinách <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
-          <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('grpCust','memcust')">${I.plusw} Přidat do skupiny</button><button class="btn-secondary sm dead">${I.imp} Import</button><button class="btn-secondary sm dead">${I.exp} Export</button><button class="btn-secondary sm dead">Ostatní ${I.chev}</button></div>
+        <div class="sub-head">Zařazení ve skupinách${recomputeCtl()}</div>
+        <div class="sub-tools">
+          <button class="btn-primary sm" onclick="openPicker('grpCust','memcust')">${I.pencil} Upravit zařazení</button>
+          <div class="search-box sm"><span class="si">${I.search}</span><input></div>
+          <button class="icon-btn dead">${I.plus}</button>
+        </div>
         <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Vytvořeno</th><th>Vytvořil(a)</th><th>Typ skupiny</th><th>Stav</th></tr></thead><tbody id="dwCustomer-zarbody">${memRows}</tbody></table></div>
         ${pager(true)}
       </div>
@@ -896,20 +997,13 @@ function drawer_custGroup(){
   const id='dwCustGroup';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'zaks',label:'Zákazníci ve skupině'},
     {k:'dp',label:'Dostupné produkty'},{k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const zakRows=custs.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+  const zakRows=custs.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Cymedica+',code:'CUSTGROUP_2192758',type:'SKUPINA ZÁKAZNÍKŮ',status:'Nová'})}
     ${tabbar(id,tabs)}
     <div class="drawer-body">
       ${generalTab(id,'custgrp','Cymedica+','CUSTGROUP_2192758')}
-      <div class="tabpanel" data-k="zaks" id="${id}-zaks">
-        <div class="sub-head">Zákazníci ve skupině <span class="dots">${I.dotsh}</span></div>
-        <div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
-          <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>
-        <div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','custgrpBody')">${I.plusw} Zákazníka</button><button class="btn-secondary sm dead">${I.imp} Import</button><button class="btn-secondary sm dead">${I.exp} Export</button><button class="btn-secondary sm dead">Ostatní ${I.chev}</button></div>
-        <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody id="dwCustGroup-zaksbody">${zakRows}</tbody></table></div>
-        ${pager(true)}
-      </div>
+      <div class="tabpanel" data-k="zaks" id="${id}-zaks"></div>
       ${['dp','ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
     </div>
   </div>`;
@@ -918,8 +1012,8 @@ function drawer_custGroup(){
 /* ============================================================= GROUP CREATION FLOW (products & customers) */
 /* --- shared create-group dialog --- */
 let cgEntity='prod';
-function openCreateGroup(){cgEntity='prod';goSection('katalog');showView('kat-groups');document.getElementById('cmTitle').textContent='Vytvořit skupinu produktů';document.getElementById('cmBodyWrap').innerHTML=renderCreateBody('prod');openModal('mdlCreateGroup');}
-function openCreateCustGroup(){cgEntity='cust';goSection('zakaznici');showView('zak-groups');document.getElementById('cmTitle').textContent='Vytvořit skupinu zákazníků';document.getElementById('cmBodyWrap').innerHTML=renderCreateBody('cust');openModal('mdlCreateGroup');}
+function openCreateGroup(){cgEntity='prod';goSection('katalog');showView('kat-groups');groupState['cm']={modes:[],includeFuture:'',entity:'prod'};document.getElementById('cmTitle').textContent='Vytvořit skupinu produktů';document.getElementById('cmBodyWrap').innerHTML=renderCreateBody('prod');openModal('mdlCreateGroup');}
+function openCreateCustGroup(){cgEntity='cust';goSection('zakaznici');showView('zak-groups');groupState['cm']={modes:[],includeFuture:'',entity:'cust'};document.getElementById('cmTitle').textContent='Vytvořit skupinu zákazníků';document.getElementById('cmBodyWrap').innerHTML=renderCreateBody('cust');openModal('mdlCreateGroup');}
 function renderCreateBody(entity){
   const typ=entity==='cust'?'Skupina zákazníků':'Skupina balení';
   const code=entity==='cust'?'CUSTGROUP_534534':'SKUGROUP_534534';
@@ -935,14 +1029,14 @@ function submitCreateGroup(){
   closeModal('mdlCreateGroup');
   if(cgEntity==='cust'){
     if(!custGroups.includes('Slevová skupina')) custGroups.push('Slevová skupina');
-    ngc={customers:[]};
+    GRP.dwNewCustGroup={id:'dwNewCustGroup',panel:'dwNewCustGroup-zaks',entity:'cust',filters:[],savedFilters:[],defining:false,manual:[],established:false};grpOpenMenu=null;
     goSection('zakaznici');showView('zak-groups');
-    setTimeout(()=>{const idx=custGroups.indexOf('Slevová skupina');const r=document.getElementById('cgrow-'+idx);if(r)r.classList.add('selected');openDrawer('dwNewCustGroup');activateTab('dwNewCustGroup','zaks');ngcRender();},0);
+    setTimeout(()=>{const idx=custGroups.indexOf('Slevová skupina');const r=document.getElementById('cgrow-'+idx);if(r)r.classList.add('selected');openDrawer('dwNewCustGroup');activateTab('dwNewCustGroup','zaks');grpRender('dwNewCustGroup');},0);
   } else {
     if(!prodGroups.some(g=>g.n==='Slevička 20%')) prodGroups.push({n:'Slevička 20%',type:'Skupina produktů'});
-    ng={products:[]};
+    GRP.dwNewGroup={id:'dwNewGroup',panel:'dwNewGroup-prody',entity:'prod',filters:[],savedFilters:[],defining:false,manual:[]};grpOpenMenu=null;
     goSection('katalog');showView('kat-groups');
-    setTimeout(()=>{const idx=prodGroups.findIndex(g=>g.n==='Slevička 20%');const r=document.getElementById('pgrow-'+idx);if(r)r.classList.add('selected');openDrawer('dwNewGroup');activateTab('dwNewGroup','prody');ngRender();},0);
+    setTimeout(()=>{const idx=prodGroups.findIndex(g=>g.n==='Slevička 20%');const r=document.getElementById('pgrow-'+idx);if(r)r.classList.add('selected');openDrawer('dwNewGroup');activateTab('dwNewGroup','prody');grpRender('dwNewGroup');},0);
   }
 }
 
@@ -967,11 +1061,73 @@ const custFilterCatalog=[
 /* empty-state arrow pointing to the "+ Balení / + Zákazníka" button */
 function ngArrow(){return `<svg class="ng-arrow" width="560" height="200" viewBox="0 0 560 200" fill="none"><path d="M548 150 C400 200 120 196 34 28" stroke="#1770c8" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M34 28 l-3 30 M34 28 l28 8" stroke="#1770c8" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>`;}
 
+/* filter attributes usable when defining a group by filter (Druh zvířete + Léčivá látka in this flow) */
+const ngFields={
+  'Druh zvířete':['Pes','Kočka','Hlodavci','Dobytek','Plazi','Vodní zvířata'],
+  'Léčivá látka':['Vitamín C','Vitamín D','Vitamín E','Probiotika','Enzymy']
+};
+const ngCatalog=filterCatalog.map(c=>({label:c[0],code:c[1],field: c[0].indexOf('Druh zvířete')>=0?'Druh zvířete':(c[0].indexOf('Léčivá látka')>=0?'Léčivá látka':null)}));
+
+/* ===================== FILTER-DEFINED GROUP MEMBER TABS (generic engine) ===================== */
+const grpClone=x=>JSON.parse(JSON.stringify(x));
+let grpOpenMenu=null, grpGuardId=null;
+const FLD={
+  prod:{'Druh zvířete':{type:'chips',options:['Pes','Kočka','Hlodavci','Dobytek','Plazi','Vodní zvířata']},
+        'Léčivá látka':{type:'chips',options:['Vitamín C','Vitamín D','Vitamín E','Probiotika','Enzymy']}},
+  cust:{'Obrat':{type:'text'},
+        'Segment':{type:'chips',options:['Veterináři','Laboratoře','Chovatelé','Petshop','Klinika','Velkoobchod']}}
+};
+const CAT={
+  prod:filterCatalog.map(c=>({label:c[0],code:c[1],field:c[0].indexOf('Druh zvířete')>=0?'Druh zvířete':(c[0].indexOf('Léčivá látka')>=0?'Léčivá látka':null)})),
+  cust:custFilterCatalog.map(c=>({label:c[0],code:c[1],field:c[0].indexOf('Segment')>=0?'Segment':(c[0].indexOf('Obrat')>=0?'Obrat':null)}))
+};
+const POOL_prod=[
+  {n:'Elite Flex Forte pasta pro kočky 30 ml',code:'C00499-00617',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín C'},
+  {n:'Elite Flex Forte pasta pro psy 60 ml',code:'C00499-00618',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín D'},
+  {n:'Liver Pak 500 pasta pro psy 60 ml',code:'C00496-00711',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín E'},
+  {n:'Lysine 100 pasta pro kočky 30 ml',code:'C01275-01496',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín D'},
+  {n:'MultiBoost pasta pro kočky 30 ml',code:'C00780-01120',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín E'},
+  {n:'RodentVit kapky pro hlodavce 15 ml',code:'C00931-02010',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Hlodavci',latka:'Vitamín C'},
+  {n:'RodentVit kapky pro hlodavce 30 ml',code:'C00931-02011',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Hlodavci',latka:'Vitamín D'},
+  {n:'ReptiThermo gel pro plazy 50 ml',code:'C01560-03300',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Plazi',latka:'Vitamín E'},
+  {n:'Elite Flex Forte pasta pro kočky',code:'C00498',ic:'master',t:'Master karta',st:'Nový',animal:'Kočka',latka:'Vitamín C'},
+  {n:'Elite Flex Forte pasta pro psy',code:'C00490',ic:'master',t:'Master karta',st:'Nový',animal:'Pes',latka:'Vitamín D'},
+  {n:'Liver Pak 500 pasta pro psy',code:'C00496',ic:'master',t:'Master karta',st:'Nový',animal:'Pes',latka:'Vitamín E'},
+  {n:'Lysine 100 pasta pro kočky',code:'C01275',ic:'master',t:'Master karta',st:'Nový',animal:'Kočka',latka:'Vitamín D'},
+  {n:'RodentVit master pro hlodavce',code:'C00931',ic:'master',t:'Master karta',st:'Nový',animal:'Hlodavci',latka:'Vitamín C'},
+  {n:'ReptiThermo master pro plazy',code:'C01560',ic:'master',t:'Master karta',st:'Nový',animal:'Plazi',latka:'Vitamín E'}
+];
+const POOL_cust=[
+  {n:'Jan Novák',code:'CUST_00543',st:'Nová',obrat:35000,segment:'Veterináři'},
+  {n:'Martin Hruška',code:'CUST_00544',st:'Nová',obrat:58000,segment:'Veterináři'},
+  {n:'MVDr. Kateřina Zdráhalová',code:'CUST_00551',st:'Nová',obrat:42000,segment:'Veterináři'},
+  {n:'Laboratoř VetLab s.r.o.',code:'CUST_00570',st:'Nová',obrat:51000,segment:'Laboratoře'},
+  {n:'BioLab Diagnostika',code:'CUST_00571',st:'Nová',obrat:47000,segment:'Laboratoře'},
+  {n:'Petshop U Tlapky',code:'CUST_00588',st:'Nová',obrat:22000,segment:'Petshop'},
+  {n:'Chovatelské potřeby Zvíře',code:'CUST_00590',st:'Nová',obrat:15000,segment:'Chovatelé'},
+  {n:'Klinika NaHrázi',code:'CUST_00601',st:'Nová',obrat:80000,segment:'Klinika'},
+  {n:'Veterina Modřany',code:'CUST_00602',st:'Nová',obrat:33000,segment:'Veterináři'},
+  {n:'Laboratoře Cytolab',code:'CUST_00610',st:'Nová',obrat:64000,segment:'Laboratoře'},
+  {n:'Zvěrolékař Beroun',code:'CUST_00615',st:'Nová',obrat:28000,segment:'Veterináři'},
+  {n:'Petshop Čtyři tlapky',code:'CUST_00620',st:'Nová',obrat:19000,segment:'Petshop'},
+  {n:'Klinika Zvířátko',code:'CUST_00631',st:'Nová',obrat:72000,segment:'Klinika'},
+  {n:'Chovatel Sever s.r.o.',code:'CUST_00640',st:'Nová',obrat:41000,segment:'Chovatelé'}
+];
+const GRP={
+  dwNewGroup:{id:'dwNewGroup',panel:'dwNewGroup-prody',entity:'prod',filters:[],savedFilters:[],defining:false,manual:[],established:false},
+  dwProdGroup:{id:'dwProdGroup',panel:'dwProdGroup-prody',entity:'prod',defining:false,manual:[],established:true,
+    filters:[{field:'Druh zvířete',type:'chips',op:':',values:['Pes','Kočka']}],savedFilters:[]},
+  dwCustGroup:{id:'dwCustGroup',panel:'dwCustGroup-zaks',entity:'cust',defining:false,manual:[],established:true,
+    filters:[{field:'Obrat',type:'text',op:'>',textValue:'20.000'},{field:'Obrat',type:'text',op:'<',textValue:'60.000'},{field:'Segment',type:'chips',op:'=',values:['Veterináři','Laboratoře']}],savedFilters:[]},
+  dwNewCustGroup:{id:'dwNewCustGroup',panel:'dwNewCustGroup-zaks',entity:'cust',filters:[],savedFilters:[],defining:false,manual:[],established:false}
+};
+GRP.dwProdGroup.savedFilters=grpClone(GRP.dwProdGroup.filters);
+GRP.dwCustGroup.savedFilters=grpClone(GRP.dwCustGroup.filters);
+
 /* --- new PRODUCT group drawer (Slevička 20%) --- */
-let ng={products:[]};
 function drawer_newGroup(){
   const id='dwNewGroup';
-  const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Produkty ve skupině'},{k:'ic',label:'Individuální ceny'},
+  const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Produkty a balení ve skupině'},{k:'ic',label:'Individuální ceny'},
     {k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Slevička 20%',code:'SKUGROUP_534534',type:'SKUPINA BALENÍ',status:'Nová'})}
@@ -994,21 +1150,204 @@ function drawer_newGroup(){
     </div>
   </div>`;
 }
-function ngRender(){
-  const host=document.getElementById('dwNewGroup-prody'); if(!host)return;
-  const has=ng.products.length>0;
-  let header=`<div class="sub-head">Produkty ve skupině <span class="dots">${I.dotsh}</span></div>`;
-  let row1=`<div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
-      <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>`;
-  let row2=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('prod','newprod')">${I.plusw} Balení</button><button class="btn-secondary sm dead">${I.imp} Import</button>${has?`<button class="btn-secondary sm dead">${I.exp} Export</button><button class="btn-secondary sm dead">Ostatní ${I.chev}</button>`:''}</div>`;
-  let body;
-  if(has){
-    const rows=ng.products.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
-    body=`<div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table></div>${pager(true)}`;
-  } else {
-    body=`<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">No products added yet</div><div class="t2">Start with adding them here</div></div></div>`;
+function ngEmpty(t1,t2){return `<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">${t1}</div><div class="t2">${t2}</div></div></div>`;}
+
+/* product pool with attributes so filters visibly influence the results */
+const NGPOOL=[
+  {n:'Elite Flex Forte pasta pro kočky 30 ml',code:'C00499-00617',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín C'},
+  {n:'Elite Flex Forte pasta pro psy 60 ml',code:'C00499-00618',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín D'},
+  {n:'Liver Pak 500 pasta pro psy 60 ml',code:'C00496-00711',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín E'},
+  {n:'Lysine 100 pasta pro kočky 30 ml',code:'C01275-01496',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín D'},
+  {n:'MultiBoost pasta pro kočky 30 ml',code:'C00780-01120',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Kočka',latka:'Vitamín E'},
+  {n:'RodentVit kapky pro hlodavce 15 ml',code:'C00931-02010',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Hlodavci',latka:'Vitamín C'},
+  {n:'RodentVit kapky pro hlodavce 30 ml',code:'C00931-02011',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Hlodavci',latka:'Vitamín D'},
+  {n:'ReptiThermo gel pro plazy 50 ml',code:'C01560-03300',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Plazi',latka:'Vitamín E'},
+  {n:'Elite Flex Forte pasta pro kočky',code:'C00498',ic:'master',t:'Master karta',st:'Nový',animal:'Kočka',latka:'Vitamín C'},
+  {n:'Elite Flex Forte pasta pro psy',code:'C00490',ic:'master',t:'Master karta',st:'Nový',animal:'Pes',latka:'Vitamín D'},
+  {n:'Liver Pak 500 pasta pro psy',code:'C00496',ic:'master',t:'Master karta',st:'Nový',animal:'Pes',latka:'Vitamín E'},
+  {n:'Lysine 100 pasta pro kočky',code:'C01275',ic:'master',t:'Master karta',st:'Nový',animal:'Kočka',latka:'Vitamín D'},
+  {n:'RodentVit master pro hlodavce',code:'C00931',ic:'master',t:'Master karta',st:'Nový',animal:'Hlodavci',latka:'Vitamín C'},
+  {n:'ReptiThermo master pro plazy',code:'C01560',ic:'master',t:'Master karta',st:'Nový',animal:'Plazi',latka:'Vitamín E'}
+];
+function grpHasVals(g){return g.filters.some(f=>f.type==='text'?!!(f.textValue&&(''+f.textValue).length):f.values.length>0);}
+/* per-row membership status icon (deterministic, majority 'actual') */
+function grpStatus(i){
+  const k = (i%7===3)?'pending':((i%7===5)?'manual':'actual');
+  const map={actual:['Filtrem: Aktuální stav',I.stActual],pending:['Filtrem: Čeká na přepočet',I.stPending],manual:['Ručně přidán',I.stManual]};
+  return `<span class="statusico" title="${map[k][0]}">${map[k][1]}</span>`;
+}
+/* does an item match the active filters? */
+function grpMatch(it,active){return active.every(f=>{
+  if(f.type==='text'){const num=parseFloat((''+f.textValue).replace(/[^0-9]/g,''))||0;const v=f.field==='Obrat'?it.obrat:0;return f.op==='>'?v>num:(f.op==='<'?v<num:v===num);}
+  if(f.field==='Druh zvířete')return f.values.includes(it.animal);
+  if(f.field==='Léčivá látka')return f.values.includes(it.latka);
+  if(f.field==='Segment')return f.values.includes(it.segment);
+  return true;});}
+/* status icon renderer + which kind a row shows */
+function grpIcon(kind){const M={actual:['Filtrem: Aktuální stav',I.stActual],pending:['Filtrem: Čeká na přepočet',I.stPending],manual:['Ručně přidán',I.stManual]};const m=M[kind]||M.pending;return `<span class="statusico" title="${m[0]}">${m[1]}</span>`;}
+/* the addition method of a row => its status icon kind:
+   manual = hand, filter = check (actual) or clock (pending) */
+function grpRowKind(g,d,i){
+  if(d._src==='manual') return 'manual';                 // really added by hand
+  if(!g.established) return 'pending';                    // first-time filter group: all clock
+  const key=(d.code||d.n||'')+'#'+i; let hsh=0; for(let k=0;k<key.length;k++) hsh=(hsh*31+key.charCodeAt(k))>>>0;
+  const m=hsh%10; return m<2?'manual':(m<5?'pending':'actual'); // established: mix, majority green
+}
+function grpSrcRemove(gid,key){const g=GRP[gid];if(!g.src)g.src={manual:true,filter:true};g.src[key]=false;grpRender(gid);}
+function grpSrcToggle(gid,key){const g=GRP[gid];if(!g.src)g.src={manual:true,filter:true};g.src[key]=!g.src[key];grpRender(gid);}
+/* membership-tab status icon: deterministic mix, majority green check */
+function memStatusIcon(i){const k=(i%9===4)?'manual':((i%4===3)?'pending':'actual');return grpIcon(k);}
+/* "Spustit přepočet" control for tab headers; info hint appears only after clicking, resets on drawer open */
+function recomputeCtl(){return `<span style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+    <span class="rc-info" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1770c8" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Přepočet může trvat několik minut, podle počtu položek</span>
+    <button class="btn-secondary sm rc-btn" onclick="event.stopPropagation();showRecompute(this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1770c8" stroke-width="1.8"><path d="M4 4v5h5"/><path d="M4 9a8 8 0 1 1-1 4"/></svg> Spustit přepočet</button>
+    <span class="dots">${I.dotsh}</span></span>`;}
+function showRecompute(btn){const info=btn.parentElement.querySelector('.rc-info');if(info)info.style.display='inline-flex';}
+/* results: filter the pool (tagged 'filter'), then merge manual items (tagged 'manual') */
+function grpResults(g){
+  const active=fdefActive(g.filters||[]);
+  let rows=[];
+  if(active.length){const pool=g.entity==='cust'?POOL_cust:POOL_prod;rows=pool.filter(it=>grpMatch(it,active)).map(it=>Object.assign({},it,{_src:'filter'}));}
+  (g.manual||[]).forEach(m=>{const ex=rows.find(r=>(r.code||r.n)===(m.code||m.n));if(ex)ex._src='manual';else rows.push(Object.assign({},m,{_src:'manual'}));});
+  return rows;
+}
+function grpRender(gid){
+  const g=GRP[gid]; const host=document.getElementById(g.panel); if(!host)return;
+  const isCust=g.entity==='cust';
+  const heading=isCust?'Zákazníci ve skupině':'Produkty a balení ve skupině';
+  const active=fdefActive(g.filters||[]);
+  const hasFilter=active.length>0;
+  const hasManual=(g.manual||[]).length>0;
+
+  const header=`<div class="sub-head">${heading}${recomputeCtl()}</div>`;
+  const primBtn=`<button class="btn-primary sm" onclick="openGroupItems('${gid}','filter')">${I.pencil} ${hasFilter?'Změnit filtr skupiny':'Nastavit filtr skupiny'}</button>`;
+  const manBtn=`<button class="btn-secondary sm" onclick="openGroupItems('${gid}','manual')">${I.plus} Ručně přidat</button>`;
+
+  // empty state — no filter and nothing added manually
+  if(!hasFilter && !hasManual){
+    host.innerHTML=header+`<div class="sub-tools">${primBtn}${manBtn}</div>`+
+      ngEmpty(isCust?'Žádní zákazníci':'Žádné produkty nebo balení','Můžete vytvořit filtr pro definici skupiny a přidávat ručně');
+    scheduleFill(); return;
   }
-  host.innerHTML=header+row1+row2+body;
+
+  if(!g.src) g.src={manual:true,filter:true};
+  const srcMan=g.src.manual!==false, srcFil=g.src.filter!==false;
+  const srcOpts=[['Ručně','manual'],['Filtrem','filter']];
+  // "Způsob přidání" filter pill (replaces the old show-manual toggle)
+  const srcPill=`<div class="dpill-wrap">
+      <div class="dpill" onclick="event.stopPropagation();toggleDD('${gid}-srcmenu')">${I.filter} Způsob přidání <span class="pcolon">:</span>
+        ${srcOpts.filter(([l,k])=>g.src[k]).map(([lbl,key])=>`<span class="pchip">${lbl} <x onclick="event.stopPropagation();grpSrcRemove('${gid}','${key}')">✕</x></span>`).join('')}</div>
+      <div class="animal-menu" id="${gid}-srcmenu">${srcOpts.map(([lbl,key])=>`<div class="am-row" onclick="event.stopPropagation();grpSrcToggle('${gid}','${key}')"><span class="am-cb ${g.src[key]?'on':''}">${g.src[key]?'✓':''}</span>${lbl}</div>`).join('')}</div>
+    </div>`;
+  const tools=`<div class="sub-tools">
+      ${primBtn}${manBtn}
+      <div class="search-box sm"><span class="si">${I.search}</span><input></div>
+      ${srcPill}
+    </div>`;
+
+  // toggle now lives on the info row, followed by the filter badges
+  const futureToggle=`<span class="toggle-wrap" style="font-weight:400;cursor:default;margin-right:8px;"><button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></button>Zahrnovat budoucí položky</span>`;
+  const chips=hasFilter?active.map(f=>`<span class="finfo grey">${f.type==='text'?(f.field+' '+f.op+' '+f.textValue):(f.field+': '+f.values.join(', '))}</span>`).join(''):'';
+  const man=hasManual?`<span class="finfo teal">Ručně přidáno: ${g.manual.length}</span>`:'';
+  const badges=`<div class="finfo-row">${futureToggle}${chips}${man}</div>`;
+
+  let rows=grpResults(g).map((d,i)=>Object.assign({},d,{_kind:grpRowKind(g,d,i)}));
+  rows=rows.filter(d=> d._kind==='manual'?srcMan:srcFil ); // Způsob přidání: manual=hand, filter=check/clock
+  const head=isCust?`<th style="width:40px"><span class="cb"></span></th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th>`:`<th style="width:40px"><span class="cb"></span></th><th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th>`;
+  const trs=rows.map(d=> isCust
+    ? `<tr style="cursor:pointer" onclick="openRefCustomer('${(d.n||'').replace(/'/g,"\\'")}','${d.code}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell">${grpIcon(d._kind)}${d.n}</div></td><td>${d.code}</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`
+    : `<tr style="cursor:pointer" onclick="openRefItem('${d.ic}','${(d.n||'').replace(/'/g,"\\'")}','${d.code}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell">${grpIcon(d._kind)}${d.n}</div></td><td>${d.code}</td><td>${d.t||typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`
+  ).join('');
+  const body=`<div class="sub-table"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>${pager(true)}`;
+  host.innerHTML=header+tools+badges+body;
+  scheduleFill();
+}
+function grpMenu(id){ grpOpenMenu=(grpOpenMenu===id?null:id); document.querySelectorAll('[id*="-vm-"].animal-menu,[id$="-addmenu"].filter-menu').forEach(m=>m.classList.toggle('open',m.id===grpOpenMenu&&!!grpOpenMenu)); }
+function grpAddFilter(gid,field){ const g=GRP[gid]; const t=(FLD[g.entity][field]||{}).type||'chips'; g.filters.push(t==='text'?{field,type:'text',op:'>',textValue:''}:{field,type:'chips',op:(field==='Segment'?'=':':'),values:[]}); grpOpenMenu=`${gid}-vm-${g.filters.length-1}`; grpRender(gid); }
+function grpToggleVal(gid,i,v){ const f=GRP[gid].filters[i]; if(f.values.includes(v))f.values=f.values.filter(x=>x!==v); else f.values.push(v); grpRender(gid); }
+function grpRemoveVal(gid,i,v){ GRP[gid].filters[i].values=GRP[gid].filters[i].values.filter(x=>x!==v); grpRender(gid); }
+function grpSetOp(gid,i,o){ GRP[gid].filters[i].op=o; grpRender(gid); }
+function grpDelFilter(gid,i){ GRP[gid].filters.splice(i,1); grpOpenMenu=null; grpRender(gid); }
+function grpResetFilter(gid,i){ const g=GRP[gid],f=g.filters[i],sv=g.savedFilters.find(s=>s.field===f.field&&s.op===f.op); if(sv){ if(f.type==='text')f.textValue=sv.textValue; else f.values=[...sv.values]; } grpOpenMenu=null; grpRender(gid); }
+function grpResetAll(gid){ GRP[gid].filters=grpClone(GRP[gid].savedFilters); grpOpenMenu=null; grpRender(gid); }
+function grpSave(gid){ GRP[gid].savedFilters=grpClone(GRP[gid].filters); GRP[gid].defining=false; grpOpenMenu=null; grpRender(gid); }
+function grpToggleDefine(gid){ GRP[gid].defining=!GRP[gid].defining; grpOpenMenu=null; grpRender(gid); }
+
+/* ===== shared group-items modal — same UI for manual add & filter definition,
+        differing only in title + primary button (mode: 'manual' | 'filter') ===== */
+function fdefActive(fs){return fs.filter(f=>f.type==='text'?!!(f.textValue&&(''+f.textValue).trim()):(f.values&&f.values.length));}
+let gdlg={gid:null,entity:'prod',mode:'manual',filters:[],selected:new Set(),openMenu:null};
+function openGroupItems(gid,mode){
+  const g=GRP[gid];
+  gdlg={gid,entity:g.entity,mode,filters:mode==='filter'?grpClone(g.filters||[]):[],selected:new Set(),openMenu:null};
+  const isCust=g.entity==='cust';
+  let title,btn;
+  if(mode==='filter'){ title=fdefActive(g.filters||[]).length?'Změnit filtr skupiny':'Nastavit filtr skupiny'; btn='Uložit'; }
+  else { title=isCust?'Ruční přidání zákazníků do skupiny':'Ruční přidání produktů do skupiny'; btn='Přidat'; }
+  document.getElementById('giTitle').textContent=title;
+  document.getElementById('giSubmit').textContent=btn;
+  giRebuild(); renderGI(); openModal('mdlGroupItems');
+}
+function giPool(){return gdlg.entity==='cust'?POOL_cust:POOL_prod;}
+function giShuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
+/* the dialog always shows the full set of rows; content is re-shuffled on each
+   filter change so it looks like the list responds in real time (mock) */
+function giRebuild(){gdlg.display=giShuffle(giPool());}
+function renderGI(){
+  const body=document.getElementById('giBody'); if(!body)return; const ent=gdlg.entity; const isCust=ent==='cust';
+  const pills=gdlg.filters.map((f,i)=>{
+    const del=`<button class="pico del" title="Odebrat filtr" onclick="event.stopPropagation();giDelFilter(${i})">${I.trash}</button>`;
+    let valPart,menu;
+    if(f.type==='text'){
+      valPart=`<span class="ptext">${f.textValue?f.textValue:'—'}</span>`;
+      menu=`<div class="animal-menu" id="gi-vm-${i}" style="width:220px;padding:10px;">
+        <div class="opseg">${['>','<','='].map(o=>`<button class="opbtn ${f.op===o?'on':''}" onclick="event.stopPropagation();giSetOp(${i},'${o}')">${o}</button>`).join('')}</div>
+        <input class="tinput" value="${f.textValue||''}" placeholder="Hodnota" oninput="gdlg.filters[${i}].textValue=this.value"></div>`;
+    } else {
+      valPart=f.values.map(v=>`<span class="pchip">${v} <x onclick="event.stopPropagation();giRemoveVal(${i},'${v}')">✕</x></span>`).join('');
+      const opts=(FLD[ent][f.field]||{}).options||[];
+      menu=`<div class="animal-menu" id="gi-vm-${i}"><div class="menu-search"><span class="si">${I.search}</span><input placeholder=""></div>
+        ${opts.map(v=>`<div class="am-row" onclick="event.stopPropagation();giToggleVal(${i},'${v}')"><span class="am-cb ${f.values.includes(v)?'on':''}">${f.values.includes(v)?'✓':''}</span>${v}</div>`).join('')}
+        <div class="am-adv" onclick="event.stopPropagation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6f6f6f" stroke-width="1.8"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pokročilý výběr</div></div>`;
+    }
+    return `<div class="dpill-wrap"><div class="dpill" onclick="event.stopPropagation();toggleDD('gi-vm-${i}')">${I.filter} ${f.field} <span class="pcolon">${f.type==='text'?f.op:':'}</span> ${valPart} ${del}</div>${menu}</div>`;
+  }).join('');
+  const addMenu=`<div class="addfilter-wrap"><button class="icon-btn" title="Přidat filtr" onclick="event.stopPropagation();toggleDD('gi-addmenu')">${I.plus}</button>
+    <div class="filter-menu" id="gi-addmenu"><div class="fm-title">Přidat filtr</div><div class="menu-search"><span class="si">${I.search}</span><input placeholder="Hledat"></div>
+     ${CAT[ent].map(c=>c.field?`<div class="fm-item" onclick="event.stopPropagation();giAddFilter('${c.field}')"><div class="l1">${c.label}</div><div class="l2">${c.code}</div></div>`:`<div class="fm-item dead"><div class="l1">${c.label}</div><div class="l2">${c.code}</div></div>`).join('')}</div></div>`;
+  const toolbar=`<div class="sub-tools" style="flex-wrap:wrap;margin-top:2px;"><div class="search-box sm"><span class="si">${I.search}</span><input></div>${pills}${addMenu}</div>`;
+  const rows=gdlg.display||giPool();
+  const keys=rows.map(r=>r.code||r.n);
+  const allOn=keys.length>0 && keys.every(k=>gdlg.selected.has(k));
+  const someOn=gdlg.selected.size>0 && !allOn;
+  const manual=gdlg.mode==='manual'; // checkboxes only when manually picking items
+  const headCb=manual?`<th style="width:46px"><span class="cb ${allOn?'on':(someOn?'ind':'')}" onclick="event.stopPropagation();giToggleAll()"></span></th>`:'';
+  const rowStart=key=> manual
+    ? `<tr style="cursor:pointer" onclick="giToggle('${key}')" class="${gdlg.selected.has(key)?'selected':''}"><td style="width:46px"><span class="cb ${gdlg.selected.has(key)?'on':''}"></span></td>`
+    : `<tr>`;
+  let head,trs;
+  if(isCust){
+    head=`${headCb}<th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th>`;
+    trs=rows.map(d=>rowStart(d.code||d.n)+`<td>${d.n}</td><td>${d.code}</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
+  } else {
+    head=`${headCb}<th>Název</th><th>Kód</th><th>Typ položky</th><th>Zařazen ve skupinách</th><th>Stav</th>`;
+    trs=rows.map(d=>rowStart(d.code||d.n)+`<td><div class="name-cell">${d.n}</div></td><td>${d.code}</td><td>${d.t||typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join('');
+  }
+  body.innerHTML=`${toolbar}<div class="sub-table" style="flex:1;min-height:0;overflow:auto;"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>${pager(true)}`;
+  if(gdlg.openMenu){const m=document.getElementById(gdlg.openMenu);if(m)m.classList.add('open');gdlg.openMenu=null;}
+}
+function giAddFilter(field){const t=(FLD[gdlg.entity][field]||{}).type||'chips';gdlg.filters.push(t==='text'?{field,type:'text',op:'>',textValue:''}:{field,type:'chips',op:(field==='Segment'?'=':':'),values:[]});gdlg.openMenu='gi-vm-'+(gdlg.filters.length-1);giRebuild();renderGI();}
+function giToggleVal(i,v){const f=gdlg.filters[i];if(f.values.includes(v))f.values=f.values.filter(x=>x!==v);else f.values.push(v);gdlg.openMenu='gi-vm-'+i;giRebuild();renderGI();}
+function giRemoveVal(i,v){gdlg.filters[i].values=gdlg.filters[i].values.filter(x=>x!==v);gdlg.openMenu='gi-vm-'+i;giRebuild();renderGI();}
+function giSetOp(i,o){gdlg.filters[i].op=o;gdlg.openMenu='gi-vm-'+i;giRebuild();renderGI();}
+function giDelFilter(i){gdlg.filters.splice(i,1);giRebuild();renderGI();}
+function giToggle(key){if(gdlg.selected.has(key))gdlg.selected.delete(key);else gdlg.selected.add(key);renderGI();}
+function giToggleAll(){const keys=(gdlg.display||giPool()).map(r=>r.code||r.n);if(keys.length&&keys.every(k=>gdlg.selected.has(k)))keys.forEach(k=>gdlg.selected.delete(k));else keys.forEach(k=>gdlg.selected.add(k));renderGI();}
+function giSubmit(){
+  const g=GRP[gdlg.gid];
+  if(gdlg.mode==='filter'){ g.filters=fdefActive(gdlg.filters); }
+  else { const chosen=giPool().filter(r=>gdlg.selected.has(r.code||r.n)); const cur=g.manual||[]; chosen.forEach(c=>{ if(!cur.some(m=>(m.code||m.n)===(c.code||c.n))) cur.push(c); }); g.manual=cur; }
+  closeModal('mdlGroupItems'); grpRender(gdlg.gid);
 }
 
 /* --- new CUSTOMER group drawer (Slevová skupina) --- */
@@ -1044,13 +1383,13 @@ function ngcRender(){
   let header=`<div class="sub-head">Zákazníci ve skupině <span class="dots">${I.dotsh}</span></div>`;
   let row1=`<div class="sub-tools"><div class="search-box sm"><span class="si">${I.search}</span><input></div>
       <button class="icon-btn dead">${I.plus}</button><div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button></div>`;
-  let row2=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','newcust')">${I.plusw} Zákazníka</button><button class="btn-secondary sm dead">${I.imp} Import</button>${has?`<button class="btn-secondary sm dead">${I.exp} Export</button><button class="btn-secondary sm dead">Ostatní ${I.chev}</button>`:''}</div>`;
+  let row2=`<div class="sub-tools"><button class="btn-primary sm" onclick="openPicker('cust','newcust')">${I.plusw} Přidat do skupiny</button>${bulkBtn('dwNewCustGroup-bulk')}</div>`;
   let body;
   if(has){
-    const rows=ngc.customers.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
+    const rows=ngc.customers.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
     body=`<div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table></div>${pager(true)}`;
   } else {
-    body=`<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">No customers added yet</div><div class="t2">Start with adding them here</div></div></div>`;
+    body=`<div class="ng-empty">${ngArrow()}<div class="et"><div class="t1">Žádní zákazníci</div><div class="t2">Můžete začít přidávat zde</div></div></div>`;
   }
   host.innerHTML=header+row1+row2+body;
 }
@@ -1081,6 +1420,7 @@ function renderPicker(){
   const rows=pickerData(picker.kind);
   const cfg=pickerCfg(picker.kind);
   const allOn=rows.length>0 && picker.selected.size===rows.length;
+  const someOn=picker.selected.size>0 && !allOn;
   const isGrp=picker.kind.indexOf('grp')===0;
   let pill = picker.filterAdded ? `
     <div class="dpill-wrap">
@@ -1100,8 +1440,8 @@ function renderPicker(){
         ${cfg.fcat.map(f=>`<div class="fm-item" onclick="event.stopPropagation();pickAddFilter()"><div class="l1">${f[0]}</div><div class="l2">${f[1]}</div></div>`).join('')}</div></div>
       <div class="vdiv"></div><button class="icon-btn dead">${I.reset}</button><button class="icon-btn dead">${I.cam}</button>
     </div>`;
-  const headCb=`<span class="cb ${allOn?'on':''}" style="cursor:pointer" onclick="event.stopPropagation();pickToggleAll()">${allOn?'✓':''}</span>`;
-  const rowStart=i=>{const on=picker.selected.has(i);return `<tr style="cursor:pointer" onclick="pickToggle(${i})" class="${on?'selected':''}"><td style="width:46px"><span class="cb ${on?'on':''}">${on?'✓':''}</span></td>`;};
+  const headCb=`<span class="cb ${allOn?'on':(someOn?'ind':'')}" onclick="event.stopPropagation();pickToggleAll()"></span>`;
+  const rowStart=i=>{const on=picker.selected.has(i);return `<tr style="cursor:pointer" onclick="pickToggle(${i})" class="${on?'selected':''}"><td style="width:46px"><span class="cb ${on?'on':''}"></span></td>`;};
   let head, bodyRows;
   if(picker.kind==='cust'){
     head=`<th style="width:46px">${headCb}</th><th>Jméno</th><th>Kód</th><th>Typ skupiny</th><th>Zařazen ve skupinách</th><th>Stav</th>`;
@@ -1122,18 +1462,17 @@ function pickAddFilter(){picker.filterAdded=true;renderPicker();setTimeout(()=>{
 function pickToggleVal(v){if(picker.values.includes(v))picker.values=picker.values.filter(x=>x!==v);else picker.values.push(v);renderPicker();setTimeout(()=>{const m=document.getElementById('pk-valmenu');if(m)m.classList.add('open');},0);}
 function pickRemoveVal(v){picker.values=picker.values.filter(x=>x!==v);renderPicker();}
 function setBody(id,html){const e=document.getElementById(id);if(e)e.innerHTML=html;}
-function grpMemRows(names,gt){return names.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${gt}</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');}
+function grpMemRows(names,gt){return names.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Ludmila Blahoskloná</td><td>10.10.2025&nbsp;&nbsp;15:32</td><td>Tereza Strašecí</td><td>${gt}</td><td><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');}
 function submitPicker(){
   const rows=pickerData(picker.kind);
   const chosen=[...picker.selected].sort((a,b)=>a-b).map(i=>rows[i]);
   closeModal('mdlManualAdd');
   const t=picker.target;
-  if(t==='newprod'){ng.products=chosen;ngRender();}
+  if(t.indexOf('man:')===0){const gid=t.slice(4);GRP[gid].manual=chosen.map(x=>typeof x==='string'?{n:x,code:'CUST_00324',st:'Nová'}:x);grpRender(gid);}
   else if(t==='newcust'){ngc.customers=chosen;ngcRender();}
-  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span></td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join(''));}
-  else if(t==='custgrpBody'){setBody('dwCustGroup-zaksbody',chosen.map(n=>`<tr><td style="width:40px"><span class="cb"></span></td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join(''));}
-  else if(t==='memcust'){setBody('dwCustomer-zarbody',grpMemRows(chosen,'Skupina zákazníků'));}
-  else if(t.indexOf('mem-')===0){setBody(t.slice(4)+'-membody',grpMemRows(chosen,'Skupina produktů'));}
+  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td>${d.code}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">${d.st} ${I.chevsm}</button></td></tr>`).join(''));}
+  else if(t==='custgrpBody'){setBody('dwCustGroup-zaksbody',chosen.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${n}</td><td>CUST_00324</td><td>Skupina zákazníků</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join(''));}
+  else if(t==='memcust'||t.indexOf('mem-')===0){/* membership: keep the full table as-is, don't collapse to the selection */}
 }
 
 /* --- modal helpers --- */
@@ -1143,6 +1482,7 @@ function activateTab(id,key){
   const dw=document.getElementById(id);if(!dw)return;
   dw.querySelectorAll('.tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.k===key));
   dw.querySelectorAll('.tabpanel').forEach(p=>p.classList.toggle('active',p.dataset.k===key));
+  scheduleFill();
 }
 
 /* ============================================================= NAV / INTERACTION */
@@ -1160,6 +1500,7 @@ function showView(name){
   document.querySelectorAll('#switcher button[data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===name));
   document.getElementById('main').scrollTop=0;
   initResizers();
+  scheduleFill();
 }
 function setNavActive(navId){document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));const e=document.getElementById(navId);if(e)e.classList.add('active');}
 function showPlaceholder(name){
@@ -1198,6 +1539,29 @@ function initResizers(){
     });
   });
 }
+/* ---- pad detail tables so rows fill the available viewport height ---- */
+function fillTables(){
+  document.querySelectorAll('.sub-table, .table-wrap').forEach(st=>{
+    if(st.offsetParent===null)return;              // only visible panels
+    if(!st.closest('.drawer') && !st.closest('#main'))return; // skip pickers/modals
+    const tbody=st.querySelector('table > tbody'); if(!tbody)return;
+    Array.from(tbody.children).forEach(r=>{ if(r.dataset.filler) r.remove(); });
+    const orig=Array.from(tbody.children); if(!orig.length)return;
+    const rowH=orig[0].getBoundingClientRect().height||40;
+    const avail=window.innerHeight-tbody.getBoundingClientRect().top-16;
+    const need=Math.floor(avail/rowH);
+    let i=0;
+    while(tbody.children.length<need && i<200){
+      const c=orig[i%orig.length].cloneNode(true);
+      c.dataset.filler='1'; c.classList.remove('selected'); c.removeAttribute('id');
+      tbody.appendChild(c); i++;
+    }
+  });
+}
+let _fillRAF;
+function scheduleFill(){ cancelAnimationFrame(_fillRAF); _fillRAF=requestAnimationFrame(fillTables); }
+window.addEventListener('resize',()=>{ clearTimeout(window._fillTO); window._fillTO=setTimeout(fillTables,120); });
+
 function goSection(sec){
   setNavActive(sec==='katalog'?'nav-katalog':'nav-zakaznici');
   document.getElementById('sb-katalog').style.display=sec==='katalog'?'flex':'none';
@@ -1205,29 +1569,92 @@ function goSection(sec){
   showView(sec==='katalog'?'kat-items':'zak-customers');
 }
 
-function openDrawer(id){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));document.getElementById(id).classList.add('open');}
-function closeDrawer(id){document.getElementById(id).classList.remove('open');}
+let drawerStack=[];
+function updateStackUI(){const on=drawerStack.length>1;const b=document.getElementById('stack-backdrop');if(b)b.classList.toggle('on',on);document.body.classList.toggle('stacked-mode',on);}
+function popTop(){ if(drawerStack.length<2)return; closeDrawer(drawerStack[drawerStack.length-1]); }
+function resetRecompute(){document.querySelectorAll('.rc-info').forEach(e=>e.style.display='none');}
+function openDrawer(id){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open','stacked'));document.getElementById(id).classList.add('open');drawerStack=[id];resetRecompute();updateStackUI();setHeaderBadge(id);scheduleFill();}
+/* open a related entity as a SECOND drawer on the right; the one we came from
+   slides left + dims (overlays the rest of the UI) */
+function openRef(id,tab,info){
+  if(drawerStack.includes(id))return;                 // avoid duplicate / cap depth
+  const from=drawerStack[drawerStack.length-1];
+  if(from) document.getElementById(from).classList.add('stacked');
+  const e=document.getElementById(id); if(!e)return;
+  e.classList.add('open'); e.classList.remove('stacked');
+  drawerStack.push(id);
+  if(tab) activateTab(id,tab);
+  if(info) setDrawerInfo(id,info);
+  showBack(id,false);
+  if(GRP[id]) grpRender(id);
+  resetRecompute(); updateStackUI(); setHeaderBadge(id); scheduleFill();
+}
+function openRefProdGroup(name){
+  openRef('dwProdGroup','obecne',{title:name,code:'SKUGROUP_9470583',type:'SKUPINA BALENÍ',oName:name,oCode:'SKUGROUP_9470583'});
+}
+function openRefItem(ic,name,code){
+  const isMaster=ic==='master';
+  openRef(isMaster?'dwProduct':'dwPackage', isMaster?'produkt':'bal',
+    {title:name,code,type:isMaster?'MASTER KARTA':'BALENÍ',oName:name,oCode:code});
+}
+function openRefCustGroup(name){
+  openRef('dwCustGroup','obecne',{title:name,code:'CUSTGROUP_2192758',type:'SKUPINA ZÁKAZNÍKŮ',oName:name,oCode:'CUSTGROUP_2192758'});
+}
+function openRefCustomer(name,code){
+  openRef('dwCustomer','obecne',{title:name,code:code||'CUST_00324',type:'ZÁKAZNÍK',oName:name,oCode:code||'CUST_00324'});
+}
+function setHeaderBadge(id){const el=document.getElementById(id+'-badge');if(!el)return;if(!/Group$/.test(id)){el.innerHTML='';return;}el.innerHTML=(Math.random()<0.25)?`<span class="hbadge pending">${I.warn} Čeká na přepočet</span>`:`<span class="hbadge actual">${I.check2} Aktuální stav</span>`;}
+function deselectRows(){ document.querySelectorAll('.table tbody tr.selected').forEach(r=>r.classList.remove('selected')); }
+function closeDrawer(id){
+  const e=document.getElementById(id); if(e)e.classList.remove('open','stacked');
+  drawerStack=drawerStack.filter(x=>x!==id);
+  const top=drawerStack[drawerStack.length-1];
+  if(top) document.getElementById(top).classList.remove('stacked');
+  else deselectRows();
+  updateStackUI();
+}
+/* return to a lower drawer -> close everything stacked above it */
+function popToDrawer(id){
+  const idx=drawerStack.indexOf(id); if(idx<0)return;
+  for(let k=drawerStack.length-1;k>idx;k--){const e=document.getElementById(drawerStack[k]);if(e)e.classList.remove('open','stacked');}
+  drawerStack=drawerStack.slice(0,idx+1);
+  const e=document.getElementById(id); if(e)e.classList.remove('stacked');
+  updateStackUI();
+}
+function ngGuardSave(){ grpSave(grpGuardId); closeModal('mdlGuard'); document.getElementById(grpGuardId).classList.remove('open'); deselectRows(); }
 
 function switchTab(id,key,el){
   el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
   const body=el.closest('.drawer').querySelector('.drawer-body');
   body.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
   const panel=document.getElementById(id+'-'+key); if(panel)panel.classList.add('active');
+  if(GRP[id] && (key==='prody'||key==='zaks')) grpRender(id);
+  scheduleFill();
 }
 
-/* row clicks
-   rows 0-5  -> open the 5th item (idx 4 = Lysine 30 ml package), select idx 4
-   rows 6-10 -> open the 11th item (idx 10 = Lysine master card), select idx 10
-   rows 11-13 (marketing) -> do nothing */
+/* set the per-row unique fields on a shared drawer template (header + Obecné card) */
+function setDrawerInfo(id,o){
+  const set=(elid,v)=>{const e=document.getElementById(elid);if(e&&v!=null)e.textContent=v;};
+  set(id+'-title',o.title); set(id+'-code',o.code); set(id+'-type',o.type);
+  set(id+'-oname',o.oName); set(id+'-ocode',o.oCode);
+  set(id+'-genname',o.oName); set(id+'-gencode',o.oCode);
+  set(id+'-crumbcur',o.title);
+  if(id==='dwPackage'){const master=(o.title||'').replace(/\s+\d+(?:[.,]\d+)?\s*ml$/i,'');set(id+'-crumblink',master);}
+  if(id==='dwProduct'){set(id+'-crumblink',o.code);}
+}
+/* row clicks — every row opens the type-appropriate detail with its own name / code / type */
 let pkgVariant=0;
 function rowItem(i){
-  if(i<=5){
-    setMainSelectionIndex(4);pkgVariant=0;
-    openDrawer('dwPackage');activateTab('dwPackage','bal');applyPackageVariant();showBack('dwPackage',false);
-  } else if(i<=10){
-    setMainSelectionIndex(10);
+  const d=itemsData[i];
+  setMainSelectionIndex(i);
+  if(d.kind==='product'){
     openDrawer('dwProduct');activateTab('dwProduct','produkt');showBack('dwProduct',false);
-  } /* else: marketing items open nothing */
+    setDrawerInfo('dwProduct',{title:d.n,code:d.code,type:'MASTER KARTA',oName:d.n,oCode:d.code});
+  } else {
+    const typ=d.kind==='item'?'MARKETINGOVÝ PRODUKT':'BALENÍ';
+    openDrawer('dwPackage');activateTab('dwPackage','bal');showBack('dwPackage',false);
+    setDrawerInfo('dwPackage',{title:d.n,code:d.code,type:typ,oName:d.n,oCode:d.code});
+  }
 }
 
 /* main-list selection helpers */
@@ -1241,7 +1668,7 @@ function showBack(id,show){const b=document.getElementById(id+'-back');if(b)b.st
 function applyPackageVariant(){
   const v=lysineVariants[pkgVariant];if(!v)return;
   const set=(elid,txt)=>{const e=document.getElementById(elid);if(e)e.textContent=txt;};
-  set('dwPackage-title',v.name);set('dwPackage-code',v.code);set('dwPackage-crumbcur',v.name);
+  set('dwPackage-title',v.name);set('dwPackage-code',v.code);set('dwPackage-crumbcur',v.name);set('dwPackage-crumblink','Lysine 100 pasta pro kočky');
   set('dwPackage-balname',v.size);set('dwPackage-genname',v.name);set('dwPackage-gencode',v.code);
   document.querySelectorAll('[id^=dwPackage-allpkg-row-]').forEach((r,i)=>r.classList.toggle('selected',i===pkgVariant));
 }
@@ -1254,8 +1681,11 @@ function drillToPackage(i){
 }
 /* DRILL UP: package breadcrumb -> master card (back arrow returns to package) */
 function drillUpToMaster(){
+  const el=document.getElementById('dwPackage-crumblink');
+  const master=(el&&el.textContent)||'Lysine 100 pasta pro kočky';
   openDrawer('dwProduct');activateTab('dwProduct','balprod');showBack('dwProduct',true);
-  setMainSelectionByName('Lysine 100 pasta pro kočky');
+  setDrawerInfo('dwProduct',{title:master,code:'C01275',type:'MASTER KARTA',oName:master,oCode:'C01275'});
+  setMainSelectionByName(master);
 }
 /* return arrows (no further back) */
 function returnToPackage(){openDrawer('dwPackage');activateTab('dwPackage','allpkg');applyPackageVariant();showBack('dwPackage',false);setMainSelectionByName(lysineVariants[pkgVariant].name);}
@@ -1267,17 +1697,26 @@ function openProduct(){goSection('katalog');showView('kat-items');setTimeout(()=
 function openPackage(){goSection('katalog');showView('kat-items');setTimeout(()=>{pkgVariant=0;openDrawer('dwPackage');activateTab('dwPackage','bal');applyPackageVariant();showBack('dwPackage',false);setMainSelectionByName('Lysine 100 pasta pro kočky 30 ml');},0);}
 function selRow(prefix,idx){document.querySelectorAll('[id^="'+prefix+'"]').forEach(r=>r.classList.remove('selected'));const r=document.getElementById(prefix+idx);if(r)r.classList.add('selected');}
 function rowProdGroup(i){
-  if(prodGroups[i].n==='Slevička 20%'){selRow('pgrow-',i);openDrawer('dwNewGroup');activateTab('dwNewGroup','prody');ngRender();}
-  else{selRow('pgrow-',0);openDrawer('dwProdGroup');}  /* the 6 base rows all open the first one */
+  selRow('pgrow-',i);
+  if(prodGroups[i].n==='Slevička 20%'){openDrawer('dwNewGroup');activateTab('dwNewGroup','prody');grpRender('dwNewGroup');}
+  else{openDrawer('dwProdGroup');activateTab('dwProdGroup','obecne');
+    setDrawerInfo('dwProdGroup',{title:prodGroups[i].n,code:'SKUGROUP_'+(9470583+i),type:'SKUPINA BALENÍ',oName:prodGroups[i].n,oCode:'SKUGROUP_'+(9470583+i)});
+    grpRender('dwProdGroup');}
 }
-function openProdGroup(){goSection('katalog');showView('kat-groups');setTimeout(()=>{selRow('pgrow-',0);openDrawer('dwProdGroup');},0);}
-function rowCustomer(i){selRow('custrow-',0);openDrawer('dwCustomer');}      /* all rows open the first customer */
+function openProdGroup(){goSection('katalog');showView('kat-groups');setTimeout(()=>{selRow('pgrow-',0);openDrawer('dwProdGroup');grpRender('dwProdGroup');},0);}
+function rowCustomer(i){
+  selRow('custrow-',i);openDrawer('dwCustomer');activateTab('dwCustomer','obecne');
+  setDrawerInfo('dwCustomer',{title:custs[i],code:'CUST_00324',type:'ZÁKAZNÍK',oName:custs[i],oCode:'CUST_00324'});
+}
 function openCustomer(){goSection('zakaznici');showView('zak-customers');setTimeout(()=>{selRow('custrow-',0);openDrawer('dwCustomer');},0);}
 function rowCustGroup(i){
-  if(custGroups[i]==='Slevová skupina'){selRow('cgrow-',i);openDrawer('dwNewCustGroup');activateTab('dwNewCustGroup','zaks');ngcRender();}
-  else{selRow('cgrow-',0);openDrawer('dwCustGroup');}  /* existing rows open the first group */
+  selRow('cgrow-',i);
+  if(custGroups[i]==='Slevová skupina'){openDrawer('dwNewCustGroup');activateTab('dwNewCustGroup','zaks');grpRender('dwNewCustGroup');}
+  else{openDrawer('dwCustGroup');activateTab('dwCustGroup','obecne');
+    setDrawerInfo('dwCustGroup',{title:custGroups[i],code:'CUSTGROUP_'+(2192758+i),type:'SKUPINA ZÁKAZNÍKŮ',oName:custGroups[i],oCode:'CUSTGROUP_'+(2192758+i)});
+    grpRender('dwCustGroup');}
 }
-function openCustGroup(){goSection('zakaznici');showView('zak-groups');setTimeout(()=>{selRow('cgrow-',0);openDrawer('dwCustGroup');},0);}
+function openCustGroup(){goSection('zakaznici');showView('zak-groups');setTimeout(()=>{selRow('cgrow-',0);openDrawer('dwCustGroup');grpRender('dwCustGroup');},0);}
 
 /* dynamic definition handlers */
 function refreshDef(id,reopenMenu){document.getElementById(id+'-defcard').innerHTML=renderDefCard(id);if(reopenMenu){const m=document.getElementById(reopenMenu);if(m)m.classList.add('open');}}
@@ -1288,8 +1727,32 @@ function setFuture(id,v){groupState[id].includeFuture=v;refreshDef(id);}
 
 document.addEventListener('click',e=>{
   if(e.target.closest('.dropdown-trigger')||e.target.closest('.mode-menu')||e.target.closest('.filter-menu')||e.target.closest('.animal-menu')||e.target.closest('.addfilter-wrap')||e.target.closest('.dpill')) return;
+  grpOpenMenu=null;
   document.querySelectorAll('.mode-menu.open,.filter-menu.open,.animal-menu.open').forEach(m=>m.classList.remove('open'));
 });
+
+/* tri-state checkboxes for tables (picker manages its own selection) */
+document.addEventListener('click',e=>{
+  const cb=e.target.closest('.cb'); if(!cb)return;
+  if(cb.closest('#manualBody')||cb.closest('#giBody'))return;
+  const table=cb.closest('table'); if(!table)return;
+  e.stopPropagation();
+  if(cb.closest('thead')){
+    const rows=[...table.querySelectorAll('tbody .cb')];
+    const makeOn=!(rows.length>0 && rows.every(c=>c.classList.contains('on')));
+    rows.forEach(c=>{c.classList.toggle('on',makeOn);c.classList.remove('ind');});
+    cb.classList.remove('ind');cb.classList.toggle('on',makeOn);
+  } else {
+    cb.classList.remove('ind');cb.classList.toggle('on');
+    const head=table.querySelector('thead .cb');
+    if(head){
+      const rows=[...table.querySelectorAll('tbody .cb')];
+      const n=rows.filter(c=>c.classList.contains('on')).length;
+      head.classList.toggle('on',n>0&&n===rows.length);
+      head.classList.toggle('ind',n>0&&n<rows.length);
+    }
+  }
+},true);
 
 /* init */
 showView('kat-items');
