@@ -41,7 +41,7 @@ body{font-family:'Roboto',system-ui,sans-serif;font-size:14px;color:var(--t1);he
 .app-body{display:flex;flex:1;overflow:hidden;position:relative;}
 
 /* ── SIDEBAR ── */
-.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;z-index:10;}
+.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;z-index:60;}
 .sb-nav{flex:1;padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
 .ni{display:flex;align-items:center;padding:4px 16px 4px 8px;gap:8px;cursor:pointer;color:var(--t2);border-radius:4px;transition:background .1s,color .1s;user-select:none;font-size:14px;line-height:20px;}
 .ni:hover{background:#f5f5f5;color:var(--t1);}
@@ -128,9 +128,9 @@ body{font-family:'Roboto',system-ui,sans-serif;font-size:14px;color:var(--t1);he
 .dd-t{width:100%;height:32px;background:#f5f5f5;border:1px solid var(--bd);border-radius:4px;padding:0 10px 0 12px;font-size:14px;color:var(--t1);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 .dd-t.open{border-color:var(--blue-border);background:#fff;}
 .dd-menu{position:absolute;left:0;right:0;background:#fff;border:1px solid var(--bd);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:300;overflow:hidden;margin-top:2px;}
-.dd-opt,.dd-opt-it{display:flex;align-items:center;height:36px;padding:0 12px;font-size:14px;cursor:pointer;gap:8px;}
-.dd-opt:hover,.dd-opt-it:hover{background:#f5f9ff;}
-.dd-opt.cur,.dd-opt-it.cur{color:var(--blue);}
+.dd-opt,.dd-opt-it,.dd-opt-ita{display:flex;align-items:center;height:36px;padding:0 12px;font-size:14px;cursor:pointer;gap:8px;}
+.dd-opt:hover,.dd-opt-it:hover,.dd-opt-ita:hover{background:#f5f9ff;}
+.dd-opt.cur,.dd-opt-it.cur,.dd-opt-ita.cur{color:var(--blue);}
 
 /* PRODUCT DRAWER */
 .dr-meta{display:flex;align-items:center;gap:14px;padding:2px 24px 0;flex-wrap:wrap;}
@@ -170,6 +170,30 @@ body{font-family:'Roboto',system-ui,sans-serif;font-size:14px;color:var(--t1);he
 
 /* PRODUCT DRAWER – fragment body uses standard field layout */
 .frag-body .field{padding:5px 16px;}
+
+/* IT ALIAS CARDS */
+.al-card{border:1px solid var(--bd);border-radius:4px;margin-bottom:10px;overflow:visible;}
+.al-hdr{display:flex;align-items:center;height:40px;padding:0 14px;cursor:pointer;font-size:14px;font-weight:500;gap:8px;user-select:none;background:#fafafa;border-radius:4px;}
+.al-hdr:hover{background:#f0f0f0;}
+.al-body{border-top:1px solid var(--bd);padding:4px 0;}
+.al-body .field{padding:10px 16px;}
+.vgen-row{display:flex;align-items:center;padding:10px 14px 6px;border-top:1px solid var(--bd);margin:8px 0 0;}
+.vgen-lbl{flex:1;font-size:14px;font-weight:600;color:var(--t1);}
+.vgen-tog-area{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--t2);}
+.inp-err{border-color:#e53935!important;background:#fff!important;}
+.err-msg{font-size:12px;color:#e53935;padding:2px 0 1px;line-height:16px;min-height:16px;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;display:flex;align-items:center;justify-content:center;}
+.modal{background:#fff;border-radius:6px;width:960px;max-width:96vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.22);}
+.modal-hdr{display:flex;align-items:center;height:56px;padding:0 20px;flex-shrink:0;}
+.modal-hdr-title{font-size:18px;font-weight:700;flex:1;}
+.modal-tb{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--bd);border-top:1px solid var(--bd);flex-shrink:0;}
+.modal-srch{display:flex;align-items:center;height:32px;border:1px solid var(--bd);border-radius:4px;padding:0 10px;gap:6px;background:#fff;width:200px;}
+.modal-srch input{border:none;outline:none;font-size:14px;width:100%;font-family:'Roboto',sans-serif;}
+.modal-body{flex:1;overflow-y:auto;min-height:0;}
+.modal-foot{display:flex;align-items:center;height:52px;padding:0 16px;border-top:1px solid var(--bd);flex-shrink:0;gap:8px;}
+.modal-foot .sp{flex:1;}
 </style>
 </head>
 <body>
@@ -200,6 +224,7 @@ body{font-family:'Roboto',system-ui,sans-serif;font-size:14px;color:var(--t1);he
     <div class="drawer" id="drawer"></div>
   </div>
 </div>
+<div id="modalHost"></div>
 
 <script>
 /* ══ FIGMA ASSET URLS (fresh from get_design_context, valid 7 days) ══ */
@@ -226,8 +251,13 @@ const ICONS = {
 const S = {
   l1:'model', l2:'item-types',
   drawerOpen:false, selectedId:null,
-  itTab:'general', vfmt:'not-active', vfmtOpen:false, vfmtInput:'',
-  itVfmt:'not-active', itVfmtOpen:false, itVfmtInput:'', itOverride:false,
+  itTab:'general', vfmt:'not-active', vfmtOpen:false, vfmtInput:'', vfmtErr:'',
+  itAliasIds:['ean','vc'],
+  itAlias:{
+    ean:{expanded:true,  override:false, vfmt:'not-active', vfmtOpen:false, vfmtInput:'', vfmtErr:''},
+    vc: {expanded:false, override:false, vfmt:'not-active', vfmtOpen:false, vfmtInput:'', vfmtErr:''},
+  },
+  aliasModal:{open:false, selected:[]},
 };
 
 /* ══ DATA ══ */
@@ -268,6 +298,12 @@ const VFMT = [
   {v:'vc-suffix',   lbl:'variantCode_suffix',    fieldLabel:'Suffix'},
   {v:'custom',      lbl:'Custom',                fieldLabel:'Custom'},
 ];
+function getITAliasDefs(){
+  return S.itAliasIds.map(id=>{
+    const r=AL_ROWS.find(x=>x.id===id);
+    return r?{id:r.id,name:r.name,code:r.code,usedFor:r.usedFor[0]||''}:null;
+  }).filter(Boolean);
+}
 const PRD_ROWS = [
   {id:'p1',  name:'Premium Concealers',                      code:'COSMETIC_5000200', brand:'Aurora Skincare',         labels:['New'],           state:'Active'},
   {id:'p2',  name:'Hydrating Cream',                         code:'COSMETIC_5000000', brand:'Lumina Glow',             labels:['New'],           state:'Active'},
@@ -287,12 +323,18 @@ const PRD_ROWS = [
 
 /* ══ HELPERS ══ */
 function getHintPreview(v, input){
-  const mc='TYPE_PERFUME', vc='VAR_001', val=input||'…';
+  const mc='4535345', vc='534534', val=input||'…';
   if(v==='prefix-mc') return val==='…'?`…_${mc}`:`${val}_${mc}`;
   if(v==='prefix-vc') return val==='…'?`…_${vc}`:`${val}_${vc}`;
   if(v==='mc-suffix') return val==='…'?`${mc}_…`:`${mc}_${val}`;
   if(v==='vc-suffix') return val==='…'?`${vc}_…`:`${vc}_${val}`;
   if(v==='custom')    return (input||'').replace(/\{masterCardCode\}/g,mc).replace(/\{variantCode\}/g,vc)||'…';
+  return '';
+}
+function validateCustomInput(val){
+  if(!val) return '';
+  if(!val.includes('{masterCardCode}')&&!val.includes('{variantCode}'))
+    return 'Must contain {masterCardCode} or {variantCode}';
   return '';
 }
 
@@ -440,12 +482,24 @@ function renderDrawer(){
   else if(S.l1==='catalogue'&&S.l2==='all-products') el.innerHTML=htmlProductDrawer();
   // bind events
   document.querySelectorAll('.dr-tab[data-tab]').forEach(t=>t.addEventListener('click',()=>setITTab(t.dataset.tab)));
+  // alias drawer vfmt dropdown
   const vt=document.getElementById('vfmtTrig');
   if(vt) vt.addEventListener('click',e=>{e.stopPropagation();S.vfmtOpen=!S.vfmtOpen;renderDrawer();});
   document.querySelectorAll('.dd-opt[data-v]').forEach(o=>o.addEventListener('click',e=>{e.stopPropagation();setVfmt(o.dataset.v);}));
-  const ivt=document.getElementById('itvfmtTrig');
-  if(ivt) ivt.addEventListener('click',e=>{e.stopPropagation();S.itVfmtOpen=!S.itVfmtOpen;renderDrawer();});
-  document.querySelectorAll('.dd-opt-it[data-iv]').forEach(o=>o.addEventListener('click',e=>{e.stopPropagation();setITVfmt(o.dataset.iv);}));
+  // per-alias card dropdowns
+  getITAliasDefs().forEach(def=>{
+    const t=document.getElementById('ita-vfmt-'+def.id);
+    if(t) t.addEventListener('click',e=>{
+      e.stopPropagation();
+      const a=S.itAlias[def.id];
+      if(!a.override) return;
+      a.vfmtOpen=!a.vfmtOpen;
+      renderDrawer();
+    });
+  });
+  document.querySelectorAll('.dd-opt-ita[data-aid][data-iv]').forEach(o=>
+    o.addEventListener('click',e=>{e.stopPropagation();setITAliasVfmt(o.dataset.aid,o.dataset.iv);})
+  );
 }
 
 function drTop(withDraft=false){
@@ -484,46 +538,59 @@ function htmlITDrawer(){
   } else if(S.itTab==='parameters'){
     body=`<div class="sec">Parameters</div><p style="color:#9e9e9e;">No parameters configured.</p>`;
   } else {
-    const ovr=S.itOverride;
-    const iCur=VFMT.find(o=>o.v===S.itVfmt)||VFMT[0];
-    const iOpen=S.itVfmtOpen&&ovr;
-    const iMenu=iOpen?`<div class="dd-menu">${VFMT.map(o=>`
-      <div class="dd-opt-it ${o.v===S.itVfmt?'cur':''}" data-iv="${o.v}">
-        <span style="width:16px;flex-shrink:0;">${o.v===S.itVfmt?SVG.check:''}</span>${o.lbl}
-      </div>`).join('')}</div>`:'';
-    let iExtra='';
-    if(ovr&&iCur.fieldLabel){
-      const iPrev=getHintPreview(S.itVfmt,S.itVfmtInput);
-      const iPh=iCur.v==='custom'?'e.g. {masterCardCode}_{variantCode}':'Enter '+iCur.fieldLabel.toLowerCase()+'…';
-      const iLbl=iCur.v==='custom'
-        ?`Custom&nbsp;<span class="tt-wrap"><span class="tt-icon">i</span><div class="tt-box">Build your format using two available variables:<br><br><code>{masterCardCode}</code> – master card code<br><code>{variantCode}</code> – variant code<br><br>What you put before or after is up to you.<br><br>Example: <code>{masterCardCode}_{variantCode}</code></div></span>`
-        :iCur.fieldLabel;
-      iExtra=`<div class="field">
-        <div class="fl" style="display:flex;align-items:flex-start;gap:4px;padding-top:7px;">${iLbl}</div>
-        <div class="fv">
-          <input class="inp" id="itvfmtInput" value="${S.itVfmtInput}" placeholder="${iPh}"
-                 oninput="S.itVfmtInput=this.value;const h=document.getElementById('itvfmtHint');if(h)h.innerHTML='Result: <strong>'+getHintPreview(S.itVfmt,this.value)+'</strong>'">
-          <div class="hint" id="itvfmtHint">Result: <strong>${iPrev||'…'}</strong></div>
+    const cards=getITAliasDefs().map(def=>{
+      const als=S.itAlias[def.id];
+      const {expanded,override:ovr,vfmt,vfmtOpen,vfmtInput,vfmtErr}=als;
+      const iCur=VFMT.find(o=>o.v===vfmt)||VFMT[0];
+      const iOpen=vfmtOpen&&ovr;
+      const iMenu=iOpen?`<div class="dd-menu">${VFMT.map(o=>`
+        <div class="dd-opt-ita ${o.v===vfmt?'cur':''}" data-aid="${def.id}" data-iv="${o.v}">
+          <span style="width:16px;flex-shrink:0;">${o.v===vfmt?SVG.check:''}</span>${o.lbl}
+        </div>`).join('')}</div>`:'';
+      let iExtra='';
+      if(ovr&&iCur.fieldLabel){
+        const iPrev=getHintPreview(vfmt,vfmtInput);
+        const iPh=iCur.v==='custom'?'e.g. {masterCardCode}_{variantCode}':'Enter '+iCur.fieldLabel.toLowerCase()+'…';
+        const iLbl=iCur.v==='custom'
+          ?`Custom&nbsp;<span class="tt-wrap"><span class="tt-icon">i</span><div class="tt-box">Build your format using two available variables:<br><br><code>{masterCardCode}</code> – master card code<br><code>{variantCode}</code> – variant code<br><br>What you put before or after is up to you.<br><br>Example: <code>{masterCardCode}_{variantCode}</code></div></span>`
+          :iCur.fieldLabel;
+        iExtra=`<div class="field">
+          <div class="fl" style="display:flex;align-items:flex-start;gap:4px;padding-top:7px;">${iLbl}</div>
+          <div class="fv">
+            <input class="inp${vfmtErr?' inp-err':''}" id="ita-input-${def.id}" value="${vfmtInput}" placeholder="${iPh}"
+                   oninput="onITAliasInput('${def.id}',this.value)">
+            <div class="err-msg" id="ita-err-${def.id}">${vfmtErr||''}</div>
+            <div class="hint" id="ita-hint-${def.id}">○ Result will look like ${iPrev||'…'}</div>
+          </div>
+        </div>`;
+      }
+      const vfmtRow=ovr
+        ?`<div class="dd"><div class="dd-t ${iOpen?'open':''}" id="ita-vfmt-${def.id}">${iCur.lbl} ${SVG.chev}</div>${iMenu}</div>`
+        :`<div class="dd-fake" style="opacity:.5;pointer-events:none;cursor:default;">Not active ${SVG.chev}</div>`;
+      const cardBody=expanded?`<div class="al-body">
+        <div class="field"><div class="fl">Name</div><div class="fv">${inp(def.name)}</div></div>
+        <div class="field"><div class="fl">Code</div><div class="fv">${inp(def.code)}</div></div>
+        <div class="field"><div class="fl">Description</div><div class="fv">${inp('')}</div></div>
+        <div class="field"><div class="fl">Object type</div><div class="fv">${ddFake('Item business version')}</div></div>
+        <div class="field"><div class="fl">Used for item types</div><div class="fv">
+          <div class="dd-fake"><span class="chip-dk">${def.usedFor}<span class="cx"> ×</span></span> ${SVG.chev}</div>
+        </div></div>
+        <div class="vgen-row">
+          <span class="vgen-lbl">Value generation</span>
+          <div class="vgen-tog-area">${tog(ovr,`toggleITAliasOverride('${def.id}')`)} Override alias setup</div>
         </div>
+        <div class="field"><div class="fl">Value format</div><div class="fv">${vfmtRow}</div></div>
+        ${iExtra}
+      </div>`:'';
+      return `<div class="al-card">
+        <div class="al-hdr" onclick="toggleITAliasExpand('${def.id}')">
+          <span style="flex-shrink:0;color:var(--t2);">${expanded?SVG.chev:SVG.chevR}</span>
+          <span>${def.name}</span>
+        </div>
+        ${cardBody}
       </div>`;
-    }
-    const vfmtRow=ovr
-      ?`<div class="dd"><div class="dd-t ${iOpen?'open':''}" id="itvfmtTrig">${iCur.lbl} ${SVG.chev}</div>${iMenu}</div>`
-      :`<div class="dd-fake" style="opacity:.5;pointer-events:none;cursor:default;">Not active ${SVG.chev}</div>`;
-    body=`
-      <div class="sec">Aliases</div>
-      <p style="font-size:14px;font-weight:600;margin-bottom:10px;">EAN</p>
-      <div class="field"><div class="fl">Name</div><div class="fv">${inp('EAN')}</div></div>
-      <div class="field"><div class="fl">Code</div><div class="fv">${inp('EAN_ALIAS')}</div></div>
-      <div class="field"><div class="fl">Description</div><div class="fv">${inp('')}</div></div>
-      <div class="field"><div class="fl">Object type</div><div class="fv">${ddFake('Item business version')}</div></div>
-      <div class="field"><div class="fl">Used for item types</div><div class="fv">
-        <div class="dd-fake"><span class="chip-dk">Perfume<span class="cx"> ×</span></span> ${SVG.chev}</div>
-      </div></div>
-      <div class="sec">Value generation</div>
-      <div class="field"><div class="fl">Value format</div><div class="fv">${vfmtRow}</div></div>
-      ${iExtra}
-      <div class="field"><div class="fl"></div><div class="fv" style="display:flex;align-items:center;gap:8px;padding-top:4px;">${tog(ovr,'toggleITOverride()')}<span style="color:var(--t2);">Override</span></div></div>`;
+    }).join('');
+    body=`<div class="sec" style="display:flex;align-items:center;justify-content:space-between;"><span>Aliases</span><button class="btn-s" onclick="openAliasModal()">${SVG.plus} Add alias</button></div>${cards}`;
   }
   return `${drTop()}
     <div class="dr-title">${row.name}</div>
@@ -553,9 +620,10 @@ function htmlAliasDrawer(){
     extraRow=`<div class="field">
       <div class="fl" style="display:flex;align-items:flex-start;gap:4px;padding-top:7px;">${labelHtml}</div>
       <div class="fv">
-        <input class="inp" id="vfmtInput" value="${S.vfmtInput}" placeholder="${ph}"
-               oninput="S.vfmtInput=this.value;const h=document.getElementById('vfmtHint');if(h)h.innerHTML='Result: <strong>'+getHintPreview(S.vfmt,this.value)+'</strong>'">
-        <div class="hint" id="vfmtHint">Result: <strong>${preview||'…'}</strong></div>
+        <input class="inp${S.vfmtErr?' inp-err':''}" id="vfmtInput" value="${S.vfmtInput}" placeholder="${ph}"
+               oninput="onAliasInput(this.value)">
+        <div class="err-msg" id="vfmtErrMsg">${S.vfmtErr||''}</div>
+        <div class="hint" id="vfmtHint">○ Result will look like ${preview||'…'}</div>
       </div>
     </div>`;
   }
@@ -731,34 +799,159 @@ function openDrawer(id){
   });
 }
 function closeDrawer(){
-  S.drawerOpen=false;S.selectedId=null;S.vfmtOpen=false;
+  S.drawerOpen=false;S.selectedId=null;S.vfmtOpen=false;S.vfmtErr='';
+  getITAliasDefs().forEach(def=>{S.itAlias[def.id].vfmtOpen=false;});
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('drHost').classList.remove('open');
   setTimeout(()=>renderCanvas(),310);
 }
 function setITTab(tab){S.itTab=tab;renderDrawer();}
-function setVfmt(v){S.vfmt=v;S.vfmtOpen=false;S.vfmtInput='';renderDrawer();}
-function setITVfmt(v){S.itVfmt=v;S.itVfmtOpen=false;S.itVfmtInput='';renderDrawer();}
-function toggleITOverride(){
-  S.itOverride=!S.itOverride;
-  if(!S.itOverride){S.itVfmt='not-active';S.itVfmtInput='';S.itVfmtOpen=false;}
+function setVfmt(v){S.vfmt=v;S.vfmtOpen=false;S.vfmtInput='';S.vfmtErr='';renderDrawer();}
+function onAliasInput(val){
+  S.vfmtInput=val;
+  if(S.vfmt==='custom'){
+    S.vfmtErr=validateCustomInput(val);
+    const einp=document.getElementById('vfmtInput');
+    if(einp) einp.className='inp'+(S.vfmtErr?' inp-err':'');
+  } else {S.vfmtErr='';}
+  const h=document.getElementById('vfmtHint');
+  if(h) h.textContent='○ Result will look like '+getHintPreview(S.vfmt,val);
+  const e=document.getElementById('vfmtErrMsg');
+  if(e) e.textContent=S.vfmtErr||'';
+}
+function toggleITAliasExpand(id){S.itAlias[id].expanded=!S.itAlias[id].expanded;renderDrawer();}
+function toggleITAliasOverride(id){
+  const a=S.itAlias[id];
+  a.override=!a.override;
+  if(!a.override){a.vfmt='not-active';a.vfmtInput='';a.vfmtOpen=false;a.vfmtErr='';}
   renderDrawer();
 }
+function setITAliasVfmt(id,v){
+  const a=S.itAlias[id];
+  a.vfmt=v;a.vfmtOpen=false;a.vfmtInput='';a.vfmtErr='';
+  renderDrawer();
+}
+function onITAliasInput(id,val){
+  const a=S.itAlias[id];
+  a.vfmtInput=val;
+  if(a.vfmt==='custom'){
+    a.vfmtErr=validateCustomInput(val);
+    const einp=document.getElementById('ita-input-'+id);
+    if(einp) einp.className='inp'+(a.vfmtErr?' inp-err':'');
+  } else {a.vfmtErr='';}
+  const h=document.getElementById('ita-hint-'+id);
+  if(h) h.textContent='○ Result will look like '+getHintPreview(a.vfmt,val);
+  const e=document.getElementById('ita-err-'+id);
+  if(e) e.textContent=a.vfmtErr||'';
+}
 function getEANChipValue(){
-  const v=S.itOverride?S.itVfmt:S.vfmt;
-  const i=S.itOverride?S.itVfmtInput:S.vfmtInput;
+  const ean=S.itAlias.ean;
+  const v=ean.override?ean.vfmt:S.vfmt;
+  const i=ean.override?ean.vfmtInput:S.vfmtInput;
   const p=getHintPreview(v,i);
   return(p&&p!=='…')?p:'4012345678901';
 }
 document.addEventListener('click',()=>{
-  const was=S.vfmtOpen||S.itVfmtOpen;
-  S.vfmtOpen=false;S.itVfmtOpen=false;
-  if(was)renderDrawer();
+  let was=S.vfmtOpen;
+  S.vfmtOpen=false;
+  getITAliasDefs().forEach(def=>{
+    if(S.itAlias[def.id].vfmtOpen) was=true;
+    S.itAlias[def.id].vfmtOpen=false;
+  });
+  if(was) renderDrawer();
 });
+
+/* ══ ALIAS MODAL ══ */
+function htmlAliasModal(){
+  const sel=S.aliasModal.selected;
+  const SVGck=`<svg viewBox="0 0 16 16" fill="none" stroke="#1770c8" stroke-width="2" width="13" height="13"><polyline points="3,8 7,12 13,4"/></svg>`;
+  const rows=AL_ROWS.map(r=>{
+    const checked=sel.includes(r.id);
+    return `<tr onclick="toggleModalAlias('${r.id}',!document.getElementById('mck-${r.id}').checked);document.getElementById('mck-${r.id}').checked=!document.getElementById('mck-${r.id}').checked" style="cursor:pointer;">
+      <td style="width:40px;padding:0 12px;"><input id="mck-${r.id}" type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();toggleModalAlias('${r.id}',this.checked)"></td>
+      <td>${r.name}</td>
+      <td class="dim">${r.code}</td>
+      <td class="dim">Description</td>
+      <td><span class="chip">Item business version</span></td>
+      <td>${r.usedFor.map(u=>`<span class="chip">${u}</span>`).join('')}</td>
+      <td class="dim">${r.scope}</td>
+      <td class="dim">${r.pub}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="modal-ov" onclick="closeAliasModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-hdr">
+        <span class="modal-hdr-title">Add alias on item type</span>
+        <button class="ibtn" onclick="closeAliasModal()">${SVG.x}</button>
+      </div>
+      <div class="modal-tb">
+        <div class="modal-srch">${SVG.search}<input placeholder=""></div>
+        <button class="ibtn">${SVG.plus}</button>
+        <button class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M3 10a7 7 0 1 0 14 0 7 7 0 0 0-14 0"/><polyline points="10,7 10,10 12,12"/><path d="M3 3l4 4"/></svg></button>
+        <button class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><rect x="2" y="4" width="16" height="13" rx="1.5"/><path d="M6 4V3M14 4V3M2 8h16"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/><circle cx="10" cy="13" r="1.2" fill="currentColor"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <table class="tbl" style="min-width:100%;table-layout:auto;">
+          <thead><tr>
+            <th style="width:40px;"><div class="cb"></div></th>
+            <th>Name</th><th>Code</th><th>Description</th>
+            <th>Object type</th><th>Used for item types</th>
+            <th>Uniqueness scope</th><th>Publishable</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="modal-foot">
+        <span style="cursor:pointer;color:var(--t2);font-size:18px;padding:0 4px;">‹</span>
+        ${[1,2,3,4,5].map((n,i)=>`<div class="pg-n${i===0?' cur':''}" style="cursor:pointer;">${n}</div>`).join('')}
+        <span style="color:#9e9e9e;padding:0 2px">…</span>
+        <div class="pg-n" style="cursor:pointer;">101</div>
+        <span style="cursor:pointer;color:var(--t2);font-size:18px;padding:0 4px;">›</span>
+        <span style="font-size:13px;color:var(--t2);margin:0 6px;">1-${AL_ROWS.length} z ${AL_ROWS.length}</span>
+        <button class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 10a7 7 0 1 0 14 0 7 7 0 0 0-14 0"/><path d="M3 3l4 4"/></svg></button>
+        <span style="font-size:13px;color:var(--t2);">Number of rows per page:</span>
+        <select class="pg-sel"><option>100</option></select>
+        <div style="width:1px;height:18px;background:var(--bd);margin:0 4px;"></div>
+        <button class="ibtn">${SVG.dots}</button>
+        <div class="sp"></div>
+        <button class="btn-s" onclick="closeAliasModal()">Cancel</button>
+        <button class="btn-p" onclick="submitAliasModal()">Add</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderModal(){
+  const el=document.getElementById('modalHost');
+  el.innerHTML=S.aliasModal.open?htmlAliasModal():'';
+}
+function openAliasModal(){
+  S.aliasModal={open:true,selected:[]};
+  renderModal();
+}
+function closeAliasModal(){
+  S.aliasModal={open:false,selected:[]};
+  renderModal();
+}
+function toggleModalAlias(id,checked){
+  if(checked&&!S.aliasModal.selected.includes(id)) S.aliasModal.selected.push(id);
+  else if(!checked) S.aliasModal.selected=S.aliasModal.selected.filter(x=>x!==id);
+}
+function submitAliasModal(){
+  S.aliasModal.selected.forEach(id=>{
+    if(!S.itAliasIds.includes(id)){
+      S.itAliasIds.push(id);
+      S.itAlias[id]={expanded:true,override:false,vfmt:'not-active',vfmtOpen:false,vfmtInput:'',vfmtErr:''};
+    }
+  });
+  S.aliasModal={open:false,selected:[]};
+  renderModal();
+  renderDrawer();
+}
 
 /* ══ BOOT ══ */
 function render(){
   renderL1();renderSidebar();renderCanvas();
+  renderModal();
   if(S.drawerOpen){
     renderDrawer();
     document.getElementById('drHost').classList.add('open');
