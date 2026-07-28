@@ -129,8 +129,9 @@ table.table{width:100%;border-collapse:collapse;}
 /* hover row actions — always occupy space (reserved), just toggle visibility on hover */
 .row-acts{display:inline-flex;align-items:center;gap:2px;vertical-align:middle;margin-left:6px;visibility:hidden;}
 .table tbody tr:hover .row-acts,.sub-table tr:hover .row-acts{visibility:visible;}
-.rowact{width:28px;height:28px;border:none;background:transparent;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.rowact{position:relative;width:28px;height:28px;border:none;background:transparent;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
 .rowact:hover{background:#e0e0e0;}
+.rowact[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--text-strong);color:#fff;font:400 13px/1.4 'Roboto',sans-serif;padding:8px 12px;border-radius:var(--radius-md);white-space:nowrap;z-index:200;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.28);}
 th.cbcol,td.cbcol{width:46px;}
 .name-cell{display:flex;align-items:center;gap:12px;color:var(--text-default);}
 .name-cell .ti{color:var(--text-disabled);display:flex;flex-shrink:0;}
@@ -385,6 +386,9 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .finfo{display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:var(--radius-round);font:400 13px/1 'Roboto',sans-serif;white-space:nowrap;}
 .finfo.grey{background:#e9edf0;color:var(--text-strong);}
 .finfo.teal{background:#c9efe6;color:#0a6b5f;}
+.finfo.blue{background:var(--primary-subtle);color:var(--text-primary);}
+.finfo.red{background:var(--danger-subtle);color:var(--danger);}
+.finfo svg{width:15px;height:15px;flex-shrink:0;margin-right:5px;}
 .showpill{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
 .rc-info{display:inline-flex;align-items:center;gap:6px;color:var(--text-primary);background:var(--primary-subtle);padding:6px 10px;border-radius:var(--radius-round);font:400 13px/1 'Roboto',sans-serif;white-space:nowrap;}
 .rc-btn{color:var(--primary);border-color:var(--border-primary);}
@@ -567,6 +571,7 @@ const I = {
   caret:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
   trash:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
   minus:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>',
+  xcircle:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/></svg>',
   pencil:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13 5l4 4"/></svg>',
   save:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7M8 21v-6h8v6"/></svg>',
   stActual:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#597931" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
@@ -626,8 +631,32 @@ function bulkBtn(uid){
     </div></div>`;
 }
 /* hover row actions: kebab + trash (canvas lists) or kebab + minus (detail member tables) */
-function actTrash(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Smazat" onclick="event.stopPropagation();this.closest('tr').remove()">${I.trash}</button></span>`;}
-function actMinus(){return `<span class="row-acts"><button class="rowact" title="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" title="Odebrat z výběru" onclick="event.stopPropagation();this.closest('tr').remove()">${I.minus}</button></span>`;}
+function actTrash(){return `<span class="row-acts"><button class="rowact" data-tip="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact" data-tip="Smazat" onclick="event.stopPropagation();this.closest('tr').remove()">${I.trash}</button></span>`;}
+function actMinus(){return `<span class="row-acts"><button class="rowact" data-tip="Další akce" onclick="event.stopPropagation()">${I.dotsh}</button><button class="rowact act-state" data-tip="Odebrat z výběru" onclick="event.stopPropagation();rowAction(this)">${I.minus}</button></span>`;}
+/* stavově závislá řádková akce v tabulkách členů / zařazení */
+function spareName(oc){
+  if(oc.indexOf('openRefCustomer')>=0) return custs[Math.floor(Math.random()*custs.length)];
+  if(oc.indexOf('openRefProdGroup')>=0) return prodGroups[Math.floor(Math.random()*prodGroups.length)].n;
+  if(oc.indexOf('openRefCustGroup')>=0) return custGroups[Math.floor(Math.random()*custGroups.length)];
+  var b=POOL_prod.filter(function(x){return x.ic!=='master';}); return b[Math.floor(Math.random()*b.length)].n;
+}
+function rowAction(btn){
+  var tr=btn.closest('tr'); if(!tr) return;
+  var chip=tr.querySelector('.way-chip'); if(!chip){ tr.remove(); return; }
+  function set(c,icon,txt){ chip.className='way-chip way-'+c; chip.innerHTML=icon+txt; }
+  var cls=chip.className;
+  if(cls.indexOf('way-green')>=0||cls.indexOf('way-yellow')>=0){ set('red',I.handMinus,'Ručně: Odebráno'); }
+  else if(cls.indexOf('way-blue')>=0){ if(Math.random()<0.5){ var nm=tr.querySelector('.name-cell'); if(nm) nm.textContent=spareName(tr.getAttribute('onclick')||''); } set('green',I.check2,'Filtrem: Aktuální'); }
+  else if(cls.indexOf('way-red')>=0){ set('green',I.check2,'Filtrem: Aktuální'); }
+  syncRowAction(tr);
+}
+function syncRowAction(tr){
+  var chip=tr.querySelector('.way-chip'), btn=tr.querySelector('.act-state'); if(!chip||!btn) return;
+  var manual=/way-(blue|red)/.test(chip.className);
+  btn.innerHTML=manual?I.xcircle:I.minus;
+  btn.setAttribute('data-tip', manual?'Zrušit ruční nastavení':'Odebrat z výběru');
+}
+function syncRowActions(){ var r=document.querySelectorAll('tr'); for(var i=0;i<r.length;i++){ if(r[i].querySelector('.act-state')&&r[i].querySelector('.way-chip')) syncRowAction(r[i]); } }
 
 /* "Způsob přidání" chip — weighted random (green & yellow common, blue & red rare) */
 function wayChip(all){
@@ -697,7 +726,7 @@ function view_katItems(){
     <tr onclick="rowItem(${i})" id="itrow-${i}" class="${i>10?'dead':''}">
       <td class="cbcol"><span class="cb"></span>${actTrash()}</td>
       <td>${d.code}</td>
-      <td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td><td>${typLabel(d)}</td>
+      <td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td>
       <td><span class="count-chip">21</span></td>
       <td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td>
     </tr>`).join('');
@@ -719,7 +748,7 @@ function view_katItems(){
   </div>
   ${toolbar('Přidat')}
   <div class="table-wrap"><table class="table">
-    <thead><tr><th class="cbcol"><span class="cb"></span></th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Typ položky</th><th>Zařazen ve výběrech</th><th>Stav</th></tr></thead>
+    <thead><tr><th class="cbcol"><span class="cb"></span></th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Zařazen ve výběrech</th><th>Stav</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>
   ${pager()}
@@ -977,7 +1006,7 @@ function drawer_prodGroup(){
   const id='dwProdGroup';
   const tabs=[{k:'obecne',label:'Obecné'},{k:'prody',label:'Balení ve výběru'},
     {k:'ic',label:'Individuální ceny'},{k:'sl',label:'Slevy nad objednávkou'},{k:'nb',label:'Nabídka'},{k:'his',label:'Historie'}];
-  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
+  const prodRows=groupItems.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Produkty pro segment Veterináři',code:'SKUGROUP_9470583',type:'VÝBĚR BALENÍ',status:'Nová'})}
     ${tabbar(id,tabs)}
@@ -1323,16 +1352,18 @@ function grpRender(gid){
   const futureToggle=`<span class="toggle-wrap" style="font-weight:400;cursor:default;margin-right:8px;"><button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></button>Automaticky přepočítávat</span>`;
   const chips=hasFilter?active.map(f=>`<span class="finfo grey">${f.type==='text'?(f.field+' '+f.op+' '+f.textValue):(f.field+': '+f.values.join(', '))}</span>`).join(''):'';
   if(hasManual && !g.manualCount) g.manualCount=14+Math.floor(Math.random()*16); // mock count 14–29
-  const man=hasManual?`<span class="finfo teal">Ručně přidáno: ${g.manualCount}</span>`:'';
-  const badges=`<div class="finfo-row">${hasFilter?futureToggle:''}${chips}${man}</div>`;
+  const man=hasManual?`<span class="finfo blue">${I.handPlus}Ručně přidáno ${g.manualCount}</span>`:'';
+  const removedCount=(hasManual||hasFilter)?1+Math.floor(Math.random()*13):0;
+  const rem=removedCount?`<span class="finfo red">${I.handMinus}Ručně odebráno ${removedCount}</span>`:'';
+  const badges=`<div class="finfo-row">${hasFilter?futureToggle:''}${chips}${man}${rem}</div>`;
 
   let rows=grpResults(g).map((d,i)=>Object.assign({},d,{_kind:grpRowKind(g,d,i)}));
   if(g.src==='manual') rows=rows.filter(d=>d._kind==='manual');       // jen ručně
   else if(g.src==='filter') rows=rows.filter(d=>d._kind!=='manual');  // jen filtrem
-  const head=isCust?`<th style="width:40px"><span class="cb"></span></th><th>Kód</th><th>Jméno</th><th>IČO</th><th>Zařazen ve výběrech</th><th>Způsob přidání</th>`:`<th style="width:40px"><span class="cb"></span></th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Typ položky</th><th>Zařazen ve výběrech</th><th>Způsob přidání</th>`;
+  const head=isCust?`<th style="width:40px"><span class="cb"></span></th><th>Kód</th><th>Jméno</th><th>IČO</th><th>Zařazen ve výběrech</th><th>Způsob přidání</th>`:`<th style="width:40px"><span class="cb"></span></th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Zařazen ve výběrech</th><th>Způsob přidání</th>`;
   const trs=rows.map(d=> isCust
     ? `<tr style="cursor:pointer" onclick="openRefCustomer('${(d.n||'').replace(/'/g,"\\'")}','${d.code}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell">${d.n}</div></td><td>${ico()}</td><td><span class="count-chip">21</span></td><td>${wayChip(true)}</td></tr>`
-    : `<tr style="cursor:pointer" onclick="openRefItem('${d.ic}','${(d.n||'').replace(/'/g,"\\'")}','${d.code}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td><td>${d.t||typLabel(d)}</td><td><span class="count-chip">21</span></td><td>${wayChip(true)}</td></tr>`
+    : `<tr style="cursor:pointer" onclick="openRefItem('${d.ic}','${(d.n||'').replace(/'/g,"\\'")}','${d.code}')"><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td><td><span class="count-chip">21</span></td><td>${wayChip(true)}</td></tr>`
   ).join('');
   const body=`<div class="sub-table"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>${pager(true)}`;
   host.innerHTML=header+tools+badges+body;
@@ -1411,8 +1442,8 @@ function renderGI(){
     head=`${headCb}<th>Kód</th><th>Jméno</th><th>IČO</th><th>Zařazen ve výběrech</th><th>Stav</th>`;
     trs=rows.map(d=>rowStart(d.code||d.n)+`<td>${d.code}</td><td>${d.n}</td><td>${ico()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
   } else {
-    head=`${headCb}<th>Kód</th><th>Název</th><th class="r">Cena</th><th>Typ položky</th><th>Zařazen ve výběrech</th><th>Stav</th>`;
-    trs=rows.map(d=>rowStart(d.code||d.n)+`<td>${d.code}</td><td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td><td>${d.t||typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
+    head=`${headCb}<th>Kód</th><th>Název</th><th class="r">Cena</th><th>Zařazen ve výběrech</th><th>Stav</th>`;
+    trs=rows.map(d=>rowStart(d.code||d.n)+`<td>${d.code}</td><td><div class="name-cell">${d.n}</div></td><td class="r">${czPrice()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
   }
   body.innerHTML=`${toolbar}<div class="sub-table" style="flex:1;min-height:0;overflow:auto;"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>${pager(true)}`;
   if(gdlg.openMenu){const m=document.getElementById(gdlg.openMenu);if(m)m.classList.add('open');gdlg.openMenu=null;}
@@ -1535,8 +1566,8 @@ function renderPicker(){
     head=`<th style="width:46px">${headCb}</th><th>Kód</th><th>Název</th><th>Stav</th>`;
     bodyRows=rows.map((n,i)=>rowStart(i)+`<td>${picker.kind==='grpCust'?rid('CUST_GR_'):rid('PROD_GR_')}</td><td>${n}</td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join('');
   } else {
-    head=`<th style="width:46px">${headCb}</th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Typ položky</th><th>Zařazen ve výběrech</th><th>Stav</th>`;
-    bodyRows=rows.map((d,i)=>rowStart(i)+`<td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
+    head=`<th style="width:46px">${headCb}</th><th>Kód</th><th>Název</th><th class="r">Cena</th><th>Zařazen ve výběrech</th><th>Stav</th>`;
+    bodyRows=rows.map((d,i)=>rowStart(i)+`<td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join('');
   }
   document.getElementById('manualBody').innerHTML=toolbar+`<div class="sub-table" style="max-height:50vh;overflow:auto;"><table><thead><tr>${head}</tr></thead><tbody>${bodyRows}</tbody></table></div>${pager(true)}`;
 }
@@ -1554,7 +1585,7 @@ function submitPicker(){
   const t=picker.target;
   if(t.indexOf('man:')===0){const gid=t.slice(4);GRP[gid].manual=chosen.map(x=>typeof x==='string'?{n:x,code:rid('CUST_'),st:'Nová'}:x);grpRender(gid);}
   else if(t==='newcust'){ngc.customers=chosen;ngcRender();}
-  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td>${typLabel(d)}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join(''));}
+  else if(t==='prodgrpBody'){setBody('dwProdGroup-prodybody',chosen.map(d=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${d.code}</td><td><div class="name-cell"><span class="ti">${I[d.ic]}</span>${d.n}</div></td><td class="r">${czPrice()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nový ${I.chevsm}</button></td></tr>`).join(''));}
   else if(t==='custgrpBody'){setBody('dwCustGroup-zaksbody',chosen.map(n=>`<tr><td style="width:40px"><span class="cb"></span>${actMinus()}</td><td>${rid('CUST_')}</td><td>${n}</td><td>${ico()}</td><td><span class="count-chip">21</span></td><td class="r"><button class="status-btn" onclick="event.stopPropagation()">Nová ${I.chevsm}</button></td></tr>`).join(''));}
   else if(t==='memcust'||t.indexOf('mem-')===0){/* membership: keep the full table as-is, don't collapse to the selection */}
 }
@@ -1641,6 +1672,7 @@ function fillTables(){
       tbody.appendChild(c); i++;
     }
   });
+  syncRowActions();
 }
 let _fillRAF;
 function scheduleFill(){ cancelAnimationFrame(_fillRAF); _fillRAF=requestAnimationFrame(fillTables); }
