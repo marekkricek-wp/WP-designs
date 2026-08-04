@@ -333,6 +333,12 @@ body.resizing{cursor:ew-resize;user-select:none;}
   border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font:400 12px 'Roboto';}
 .dpill .pchip x{cursor:pointer;font-style:normal;color:var(--text-disabled);}
 .dpill .pcolon{color:var(--text-disabled);}
+.dpill.dpill-err{background:var(--danger-subtle);border-color:var(--danger);color:var(--danger);}
+.dpill.dpill-err .pchip{background:#f7d9d5;color:var(--danger);}
+.dpill.dpill-err .pchip x{color:var(--danger);}
+.conflict-tip{display:none;position:absolute;left:0;top:calc(100% + 6px);width:300px;background:var(--text-strong);color:#fff;padding:10px 12px;border-radius:var(--radius-md);font:400 12px/1.5 'Roboto',sans-serif;z-index:2147483647;box-shadow:0 6px 18px rgba(0,0,0,.32);}
+.conflict-tip b{display:block;font:700 11px/1.4 'Roboto',sans-serif;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;}
+.dpill-err:hover + .conflict-tip{display:block;}
 /* active (dropdown open) -> blue */
 .dpill-wrap:has(.animal-menu.open) .dpill{background:var(--primary-subtle);border-color:var(--border-primary);color:var(--text-primary);}
 .dpill-wrap:has(.animal-menu.open) .pchip{background:#5b5b5b;color:#fff;border-color:#5b5b5b;}
@@ -515,6 +521,15 @@ body.resizing{cursor:ew-resize;user-select:none;}
       <button class="btn-secondary" onclick="closeModal('mdlGuard')">Zrušit</button>
       <button class="btn-primary" style="background:var(--danger);" onclick="ngGuardSave()">Uložit filtr skupiny</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== Modal: nelze uložit (cyklus) ===== -->
+<div class="modal-overlay" id="mdlSaveErr" style="z-index:30000;">
+  <div class="modal sm" style="width:440px;">
+    <div class="modal-head"><span class="mt" style="font-size:18px;">Nemohu uložit filtr</span><span class="mx" onclick="closeModal('mdlSaveErr')">✕</span></div>
+    <div class="modal-body"><div id="seTitle" style="font:600 14px/20px 'Roboto';color:var(--text-strong);margin-bottom:8px;"></div><div id="seBody" style="font:400 14px/20px 'Roboto';color:var(--text-default);"></div></div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('mdlSaveErr')">Zavřit</button></div>
   </div>
 </div>
 
@@ -1188,6 +1203,10 @@ const CAT={
   prod:filterCatalog.map(c=>({label:c[0],code:c[1],field:catLeaf(c[0])})),
   cust:custFilterCatalog.map(c=>({label:c[0],code:c[1],field:catLeaf(c[0])}))
 };
+FLD.prod['Skupina produktů']={type:'chips',options:['A (sám na sebe)','B (vzájemný cyklus)','C (řetězový cyklus)','D','E']};
+CAT.prod.push({label:'Skupina produktů',code:'ROOT_ATTRIBUTE:GROUPREF',field:'Skupina produktů'});
+FLD.cust['Skupina zákazníků']={type:'chips',options:['A (sám na sebe)','B (vzájemný cyklus)','C (řetězový cyklus)','D','E']};
+CAT.cust.push({label:'Skupina zákazníků',code:'ROOT_ATTRIBUTE:GROUPREF',field:'Skupina zákazníků'});
 const POOL_prod=[
   {n:'Anaflex pasta pro psy 30 ml',code:'C00101-00030',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín C'},
   {n:'Anaflex pasta pro psy 60 ml',code:'C00101-00060',ic:'pkg',t:'Balení',st:'Nový produkt',animal:'Pes',latka:'Vitamín D'},
@@ -1431,7 +1450,8 @@ function renderGI(){
         ${opts.map(v=>`<div class="am-row" onclick="event.stopPropagation();giToggleVal(${i},'${v}')"><span class="am-cb ${f.values.includes(v)?'on':''}">${f.values.includes(v)?'✓':''}</span>${v}</div>`).join('')}
         <div class="am-adv" onclick="event.stopPropagation()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6f6f6f" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> Pokročilý výběr</div></div>`;
     }
-    return `<div class="dpill-wrap"><div class="dpill" onclick="event.stopPropagation();toggleDD('gi-vm-${i}')">${I.filter} ${f.field} <span class="pcolon">${f.type==='text'?f.op:':'}</span> ${valPart} ${del}</div>${menu}</div>`;
+    const conf=filterConflict(f);
+    return `<div class="dpill-wrap"><div class="dpill ${conf?'dpill-err':''}" onclick="event.stopPropagation();toggleDD('gi-vm-${i}')">${I.filter} ${f.field} <span class="pcolon">${f.type==='text'?f.op:':'}</span> ${valPart} ${del}</div>${conf?`<div class="conflict-tip"><b>${conf.t}</b>${conf.b}</div>`:''}${menu}</div>`;
   }).join('');
   const addMenu=`<div class="addfilter-wrap"><button class="icon-btn" title="Přidat filtr" onclick="event.stopPropagation();toggleDD('gi-addmenu')">${I.plus}</button>
     <div class="filter-menu" id="gi-addmenu"><div class="fm-title">Přidat filtr</div><div class="menu-search"><span class="si">${I.search}</span><input placeholder="Hledat"></div>
@@ -1464,9 +1484,18 @@ function giSetOp(i,o){gdlg.filters[i].op=o;gdlg.openMenu='gi-vm-'+i;giRebuild();
 function giDelFilter(i){gdlg.filters.splice(i,1);giRebuild();renderGI();}
 function giToggle(key){if(gdlg.selected.has(key))gdlg.selected.delete(key);else gdlg.selected.add(key);renderGI();}
 function giToggleAll(){const keys=(gdlg.display||giPool()).map(r=>r.code||r.n);if(keys.length&&keys.every(k=>gdlg.selected.has(k)))keys.forEach(k=>gdlg.selected.delete(k));else keys.forEach(k=>gdlg.selected.add(k));renderGI();}
+function filterConflict(f){
+  if(!f||(f.field!=='Skupina produktů'&&f.field!=='Skupina zákazníků')||f.type!=='chips')return null;
+  const v=f.values||[];const has=L=>v.some(x=>x.charAt(0)===L);
+  if(has('A'))return {t:'SKUPINA NEMŮŽE ODKAZOVAT SAMA NA SEBE',title:'Skupina nemůže odkazovat sama na sebe',b:'Skupina „A" ve své definici odkazuje sama na sebe, takže ji nejde vyhodnotit. Odeberte tento odkaz.'};
+  if(has('B'))return {t:'SKUPINY SE ODKAZUJÍ NAVZÁJEM',title:'Skupiny se odkazují navzájem',b:'Skupiny „A" a „B" se odkazují jedna na druhou (A → B → A), takže nejde určit jejich obsah. Odeberte jeden z odkazů.'};
+  if(has('C'))return {t:'ODKAZY MEZI SKUPINAMI TVOŘÍ KRUH',title:'Odkazy mezi skupinami tvoří kruh',b:'Odkazy tvoří kruh (A → C → D → A) a skupinu nelze vyhodnotit. Přerušte kruh odebráním jednoho z odkazů.'};
+  return null;
+}
+function giCycle(){if(!gdlg||gdlg.mode!=='filter')return null;for(const f of (gdlg.filters||[])){const c=filterConflict(f);if(c)return c;}return null;}
 function giSubmit(){
   const g=GRP[gdlg.gid];
-  if(gdlg.mode==='filter'){ g.filters=fdefActive(gdlg.filters); }
+  if(gdlg.mode==='filter'){ const c=giCycle(); if(c){document.getElementById('seTitle').textContent=c.title;document.getElementById('seBody').textContent=c.b;openModal('mdlSaveErr');return;} g.filters=fdefActive(gdlg.filters); }
   else { g.manual=giPool().filter(r=>gdlg.selected.has(r.code||r.n)); g.manualCount=g.manual.length?14+Math.floor(Math.random()*16):0; } // save = checked set; chip count is mock 14–29
   closeModal('mdlGroupItems'); grpRender(gdlg.gid);
 }
