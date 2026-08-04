@@ -844,6 +844,7 @@ function view_zakGroups(){
 /* ============================================================= DRAWER PARTS */
 function drawerHead(opts){
   const crumb = opts.crumb ? `<div class="crumb">${opts.crumb}</div>` : '';
+  const isGroup = (opts.type||'').indexOf('SKUPINA')>=0; // skupiny nemají stavové tlačítko
   return `<div class="drawer-head">
     <div class="dh-top">
       <button class="icon-btn sq" onclick="closeDrawer('${opts.id}')">${I.x}</button>
@@ -851,7 +852,7 @@ function drawerHead(opts){
       <button class="icon-btn sq">${I.panelR}</button>
       ${crumb}
       <div class="dh-status">
-        <button class="status-btn lg">${opts.status} ${I.chevsm}</button>
+        ${isGroup?'':`<button class="status-btn lg">${opts.status} ${I.chevsm}</button>`}
         <button class="icon-btn sq">${I.dotsh}</button>
       </div>
     </div>
@@ -1353,8 +1354,7 @@ function grpRender(gid){
   const hasFilter=active.length>0;
   const hasManual=(g.manual||[]).length>0;
 
-  const futureToggle=`<span class="toggle-wrap" style="font-weight:400;cursor:default;"><button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on')"></button>Automaticky přepočítávat</span>`;
-  const header=`<div class="sub-head">${heading}${recomputeCtl(hasFilter, hasFilter?futureToggle:'')}</div>`;
+  const header=`<div class="sub-head">${heading}${recomputeCtl(false)}</div>`;
   const primBtn=`<button class="btn-primary sm" onclick="openGroupItems('${gid}','filter')">${I.pencil} Filtrem</button>`;
   const manBtn=`<button class="btn-secondary sm" onclick="openGroupItems('${gid}','manual')">${I.pencil} Ručně</button>`;
 
