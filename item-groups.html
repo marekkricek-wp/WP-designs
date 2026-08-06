@@ -549,7 +549,7 @@ body.resizing{cursor:ew-resize;user-select:none;}
   <div class="modal lg" style="height:95vh;max-height:95vh;">
     <div class="modal-head"><span class="mt" id="giTitle">Definice filtru skupiny</span><span class="mx" onclick="closeModal('mdlGroupItems')">✕</span></div>
     <div class="modal-body" id="giBody" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;"></div>
-    <div class="modal-foot">
+    <div class="modal-foot" id="giFoot">
       <button class="btn-secondary" onclick="closeModal('mdlGroupItems')">Zrušit</button>
       <button class="btn-primary" id="giSubmit" onclick="giSubmit()">Uložit</button>
     </div>
@@ -1421,11 +1421,13 @@ function openGroupItems(gid,mode){
   gdlg={gid,entity:g.entity,mode,filters:mode==='filter'?grpClone(g.filters||[]):[],
         selected:editingManual?new Set(poolKeys.filter(()=>Math.random()<0.65)):new Set(),openMenu:null};
   const isCust=g.entity==='cust';
-  let title,btn;
-  if(mode==='filter'){ title='Definice filtru skupiny'; btn='Uložit'; }
-  else { title=isCust?'Ruční přidání zákazníků do skupiny':'Ruční přidání produktů do skupiny'; btn='Uložit'; }
+  let title;
+  if(mode==='filter'){ title='Definice filtru skupiny'; }
+  else { title=isCust?'Ruční přidání zákazníků do skupiny':'Ruční přidání produktů do skupiny'; }
   document.getElementById('giTitle').textContent=title;
-  document.getElementById('giSubmit').textContent=btn;
+  document.getElementById('giFoot').innerHTML = mode==='filter'
+    ? `<button class="btn-secondary" onclick="closeModal('mdlGroupItems')">Zrušit</button><button class="btn-primary" onclick="giSubmit()">Uložit</button>`
+    : `<button class="btn-secondary" onclick="giSubmit()">Zavřít</button>`;
   giRebuild(); renderGI(); openModal('mdlGroupItems');
 }
 function giPool(){return gdlg.entity==='cust'?POOL_cust:POOL_prod.filter(it=>it.ic!=='master');}
@@ -1434,7 +1436,7 @@ function giShuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Ma
    filter change so it looks like the list responds in real time (mock) */
 function giRebuild(){gdlg.display=giShuffle(giPool());}
 function renderGI(){
-  const body=document.getElementById('giBody'); if(!body)return; const ent=gdlg.entity; const isCust=ent==='cust';
+  const body=document.getElementById('giBody'); if(!body)return; const ent=gdlg.entity; const isCust=ent==='cust'; const manual=gdlg.mode==='manual';
   const pills=gdlg.filters.map((f,i)=>{
     const del=`<button class="pico del" title="Odebrat filtr" onclick="event.stopPropagation();giDelFilter(${i})">${I.trash}</button>`;
     let valPart,menu;
@@ -1456,13 +1458,12 @@ function renderGI(){
   const addMenu=`<div class="addfilter-wrap"><button class="icon-btn" title="Přidat filtr" onclick="event.stopPropagation();toggleDD('gi-addmenu')">${I.plus}</button>
     <div class="filter-menu" id="gi-addmenu"><div class="fm-title">Přidat filtr</div><div class="menu-search"><span class="si">${I.search}</span><input placeholder="Hledat"></div>
      ${CAT[ent].map(c=>c.field?`<div class="fm-item" onclick="event.stopPropagation();giAddFilter('${c.field}')"><div class="l1">${c.label}</div><div class="l2">${c.code}</div></div>`:`<div class="fm-item dead"><div class="l1">${c.label}</div><div class="l2">${c.code}</div></div>`).join('')}</div></div>`;
-  const toolbar=`<div class="sub-tools" style="flex-wrap:wrap;margin-top:2px;"><div class="search-box sm"><span class="si">${I.search}</span><input></div>${pills}${addMenu}</div>`;
-  const rows=gdlg.display||giPool();
-  const keys=rows.map(r=>r.code||r.n);
-  const allOn=keys.length>0 && keys.every(k=>gdlg.selected.has(k));
-  const someOn=gdlg.selected.size>0 && !allOn;
-  const manual=gdlg.mode==='manual'; // checkboxes only when manually picking items
-  const headCb=manual?`<th style="width:46px"><span class="cb ${allOn?'on':(someOn?'ind':'')}" onclick="event.stopPropagation();giToggleAll()"></span></th>`:'';
+  const onlyAddedPill=manual?`<div class="dpill" style="cursor:pointer" onclick="event.stopPropagation();giToggleOnlyAdded()">${I.filter} Zobrazit jen přidané <button class="toggle ${gdlg.onlyAdded?'on':''}" onclick="event.stopPropagation();giToggleOnlyAdded()"></button></div>`:'';
+  const toolbar=`<div class="sub-tools" style="flex-wrap:wrap;margin-top:2px;"><div class="search-box sm"><span class="si">${I.search}</span><input></div>${onlyAddedPill}${pills}${addMenu}</div>`;
+  let rows=gdlg.display||giPool();
+  if(manual && gdlg.onlyAdded) rows=rows.filter(r=>gdlg.selected.has(r.code||r.n)); // „Zobrazit jen přidané"
+  // manuální dialog: řádkové checkboxy ano, hlavičkový (vybrat vše) ne; filtrový dialog: bez checkboxů
+  const headCb=manual?'<th style="width:46px"></th>':'';
   const rowStart=key=> manual
     ? `<tr style="cursor:pointer" onclick="giToggle('${key}')"><td style="width:46px"><span class="cb ${gdlg.selected.has(key)?'on':''}"></span></td>`
     : `<tr>`;
@@ -1477,6 +1478,7 @@ function renderGI(){
   body.innerHTML=`${toolbar}<div class="sub-table" style="flex:1;min-height:0;overflow:auto;"><table><thead><tr>${head}</tr></thead><tbody>${trs}</tbody></table></div>${pager(true)}`;
   if(gdlg.openMenu){const m=document.getElementById(gdlg.openMenu);if(m)m.classList.add('open');gdlg.openMenu=null;}
 }
+function giToggleOnlyAdded(){gdlg.onlyAdded=!gdlg.onlyAdded;renderGI();}
 function giAddFilter(field){const t=(FLD[gdlg.entity][field]||{}).type||'chips';gdlg.filters.push(t==='text'?{field,type:'text',op:'>',textValue:''}:{field,type:'chips',op:(field==='Segment'?'=':':'),values:[]});gdlg.openMenu='gi-vm-'+(gdlg.filters.length-1);giRebuild();renderGI();}
 function giToggleVal(i,v){const f=gdlg.filters[i];if(f.values.includes(v))f.values=f.values.filter(x=>x!==v);else f.values.push(v);gdlg.openMenu='gi-vm-'+i;giRebuild();renderGI();}
 function giRemoveVal(i,v){gdlg.filters[i].values=gdlg.filters[i].values.filter(x=>x!==v);gdlg.openMenu='gi-vm-'+i;giRebuild();renderGI();}
