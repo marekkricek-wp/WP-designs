@@ -1489,9 +1489,9 @@ function giToggleAll(){const keys=(gdlg.display||giPool()).map(r=>r.code||r.n);i
 function filterConflict(f){
   if(!f||(f.field!=='Skupina produktů'&&f.field!=='Skupina zákazníků')||f.type!=='chips')return null;
   const v=f.values||[];const has=L=>v.some(x=>x.charAt(0)===L);
-  if(has('A'))return {t:'SKUPINA NEMŮŽE ODKAZOVAT SAMA NA SEBE',title:'Skupina nemůže odkazovat sama na sebe',b:'Skupina „A" ve své definici odkazuje sama na sebe, takže ji nejde vyhodnotit. Odeberte tento odkaz.'};
-  if(has('B'))return {t:'SKUPINY SE ODKAZUJÍ NAVZÁJEM',title:'Skupiny se odkazují navzájem',b:'Skupiny „A" a „B" se odkazují jedna na druhou (A → B → A), takže nejde určit jejich obsah. Odeberte jeden z odkazů.'};
-  if(has('C'))return {t:'ODKAZY MEZI SKUPINAMI TVOŘÍ KRUH',title:'Odkazy mezi skupinami tvoří kruh',b:'Odkazy tvoří kruh (A → C → D → A) a skupinu nelze vyhodnotit. Přerušte kruh odebráním jednoho z odkazů.'};
+  if(has('A'))return {t:'SKUPINA NEMŮŽE OBSAHOVAT SAMA SEBE',title:'Skupina nemůže obsahovat sama sebe',b:'Skupina „A" má ve své definici podmínku na sebe samu, takže ji nelze vyhodnotit. Odeberte tuto podmínku.'};
+  if(has('B'))return {t:'SKUPINY SE NAVZÁJEM OBSAHUJÍ',title:'Skupiny se navzájem obsahují',b:'Skupiny „A" a „B" se navzájem používají jako podmínku (A → B → A), takže nelze určit jejich obsah. Odeberte jednu z těchto podmínek.'};
+  if(has('C'))return {t:'PODMÍNKY SKUPIN TVOŘÍ KRUH',title:'Podmínky skupin tvoří kruh',b:'Podmínky mezi skupinami tvoří kruh (A → C → D → A) a skupinu nelze vyhodnotit. Přerušte kruh odebráním jedné z podmínek.'};
   return null;
 }
 function giCycle(){if(!gdlg||gdlg.mode!=='filter')return null;for(const f of (gdlg.filters||[])){const c=filterConflict(f);if(c)return c;}return null;}
