@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WisePorter — Model / Create Parameter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Surfaces */
+    --surface-default: #f6f6f6;
+    --surface-card: #ffffff;
+    --selectable-hover: #f6f6f6;
+    --selectable-selected: #e6f7ff;
+    --selectable-selected-hover: #ddedf5;
+
+    /* Primary (brand blue) */
+    --primary: #1770c8;
+    --primary-hover: #00539a;
+    --primary-active: #003a6e;
+    --primary-disabled: #a5caf5;
+    --primary-subtle: #e6f7ff;
+
+    /* Secondary (grey) */
+    --secondary: #6f6f6f;
+    --secondary-hover: #525252;
+    --secondary-active: #393939;
+    --secondary-disabled: #c6c6c6;
+    --secondary-subtle: #f6f6f6;
+
+    /* Semantic */
+    --danger: #c83f32;
+    --danger-subtle: #fef0f0;
+    --warning: #f2bf46;
+    --warning-text: #7c4500;
+    --warning-subtle: #fff6ae;
+    --success: #597931;
+    --success-subtle: #e1fcca;
+    --info: #007b88;
+    --info-subtle: #def8ff;
+
+    /* Text */
+    --text-default: #525252;
+    --text-strong: #262626;
+    --text-disabled: #8e8e8e;
+    --text-inverse: #ffffff;
+    --text-link: #1770c8;
+    --text-primary: #00539a;
+
+    /* Borders */
+    --border-default: #a8a8a8;
+    --border-strong: #6f6f6f;
+    --border-subtle: #dfdfdf;
+    --border-primary: #77abf0;
+    --border-focus: #1770c8;
+
+    /* Spacing */
+    --sp-2:2px; --sp-4:4px; --sp-6:6px; --sp-8:8px;
+    --sp-10:10px; --sp-12:12px; --sp-16:16px; --sp-20:20px;
+    --sp-24:24px; --sp-32:32px; --sp-40:40px; --sp-48:48px;
+
+    /* Radius */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-round: 320px;
+
+    /* Layout constants */
+    --header-h: 44px;
+    --sidebar-w: 180px;
+    --drawer-w: 902px;
+    --table-header-h: 48px;
+    --table-row-h: 40px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--surface-default);
+    color: var(--text-default);
+    font-family: 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ---------- Prototype-only controls (not part of WisePorter UI) ---------- */
+  .proto-bar {
+    flex: 0 0 auto; height: 40px;
+    background: var(--surface-card); border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0 var(--sp-16); gap: var(--sp-8);
+  }
+  .proto-btn {
+    height: 26px; padding: 0 var(--sp-12); border-radius: var(--radius-round); border: none;
+    font: 700 12px/1 'Roboto', sans-serif; cursor: pointer;
+    background: var(--secondary-subtle); color: var(--text-strong);
+  }
+  .proto-btn:hover { background: var(--selectable-selected-hover); }
+  .proto-btn.active { background: var(--secondary-active); color: var(--text-inverse); }
+  .proto-btn-reset { background: var(--warning); color: var(--warning-text); }
+  .proto-btn[hidden] { display: none; }
+
+  /* ---------- Typography ---------- */
+  .title-xl { font: 300 32px/44px 'Roboto', sans-serif; color: var(--text-strong); }
+  .title-lg { font: 500 24px/32px 'Roboto', sans-serif; color: var(--text-strong); }
+  .title-md { font: 600 18px/24px 'Roboto', sans-serif; color: var(--text-strong); }
+  .title-sm { font: 900 14px/20px 'Roboto', sans-serif; color: var(--text-strong); }
+  .title-xs { font: 700 12px/16px 'Roboto', sans-serif; color: var(--text-strong); text-transform: uppercase; letter-spacing: .04em; }
+  .text-lg { font: 400 16px/24px 'Roboto', sans-serif; }
+  .text-lg-bold { font: 700 16px/24px 'Roboto', sans-serif; }
+  .text-md { font: 400 14px/20px 'Roboto', sans-serif; }
+  .text-md-bold { font: 700 14px/20px 'Roboto', sans-serif; }
+  .text-sm { font: 400 12px/16px 'Roboto', sans-serif; }
+  .text-sm-bold { font: 700 12px/16px 'Roboto', sans-serif; }
+
+  svg.icon { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+
+  /* ---------- App shell ---------- */
+  .app { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; background: var(--surface-card); }
+
+  .topbar {
+    height: var(--header-h);
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sp-16);
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--border-subtle);
+    gap: var(--sp-24);
+  }
+  .brand { display: flex; align-items: center; gap: var(--sp-8); margin-right: var(--sp-8); }
+  .brand-mark { width: 20px; height: 20px; flex-shrink: 0; }
+  .brand-name { font: 500 15px/1 'Roboto', sans-serif; color: var(--text-strong); letter-spacing: -.01em; }
+  .brand-name b { font-weight: 700; }
+
+  .topnav { display: flex; align-items: center; gap: var(--sp-24); flex: 1; height: 100%; }
+  .topnav-item {
+    font: 400 14px/1 'Roboto', sans-serif;
+    color: var(--text-default);
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+  }
+  .topnav-item.active { color: var(--text-strong); font-weight: 700; border-bottom-color: var(--primary); }
+  .topnav-item:hover:not(.active) { color: var(--text-strong); }
+
+  .topbar-actions { display: flex; align-items: center; gap: var(--sp-16); color: var(--secondary); }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--secondary); background: transparent; border: none; cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--selectable-hover); color: var(--text-strong); }
+
+  .body-row { flex: 1; display: flex; min-height: 0; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex: 0 0 auto;
+    background: var(--surface-card);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-16) var(--sp-12);
+  }
+  .side-nav { display: flex; flex-direction: column; gap: var(--sp-2); flex: 1; }
+  .side-item {
+    display: flex; align-items: center; gap: var(--sp-10);
+    height: 32px; padding: 0 var(--sp-8);
+    border-radius: var(--radius-md);
+    color: var(--text-default);
+    font: 400 13px/1 'Roboto', sans-serif;
+    cursor: pointer;
+  }
+  .side-item svg { color: var(--secondary); }
+  .side-item:hover { background: var(--selectable-hover); }
+  .side-item.active { background: var(--selectable-selected); color: var(--text-primary); font-weight: 700; }
+  .side-item.active svg { color: var(--text-primary); }
+
+  .side-collapse {
+    display: flex; align-items: center; gap: var(--sp-10);
+    height: 32px; padding: 0 var(--sp-8);
+    color: var(--secondary);
+    font: 400 12px/1 'Roboto', sans-serif;
+    cursor: pointer; border-radius: var(--radius-md);
+  }
+  .side-collapse:hover { background: var(--selectable-hover); }
+
+  /* ---------- Content / list pane ---------- */
+  .content-row { flex: 1; display: flex; min-width: 0; position: relative; background: var(--surface-card); }
+
+  .list-pane { flex: 1 1 auto; width: 100%; min-width: 280px; display: flex; flex-direction: column; padding: var(--sp-16) var(--sp-24); overflow: auto; }
+  .list-pane .title-lg { margin: 0 0 var(--sp-16); text-wrap: balance; }
+
+  .toolbar-row { display: flex; align-items: center; gap: var(--sp-12); margin-bottom: var(--sp-16); }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: var(--sp-6);
+    padding: 0 var(--sp-12); height: 32px;
+    background: var(--primary); color: var(--text-inverse);
+    border: none; border-radius: var(--radius-md);
+    font: 500 14px/1 'Roboto', sans-serif; cursor: pointer; white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:active { background: var(--primary-active); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: var(--sp-6);
+    padding: 0 var(--sp-12); height: 32px;
+    background: transparent; color: var(--text-default);
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    font: 400 14px/1 'Roboto', sans-serif; cursor: pointer; white-space: nowrap;
+  }
+  .btn-secondary:hover { background: var(--selectable-hover); }
+
+  .search-box {
+    display: flex; align-items: center; gap: var(--sp-8);
+    height: 32px; width: 220px; padding: 0 var(--sp-10);
+    background: var(--surface-card);
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    color: var(--text-disabled);
+  }
+  .search-box input {
+    border: none; outline: none; background: transparent; flex: 1;
+    font: 400 14px/1 'Roboto', sans-serif; color: var(--text-default);
+  }
+
+  .table-wrap { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
+  .table { width: 100%; border-collapse: collapse; }
+  .table thead th {
+    padding: 0 var(--sp-16); height: var(--table-header-h); text-align: left;
+    font: 700 13px/20px 'Roboto', sans-serif; color: var(--text-strong);
+    background: var(--surface-card); border-bottom: 1px solid var(--border-subtle);
+  }
+  .table tbody tr { border-bottom: 1px solid var(--border-subtle); cursor: pointer; }
+  .table tbody tr:last-child { border-bottom: none; }
+  .table tbody tr:hover { background: var(--selectable-hover); }
+  .table tbody tr.selected { background: var(--selectable-selected); }
+  .table tbody tr.selected:hover { background: var(--selectable-selected-hover); }
+  .table tbody td { padding: 0 var(--sp-16); height: var(--table-row-h); font: 400 13px/20px 'Roboto', sans-serif; color: var(--text-default); }
+  .table tbody td.code-cell { color: var(--text-disabled); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Drawer ---------- */
+  .drawer {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: var(--drawer-w);
+    max-width: 68%;
+    background: var(--surface-card);
+    border-left: 1px solid var(--border-subtle);
+    box-shadow: -6px 0 20px rgba(38, 38, 38, 0.10);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10;
+  }
+  .drawer[hidden] { display: none; }
+
+  .drawer-topbar { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-12) var(--sp-24) 0; }
+  .drawer-topbar-left { display: flex; align-items: center; gap: var(--sp-4); }
+  .drawer-topbar .icon-btn.active { background: var(--selectable-selected); color: var(--text-primary); }
+
+  .drawer-head { padding: var(--sp-12) var(--sp-24) 0; }
+  .drawer-head .title-lg { margin: 0 0 var(--sp-4); text-wrap: balance; }
+  .drawer-meta { display: flex; align-items: center; gap: var(--sp-8); color: var(--text-disabled); font: 400 12px/16px 'Roboto', sans-serif; margin-bottom: var(--sp-12); }
+  .drawer-meta .chip-code { font-variant-numeric: tabular-nums; }
+  .drawer-meta .type-badge { display: inline-flex; align-items: center; gap: var(--sp-4); color: var(--text-disabled); font: 700 11px/16px 'Roboto', sans-serif; letter-spacing: .04em; }
+
+  .tabs { display: flex; gap: var(--sp-24); padding: 0 var(--sp-24); border-bottom: 1px solid var(--border-subtle); }
+  .tab {
+    padding: var(--sp-10) 0; font: 400 14px/20px 'Roboto', sans-serif; color: var(--text-default);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab.active { color: var(--text-primary); font-weight: 700; border-bottom-color: var(--primary); }
+  .tab:hover:not(.active) { color: var(--text-strong); }
+
+  .drawer-body { flex: 1; overflow: auto; padding: 0 var(--sp-24) var(--sp-24); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .section-header-left { display: flex; align-items: center; gap: var(--sp-6); }
+  .section-header-left svg { color: var(--text-strong); }
+  .section-empty { padding: var(--sp-32) 0; color: var(--text-disabled); font: 400 13px/20px 'Roboto', sans-serif; }
+
+  /* ---------- Parameters: sticky headers + collection group ---------- */
+  .params-header {
+    position: sticky; top: 0; z-index: 6;
+    padding-top: var(--sp-20); height: calc(40px + var(--sp-20));
+    box-sizing: border-box;
+    background: var(--surface-card);
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+
+  .group-card {
+    border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+    background: var(--surface-card); margin-bottom: var(--sp-16);
+  }
+  .group-header {
+    position: sticky; top: calc(40px + var(--sp-20)); z-index: 5;
+    background: var(--surface-card);
+    border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--sp-12) var(--sp-16);
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+  }
+  .group-header.collapsed {
+    border-bottom: none;
+    border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);
+  }
+  .group-header-left { display: flex; align-items: center; gap: var(--sp-8); }
+  .group-header-left svg { color: var(--text-strong); transition: transform .15s ease; flex-shrink: 0; }
+  .group-header.collapsed .group-header-left svg { transform: rotate(180deg); }
+  .group-header .title-md { margin: 0; }
+  .group-header > .icon-btn { flex-shrink: 0; }
+
+  .element-item { border-top: 1px solid var(--border-subtle); }
+  .element-item:first-child { border-top: none; }
+  .element-header {
+    display: flex; align-items: center; gap: var(--sp-8);
+    padding: var(--sp-12) var(--sp-16) var(--sp-4); cursor: pointer;
+  }
+  .element-header svg.chevron { width: 14px; height: 14px; color: var(--text-strong); transition: transform .15s ease; flex-shrink: 0; }
+  .element-header.collapsed svg.chevron { transform: rotate(180deg); }
+  .element-header .el-num { flex: 1; }
+  .element-fields { padding: 0 var(--sp-16) var(--sp-16); display: flex; flex-direction: column; }
+  .element-fields.collapsed { display: none; }
+
+  .create-item-row { padding: var(--sp-16); }
+
+  .group-table-wrap { overflow-x: auto; }
+  table.param-table { width: 100%; border-collapse: collapse; }
+  table.param-table th {
+    text-align: left; font: 700 12px/16px 'Roboto', sans-serif; color: var(--text-strong);
+    padding: var(--sp-10) var(--sp-12); border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-card); white-space: nowrap;
+  }
+  table.param-table th.num-col { width: 72px; }
+  table.param-table td { padding: var(--sp-6) var(--sp-12); vertical-align: middle; }
+  table.param-table tbody tr { border-bottom: 1px solid var(--border-subtle); }
+  table.param-table tbody tr:last-child { border-bottom: none; }
+  .num-label { display: flex; align-items: center; gap: var(--sp-2); font: 700 13px/1 'Roboto', sans-serif; color: var(--text-strong); white-space: nowrap; }
+
+  /* ---------- Manual reorder controls (Default order type) ---------- */
+  .reorder-controls { display: flex; align-items: center; gap: var(--sp-4); flex-shrink: 0; }
+  .reorder-btn {
+    width: 24px; height: 24px; padding: 0; flex-shrink: 0;
+    border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-card);
+    display: flex; align-items: center; justify-content: center; color: var(--text-default); cursor: pointer;
+  }
+  .reorder-btn svg { width: 14px; height: 14px; }
+  .reorder-btn:hover:not(:disabled) { background: var(--selectable-hover); color: var(--text-strong); }
+  .reorder-btn:disabled { color: var(--text-disabled); border-color: var(--border-subtle); cursor: not-allowed; }
+  .reorder-num {
+    width: 34px; height: 24px; padding: 0; text-align: center;
+    border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-card);
+    font: 700 13px/1 'Roboto', sans-serif; color: var(--text-strong);
+  }
+  .reorder-num:focus { outline: none; border-color: var(--border-focus); }
+  .reorder-num::-webkit-outer-spin-button, .reorder-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* ---------- Attribute-drives-order icon (Order by attribute) ---------- */
+  .attr-order-icon { display: inline-flex; vertical-align: middle; margin-left: var(--sp-4); color: var(--text-disabled); cursor: help; }
+  .attr-order-icon svg { width: 14px; height: 14px; }
+  .attr-order-icon:hover, .attr-order-icon:focus { color: var(--text-strong); outline: none; }
+  th .attr-order-icon { margin-left: var(--sp-6); }
+
+  /* ---------- Shared floating tooltip ---------- */
+  .tooltip-bubble {
+    position: fixed; top: 0; left: 0; max-width: 260px;
+    background: var(--text-strong); color: var(--text-inverse);
+    border-radius: var(--radius-md); padding: var(--sp-8) var(--sp-10);
+    box-shadow: 0 8px 24px rgba(38,38,38,0.24);
+    z-index: 200; display: none; pointer-events: none;
+  }
+  .tooltip-bubble.open { display: block; }
+  .tooltip-title { font: 700 11px/16px 'Roboto', sans-serif; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; color: var(--text-inverse); }
+  .tooltip-title[hidden] { display: none; }
+  .tooltip-text { font: 400 12px/16px 'Roboto', sans-serif; color: var(--text-inverse); }
+  .tooltip-arrow { position: absolute; width: 10px; height: 10px; background: var(--text-strong); transform: rotate(45deg); }
+  .tooltip-bubble.placement-top .tooltip-arrow { bottom: -4px; left: 50%; margin-left: -5px; }
+  .tooltip-bubble.placement-bottom .tooltip-arrow { top: -4px; left: 50%; margin-left: -5px; }
+
+  /* ---------- Popover menu (Parameters "...") ---------- */
+  .popover {
+    position: fixed; top: 0; left: 0;
+    width: 220px; background: var(--surface-card);
+    border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(38,38,38,0.14), 0 1px 3px rgba(38,38,38,0.08);
+    padding: var(--sp-8); z-index: 140; display: none;
+  }
+  .popover.open { display: block; }
+  .popover-row { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-6) var(--sp-8); }
+  .popover-row .text-sm { color: var(--text-disabled); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .layout-toggle { display: flex; gap: var(--sp-4); }
+  .layout-toggle button {
+    width: 24px; height: 24px; border-radius: var(--radius-sm); border: 1px solid var(--border-default);
+    background: var(--surface-card); color: var(--secondary); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .layout-toggle button.active { background: var(--primary-subtle); border-color: var(--border-primary); color: var(--text-primary); }
+  .popover-divider { height: 1px; background: var(--border-subtle); margin: var(--sp-6) 0; }
+  .popover-item {
+    display: flex; align-items: center; gap: var(--sp-10);
+    padding: var(--sp-8); border-radius: var(--radius-sm);
+    font: 400 13px/1 'Roboto', sans-serif; color: var(--text-default); cursor: pointer;
+  }
+  .popover-item svg { color: var(--secondary); }
+  .popover-item:hover { background: var(--selectable-hover); }
+  .popover-item.disabled { color: var(--text-disabled); cursor: not-allowed; pointer-events: none; }
+  .popover-item.disabled svg { color: var(--text-disabled); }
+
+  /* ---------- Shared floating action menu (Edit / Delete / Go to data type) ---------- */
+  .action-menu {
+    position: fixed; top: 0; left: 0; width: 190px;
+    background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(38,38,38,0.14), 0 1px 3px rgba(38,38,38,0.08);
+    padding: var(--sp-4); z-index: 145; display: none;
+  }
+  .action-menu.open { display: block; }
+  .action-menu-item {
+    display: flex; align-items: center; gap: var(--sp-10);
+    padding: var(--sp-8); border-radius: var(--radius-sm);
+    font: 400 13px/1 'Roboto', sans-serif; color: var(--text-default); cursor: pointer;
+  }
+  .action-menu-item svg { color: var(--secondary); }
+  .action-menu-item:hover { background: var(--selectable-hover); }
+  .action-menu-item.danger { color: var(--danger); }
+  .action-menu-item.danger svg { color: var(--danger); }
+  .action-menu.disabled .action-menu-item { color: var(--text-disabled); cursor: not-allowed; pointer-events: none; }
+  .action-menu.disabled .action-menu-item svg { color: var(--text-disabled); }
+  .action-menu-item.hidden-item { display: none; }
+
+  /* ---------- Custom dropdown (select-fill style) ---------- */
+  .select-fill {
+    width: 100%; height: 32px; padding: 0 var(--sp-8) 0 var(--sp-10);
+    background: var(--surface-default); border: 1px solid transparent; border-radius: var(--radius-md);
+    font: 400 14px/1 'Roboto', sans-serif; color: var(--text-default);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+    cursor: pointer; text-align: left;
+  }
+  .select-fill:hover { border-color: var(--border-default); }
+  .select-fill svg { color: var(--text-disabled); transition: transform .12s ease; }
+
+  .dropdown { position: relative; }
+  .dropdown.open .select-fill { border-color: var(--border-focus); background: var(--surface-card); }
+  .dropdown.open .select-fill svg { transform: rotate(180deg); }
+  .dropdown-panel {
+    display: none; position: fixed; top: 0; left: 0;
+    background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(38,38,38,0.14), 0 1px 3px rgba(38,38,38,0.08);
+    padding: var(--sp-4) 0; z-index: 130; max-height: 220px; overflow: auto;
+  }
+  .dropdown.open .dropdown-panel { display: block; }
+  .dropdown-option {
+    display: flex; align-items: center; gap: var(--sp-8);
+    padding: var(--sp-8) var(--sp-10);
+    font: 400 14px/20px 'Roboto', sans-serif; color: var(--text-default); cursor: pointer;
+  }
+  .dropdown-option:hover { background: var(--selectable-hover); }
+  .dropdown-option .check { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-strong); }
+  .dropdown-option .check-spacer { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ---------- Form rows ---------- */
+  .form-row { display: flex; align-items: center; margin-bottom: var(--sp-8); min-height: 40px; }
+  .form-label { width: 190px; flex-shrink: 0; font: 400 14px/20px 'Roboto', sans-serif; color: var(--text-default); }
+  .form-field { flex: 1; min-width: 0; }
+  .input-fill {
+    width: 100%; height: 32px; padding: 0 var(--sp-10);
+    background: var(--surface-default); border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font: 400 14px/1 'Roboto', sans-serif; color: var(--text-default);
+    outline: none;
+  }
+  .input-fill:hover { border-color: var(--border-default); }
+  .input-fill:focus { border-color: var(--border-focus); background: var(--surface-card); }
+  .input-fill::placeholder { color: var(--text-disabled); }
+
+  .input-readonly {
+    width: 100%; height: 32px; padding: 0 var(--sp-10);
+    background: transparent; border: none; border-bottom: 1px solid var(--border-subtle);
+    border-radius: 0; font: 400 14px/1 'Roboto', sans-serif; color: var(--text-default);
+    outline: none; cursor: default;
+  }
+
+  .toggle {
+    width: 32px; height: 16px; border-radius: var(--radius-round);
+    background: var(--border-default); border: none; cursor: pointer;
+    position: relative; transition: background .15s; padding: 0; flex-shrink: 0;
+  }
+  .toggle.on { background: var(--primary); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; transition: left .15s;
+  }
+  .toggle.on::after { left: 18px; }
+
+  .section-title { font: 700 16px/24px 'Roboto', sans-serif; color: var(--text-strong); margin: var(--sp-24) 0 var(--sp-16); }
+  .section-title:first-child { margin-top: 0; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(20,20,20,0.55);
+    display: none; align-items: flex-start; justify-content: center;
+    padding-top: 8vh; z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    width: 750px; max-width: calc(100vw - 48px); max-height: 82vh;
+    background: var(--surface-card); border-radius: var(--radius-lg);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-24) var(--sp-24) 0; flex: 0 0 auto; }
+  .modal-body { padding: var(--sp-16) var(--sp-24) var(--sp-24); overflow: auto; }
+  .modal-foot {
+    display: flex; justify-content: flex-end; gap: var(--sp-12);
+    padding: var(--sp-16) var(--sp-24); border-top: 1px solid var(--border-subtle); flex: 0 0 auto;
+  }
+  .close-x { color: var(--secondary); background: none; border: none; cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); }
+  .close-x:hover { background: var(--selectable-hover); color: var(--text-strong); }
+
+  .field-hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ===================== PROTOTYPE-ONLY CONTROLS ===================== -->
+<div class="proto-bar">
+  <button class="proto-btn active" id="btnViewParent" hidden>I am a parent</button>
+  <button class="proto-btn" id="btnViewChild" hidden>I am a child</button>
+  <button class="proto-btn proto-btn-reset" id="btnResetProto">Reset</button>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#1770c8" stroke-width="2.4" stroke-dasharray="10 4.14" stroke-linecap="round" transform="rotate(-90 12 12)"></circle>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#f2bf46" stroke-width="2.4" stroke-dasharray="4 24.14" stroke-dashoffset="-10" stroke-linecap="round" transform="rotate(-90 12 12)"></circle>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#c83f32" stroke-width="2.4" stroke-dasharray="4 24.14" stroke-dashoffset="-15" stroke-linecap="round" transform="rotate(-90 12 12)"></circle>
+      </svg>
+      <span class="brand-name">wise<b>porter</b></span>
+    </div>
+    <nav class="topnav">
+      <div class="topnav-item">Catalogue</div>
+      <div class="topnav-item">Administration</div>
+      <div class="topnav-item active">Model</div>
+      <div class="topnav-item">Processes</div>
+    </nav>
+    <div class="topbar-actions">
+      <button class="icon-btn" title="Bookmarks">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.2-7 4.2V4.5a1 1 0 0 1 1-1Z"/></svg>
+      </button>
+      <button class="icon-btn" title="Account">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg>
+      </button>
+      <button class="icon-btn" title="More">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="body-row">
+
+    <aside class="sidebar">
+      <nav class="side-nav">
+        <div class="side-item" data-nav="datatypes">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M8 4c-2 0-3 1-3 3v3c0 1.2-.6 2-2 2 1.4 0 2 .8 2 2v3c0 2 1 3 3 3"/><path d="M16 4c2 0 3 1 3 3v3c0 1.2.6 2 2 2-1.4 0-2 .8-2 2v3c0 2-1 3-3 3"/></svg>
+          <span>Data types</span>
+        </div>
+        <div class="side-item" data-nav="relationshiptypes">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="9" width="6" height="6" rx="1.2"/><rect x="15" y="9" width="6" height="6" rx="1.2"/><path d="M9 12h6"/></svg>
+          <span>Relationship types</span>
+        </div>
+        <div class="side-item active" data-nav="itemtypes">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M12 7.2V13m0 0-5.5 4M12 13l5.5 4"/></svg>
+          <span>Item types</span>
+        </div>
+        <div class="side-item" data-nav="aliases">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M11 4h5a2 2 0 0 1 2 2v5L9.5 19.5a1.5 1.5 0 0 1-2.1 0L4 16.1a1.5 1.5 0 0 1 0-2.1L11 4Z"/><circle cx="14.3" cy="8.7" r="1.1" fill="currentColor" stroke="none"/></svg>
+          <span>Aliases</span>
+        </div>
+        <div class="side-item" data-nav="variables">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 5h5l4 6.5L18 5h1"/><path d="M5 19h5l3-5"/><path d="M15 19h4"/></svg>
+          <span>Variables</span>
+        </div>
+        <div class="side-item" data-nav="businessrules">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M8.5 9.5h7M8.5 12.5h7M8.5 15.5h4"/></svg>
+          <span>Business rules</span>
+        </div>
+        <div class="side-item" data-nav="guieditor">
+          <svg class="icon" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4"/><path d="m15 8 4 4-4 4"/></svg>
+          <span>GUI Editor</span>
+        </div>
+      </nav>
+      <div class="side-collapse">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15 5v14"/><path d="m11 9-3 3 3 3"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        <span>Collapse menu</span>
+      </div>
+    </aside>
+
+    <div class="content-row">
+
+      <!-- ===================== LIST PANE ===================== -->
+      <div class="list-pane">
+        <div class="title-lg">Item types</div>
+        <div class="toolbar-row">
+          <button class="btn-primary" type="button">
+            <svg class="icon" viewBox="0 0 24 24" stroke="white"><path d="M12 5v14M5 12h14"/></svg>
+            Item type
+          </button>
+          <div class="search-box">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m20 20-4.8-4.8"/></svg>
+            <input type="text" placeholder="">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Name</th><th>Code</th></tr>
+            </thead>
+            <tbody id="itemTypeRows">
+              <tr data-name="Category" data-code="CATEGORY"><td>Category</td><td class="code-cell">CATEGORY</td></tr>
+              <tr data-name="Cosmetic product" data-code="TYPE_COSMETIC_PRODUCT" class="selected"><td>Cosmetic product</td><td class="code-cell">TYPE_COS…</td></tr>
+              <tr data-name="Perfume" data-code="TYPE_PERFUME"><td>Perfume</td><td class="code-cell">TYPE_PERI…</td></tr>
+              <tr data-name="Vendor" data-code="TYPE_VENDOR"><td>Vendor</td><td class="code-cell">TYPE_VEN…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===================== DRAWER ===================== -->
+      <aside class="drawer" id="drawer">
+        <div class="drawer-topbar">
+          <div class="drawer-topbar-left">
+            <button class="icon-btn" id="drawerClose" title="Close">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+            <button class="icon-btn" id="layoutDockLeft" title="Dock left">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="9" y1="5" x2="9" y2="19"/><path d="M7 9.5 5.5 12 7 14.5"/></svg>
+            </button>
+            <button class="icon-btn" id="layoutDockRight" title="Dock right">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="15" y1="5" x2="15" y2="19"/><path d="M17 9.5 18.5 12 17 14.5"/></svg>
+            </button>
+          </div>
+          <button class="icon-btn" title="More">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+          </button>
+        </div>
+
+        <div class="drawer-head">
+          <div class="title-lg" id="drawerTitle">Cosmetic product</div>
+          <div class="drawer-meta">
+            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.6 2.6"/></svg>
+            <span class="chip-code" id="drawerCode">TYPE_COSMETIC_PRODUCT</span>
+            <span class="type-badge">ITEM TYPE</span>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab" data-tab="general">General</div>
+          <div class="tab active" data-tab="parameters">Parameters</div>
+        </div>
+
+        <div class="drawer-body">
+
+          <div id="tabGeneral" class="field-hidden" style="padding-top: var(--sp-20);">
+            <div class="section-header">
+              <div class="section-header-left">
+                <span class="text-md-bold" style="color:var(--text-strong)">General</span>
+              </div>
+            </div>
+            <div class="section-empty">No general information to show yet.</div>
+          </div>
+
+          <div id="tabParameters">
+            <div class="params-header" id="paramsHeader">
+              <div class="section-header-left">
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="m6 15 6-6 6 6"/></svg>
+                <span class="title-md">Parameters</span>
+              </div>
+              <button class="icon-btn" id="paramsMenuBtn" title="More">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+              </button>
+              <div class="popover" id="paramsMenu">
+                <div class="popover-row">
+                  <span class="text-sm">Layout</span>
+                  <div class="layout-toggle">
+                    <button class="active" id="layoutListBtn" title="List view">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <button id="layoutTableBtn" title="Table view">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="3.5" y="5" width="17" height="14" rx="1.5"/><path d="M3.5 10h17"/><path d="M10 10v9"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="popover-divider"></div>
+                <div class="popover-item" id="openCreateParam">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                  <span>Parameter</span>
+                </div>
+                <div class="popover-item" id="configureFragment">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h10M17 7h3M4 12h3M9 12h11M4 17h13M20 17h0"/><circle cx="13" cy="7" r="1.6" fill="var(--surface-card)"/><circle cx="6" cy="12" r="1.6" fill="var(--surface-card)"/><circle cx="16" cy="17" r="1.6" fill="var(--surface-card)"/></svg>
+                  <span>Configure fragment</span>
+                </div>
+              </div>
+            </div>
+            <div id="parametersContent"></div>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CREATE PARAMETER MODAL ===================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="title-lg" id="modalTitle">Create parameter</div>
+      <button class="close-x" id="modalClose">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="section-title">Basic information</div>
+
+      <div class="form-row">
+        <div class="form-label">Name</div>
+        <div class="form-field"><input class="input-fill" type="text" id="fieldName" value="Supplier"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Code</div>
+        <div class="form-field"><input class="input-fill" type="text" id="fieldCode" value="PARAM_SUPPLIER"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Description</div>
+        <div class="form-field"><input class="input-fill" type="text" id="fieldDescription" placeholder=""></div>
+      </div>
+
+      <div class="section-title">Parameter definition</div>
+
+      <div class="form-row">
+        <div class="form-label">Data type</div>
+        <div class="form-field">
+          <div class="select-fill" tabindex="0">
+            <span id="fieldDataType">Supplier</span>
+            <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">Multivalued</div>
+        <div class="form-field"><button class="toggle" id="multivaluedToggle"></button></div>
+      </div>
+
+      <!-- Collection type -->
+      <div class="form-row field-hidden" id="rowCollectionType">
+        <div class="form-label">Collection type</div>
+        <div class="form-field">
+          <div class="dropdown" id="ddCollectionType">
+            <button class="select-fill" type="button">
+              <span class="dropdown-value">List (bulk)</span>
+              <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel">
+              <div class="dropdown-option" data-value="List (bulk)">
+                <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                <span>List (bulk)</span>
+              </div>
+              <div class="dropdown-option" data-value="Map (specific)">
+                <span class="check-spacer"></span>
+                <span>Map (specific)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order type -->
+      <div class="form-row field-hidden" id="rowOrderType">
+        <div class="form-label">Order type</div>
+        <div class="form-field">
+          <div class="dropdown" id="ddOrderType">
+            <button class="select-fill" type="button">
+              <span class="dropdown-value">None (order how added in time)</span>
+              <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel">
+              <div class="dropdown-option" data-value="None (order how added in time)">
+                <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                <span>None (order how added in time)</span>
+              </div>
+              <div class="dropdown-option" data-value="Default order (by number, reoder possible)">
+                <span class="check-spacer"></span>
+                <span>Default order (by number, reoder possible)</span>
+              </div>
+              <div class="dropdown-option" data-value="Order by attribute (selected attribute drives order)">
+                <span class="check-spacer"></span>
+                <span>Order by attribute (selected attribute drives order)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select attribute -->
+      <div class="form-row field-hidden" id="rowSelectAttribute">
+        <div class="form-label">Select attribute</div>
+        <div class="form-field">
+          <div class="dropdown" id="ddSelectAttribute">
+            <button class="select-fill" type="button">
+              <span class="dropdown-value">Not selected</span>
+              <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel">
+              <div class="dropdown-option" data-value="Not selected">
+                <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                <span>Not selected</span>
+              </div>
+              <div class="dropdown-option" data-value="Supplier name">
+                <span class="check-spacer"></span>
+                <span>Supplier name</span>
+              </div>
+              <div class="dropdown-option" data-value="Supplier code">
+                <span class="check-spacer"></span>
+                <span>Supplier code</span>
+              </div>
+              <div class="dropdown-option" data-value="Date since">
+                <span class="check-spacer"></span>
+                <span>Date since</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-secondary" id="modalCancel">Cancel</button>
+      <button class="btn-primary" id="modalCreate"><span id="modalCreateLabel">Create</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SHARED FLOATING ACTION MENU (Edit / Delete / Go to data type) ===================== -->
+<div class="action-menu" id="actionMenu">
+  <div class="action-menu-item" id="actionShowCode">
+    <svg class="icon" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></svg>
+    <span>Show code</span>
+  </div>
+  <div class="action-menu-item" id="actionEdit">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    <span>Edit</span>
+  </div>
+  <div class="action-menu-item danger" id="actionDelete">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+    <span>Delete</span>
+  </div>
+  <div class="action-menu-item" id="actionGoToType">
+    <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="12" height="9" rx="1.5"/><path d="M13 14l7 7"/><path d="M20 15v6h-6"/></svg>
+    <span>Go to data type</span>
+  </div>
+</div>
+
+<!-- ===================== SHARED FLOATING TOOLTIP ===================== -->
+<div class="tooltip-bubble" id="tooltipBubble">
+  <div class="tooltip-title" id="tooltipTitle" hidden></div>
+  <div class="tooltip-text" id="tooltipText"></div>
+  <div class="tooltip-arrow"></div>
+</div>
+
+<script>
+(function () {
+  // ---------- Row selection / drawer ----------
+  var drawer = document.getElementById('drawer');
+  var rows = document.querySelectorAll('#itemTypeRows tr');
+  var drawerTitle = document.getElementById('drawerTitle');
+  var drawerCode = document.getElementById('drawerCode');
+
+  rows.forEach(function (row) {
+    row.addEventListener('click', function () {
+      rows.forEach(function (r) { r.classList.remove('selected'); });
+      row.classList.add('selected');
+      drawerTitle.textContent = row.dataset.name;
+      drawerCode.textContent = row.dataset.code;
+      drawer.hidden = false;
+    });
+  });
+
+  document.getElementById('drawerClose').addEventListener('click', function () {
+    drawer.hidden = true;
+    rows.forEach(function (r) { r.classList.remove('selected'); });
+  });
+
+  document.getElementById('layoutDockLeft').addEventListener('click', function () {
+    this.classList.add('active');
+    document.getElementById('layoutDockRight').classList.remove('active');
+  });
+  document.getElementById('layoutDockRight').addEventListener('click', function () {
+    this.classList.add('active');
+    document.getElementById('layoutDockLeft').classList.remove('active');
+  });
+
+  // ---------- Drawer tabs ----------
+  var tabs = document.querySelectorAll('.tab');
+  var tabGeneral = document.getElementById('tabGeneral');
+  var tabParameters = document.getElementById('tabParameters');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var isParams = tab.dataset.tab === 'parameters';
+      tabGeneral.classList.toggle('field-hidden', isParams);
+      tabParameters.classList.toggle('field-hidden', !isParams);
+    });
+  });
+
+  // ---------- Floating position helper (escapes overflow:auto clipping) ----------
+  function positionFloating(anchorEl, panelEl, alignRight) {
+    var rect = anchorEl.getBoundingClientRect();
+    panelEl.style.top = (rect.bottom + 4) + 'px';
+    if (alignRight) {
+      var panelWidth = panelEl.offsetWidth || 220;
+      panelEl.style.left = Math.max(8, rect.right - panelWidth) + 'px';
+    } else {
+      panelEl.style.left = rect.left + 'px';
+      panelEl.style.width = rect.width + 'px';
+    }
+  }
+
+  // ---------- Shared floating tooltip ----------
+  var tooltipBubble = document.getElementById('tooltipBubble');
+  var tooltipTitleEl = document.getElementById('tooltipTitle');
+  var tooltipTextEl = document.getElementById('tooltipText');
+  function showTooltip(anchorEl, title, text) {
+    var rect = anchorEl.getBoundingClientRect();
+    tooltipTextEl.textContent = text;
+    if (title) { tooltipTitleEl.textContent = title; tooltipTitleEl.hidden = false; }
+    else { tooltipTitleEl.hidden = true; }
+    tooltipBubble.classList.remove('placement-bottom', 'placement-top');
+    tooltipBubble.classList.add('open', 'placement-top');
+    var ttRect = tooltipBubble.getBoundingClientRect();
+    var top = rect.top - ttRect.height - 10;
+    if (top < 8) {
+      top = rect.bottom + 10;
+      tooltipBubble.classList.remove('placement-top');
+      tooltipBubble.classList.add('placement-bottom');
+    }
+    var left = rect.left + rect.width / 2 - ttRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
+    tooltipBubble.style.top = top + 'px';
+    tooltipBubble.style.left = left + 'px';
+  }
+  function hideTooltip() {
+    tooltipBubble.classList.remove('open');
+  }
+
+  // ---------- Parameters "..." popover ----------
+  var paramsMenuBtn = document.getElementById('paramsMenuBtn');
+  var paramsMenu = document.getElementById('paramsMenu');
+  paramsMenuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var willOpen = !paramsMenu.classList.contains('open');
+    paramsMenu.classList.toggle('open', willOpen);
+    if (willOpen) positionFloating(paramsMenuBtn, paramsMenu, true);
+  });
+  document.getElementById('configureFragment').addEventListener('click', function (e) {
+    if (e.currentTarget.classList.contains('disabled')) return;
+    paramsMenu.classList.remove('open');
+  });
+  function updateParamsMenuDisabled() {
+    var disabled = viewMode === 'child';
+    document.getElementById('openCreateParam').classList.toggle('disabled', disabled);
+    document.getElementById('configureFragment').classList.toggle('disabled', disabled);
+  }
+
+  // ---------- Parameters state ----------
+  var paramConfig = {
+    name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
+    multivalued: true, collectionType: 'List (bulk)',
+    orderType: 'None (order how added in time)', selectAttribute: 'Not selected'
+  };
+  var parameterCreated = true;
+  var viewMode = 'parent';
+  var modalMode = 'create';
+  function defaultSupplierData() {
+    return [
+      { name: 'DPD', code: 'SC_DPD', date: '01.04.2024' },
+      { name: 'GLS', code: 'SC_GLS', date: '22.12.2025' },
+      { name: 'PPL', code: 'SC_PPL', date: '09.01.2026' }
+    ];
+  }
+  var supplierData = defaultSupplierData();
+  var elementCollapsed = {};
+  var groupCollapsed = false;
+  var currentParamLayout = 'list';
+
+  var btnViewParent = document.getElementById('btnViewParent');
+  var btnViewChild = document.getElementById('btnViewChild');
+  var btnResetProto = document.getElementById('btnResetProto');
+  var actionMenu = document.getElementById('actionMenu');
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var CHEVRON_SVG = '<svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>';
+  var DOTS_SVG = '<svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>';
+  var SORT_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M4 6h9M4 12h6M4 18h3"/><path d="M18 7v10m0 0-3-3m3 3 3-3"/></svg>';
+  var ARROW_UP_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+  var ARROW_DOWN_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  // Order type that enables manual up/down/number reordering
+  var REORDER_ORDER_TYPE = 'Default order (by number, reoder possible)';
+  // Order type where a selected attribute (Date since, in this prototype) drives the order
+  var ATTRIBUTE_ORDER_TYPE = 'Order by attribute (selected attribute drives order)';
+
+  function parseCzechDate(str) {
+    var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(str || '').trim());
+    if (!m) return null;
+    return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
+  }
+
+  function sortSupplierByDate() {
+    supplierData.sort(function (a, b) {
+      var da = parseCzechDate(a.date), db = parseCzechDate(b.date);
+      if (da === null && db === null) return 0;
+      if (da === null) return 1;
+      if (db === null) return -1;
+      return da - db;
+    });
+  }
+
+  function buildReorderControls(idx, total) {
+    return (
+      '<button class="reorder-btn" type="button" data-act="up" data-idx="' + idx + '"' + (idx === 0 ? ' disabled' : '') + ' title="Move up">' + ARROW_UP_SVG + '</button>' +
+      '<input class="reorder-num" type="number" min="1" max="' + total + '" value="' + (idx + 1) + '" data-idx="' + idx + '">' +
+      '<button class="reorder-btn" type="button" data-act="down" data-idx="' + idx + '"' + (idx === total - 1 ? ' disabled' : '') + ' title="Move down">' + ARROW_DOWN_SVG + '</button>'
+    );
+  }
+
+  function moveElement(fromIdx, toIdx) {
+    var total = supplierData.length;
+    if (toIdx < 0) toIdx = 0;
+    if (toIdx > total - 1) toIdx = total - 1;
+    if (toIdx === fromIdx) return;
+    var item = supplierData.splice(fromIdx, 1)[0];
+    supplierData.splice(toIdx, 0, item);
+  }
+
+  function updateViewToggleVisibility() {
+    var show = parameterCreated;
+    btnViewParent.hidden = !show;
+    btnViewChild.hidden = !show;
+  }
+
+  function renderParameters() {
+    var container = document.getElementById('parametersContent');
+
+    if (!parameterCreated) {
+      container.innerHTML = '<div class="section-empty">No parameters defined yet.</div>';
+      updateViewToggleVisibility();
+      return;
+    }
+
+    var isChild = viewMode === 'child';
+    var inputClass = isChild ? 'input-readonly' : 'input-fill';
+    var roAttr = isChild ? ' readonly' : '';
+    var canReorder = !isChild && paramConfig.orderType === REORDER_ORDER_TYPE;
+    var canAttributeOrder = paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since';
+    var attrIconHtml = '<span class="attr-order-icon" tabindex="0">' + SORT_SVG + '</span>';
+    var dateLabelText = 'Date since' + (canAttributeOrder ? attrIconHtml : '');
+    var bodyHtml = '';
+
+    if (!groupCollapsed) {
+      if (currentParamLayout === 'list') {
+        bodyHtml += '<div class="group-body">';
+        supplierData.forEach(function (item, idx) {
+          var collapsed = !!elementCollapsed[idx];
+          var numBlock = canReorder
+            ? '<div class="el-num reorder-controls">' + buildReorderControls(idx, supplierData.length) + '</div>'
+            : '<span class="text-md-bold el-num" style="color:var(--text-strong)">' + pad2(idx + 1) + '</span>';
+          bodyHtml +=
+            '<div class="element-item">' +
+              '<div class="element-header' + (collapsed ? ' collapsed' : '') + '" data-idx="' + idx + '">' +
+                CHEVRON_SVG +
+                numBlock +
+                '<button class="icon-btn el-menu" type="button" data-context="element" data-idx="' + idx + '" title="More">' + DOTS_SVG + '</button>' +
+              '</div>' +
+              '<div class="element-fields' + (collapsed ? ' collapsed' : '') + '">' +
+                '<div class="form-row"><div class="form-label">Supplier name</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="name" value="' + esc(item.name) + '"' + roAttr + '></div></div>' +
+                '<div class="form-row"><div class="form-label">Supplier code</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="code" value="' + esc(item.code) + '"' + roAttr + '></div></div>' +
+                '<div class="form-row"><div class="form-label">' + dateLabelText + '</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="date" value="' + esc(item.date) + '"' + roAttr + '></div></div>' +
+              '</div>' +
+            '</div>';
+        });
+        bodyHtml += '</div>';
+      } else {
+        bodyHtml += '<div class="group-table-wrap"><table class="param-table"><thead><tr>' +
+          '<th class="num-col">' + (canAttributeOrder ? '' : SORT_SVG) + '</th>' +
+          '<th>Supplier name</th><th>Supplier code</th><th>' + dateLabelText + '</th>' +
+          '</tr></thead><tbody>';
+        supplierData.forEach(function (item, idx) {
+          var numLabelContent = canReorder
+            ? buildReorderControls(idx, supplierData.length)
+            : pad2(idx + 1);
+          bodyHtml +=
+            '<tr>' +
+              '<td class="num-col"><span class="num-label">' + numLabelContent +
+                '<button class="icon-btn el-menu" type="button" data-context="element" data-idx="' + idx + '" title="More" style="width:22px;height:22px;">' + DOTS_SVG + '</button></span></td>' +
+              '<td><input class="' + inputClass + '" data-idx="' + idx + '" data-field="name" value="' + esc(item.name) + '"' + roAttr + '></td>' +
+              '<td><input class="' + inputClass + '" data-idx="' + idx + '" data-field="code" value="' + esc(item.code) + '"' + roAttr + '></td>' +
+              '<td><input class="' + inputClass + '" data-idx="' + idx + '" data-field="date" value="' + esc(item.date) + '"' + roAttr + '></td>' +
+            '</tr>';
+        });
+        bodyHtml += '</tbody></table></div>';
+      }
+      if (!isChild) {
+        bodyHtml += '<div class="create-item-row"><button class="btn-secondary" id="createItemBtn" type="button">' +
+          '<svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create item</button></div>';
+      }
+    }
+
+    container.innerHTML =
+      '<div class="group-card">' +
+        '<div class="group-header' + (groupCollapsed ? ' collapsed' : '') + '" id="groupHeader">' +
+          '<div class="group-header-left">' + CHEVRON_SVG + '<span class="title-md">' + esc(paramConfig.name) + '</span></div>' +
+          '<button class="icon-btn" type="button" id="groupMoreBtn" data-context="group" title="More">' + DOTS_SVG + '</button>' +
+        '</div>' +
+        bodyHtml +
+      '</div>';
+
+    attachParameterEvents();
+    updateViewToggleVisibility();
+  }
+
+  function attachParameterEvents() {
+    var groupHeader = document.getElementById('groupHeader');
+    var groupMoreBtn = document.getElementById('groupMoreBtn');
+
+    groupHeader.addEventListener('click', function () {
+      groupCollapsed = !groupCollapsed;
+      renderParameters();
+    });
+    groupMoreBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openActionMenu(groupMoreBtn, 'group', null);
+    });
+
+    document.querySelectorAll('.element-header').forEach(function (header) {
+      header.addEventListener('click', function (e) {
+        if (e.target.closest('.el-menu') || e.target.closest('.reorder-controls')) return;
+        var idx = +header.dataset.idx;
+        elementCollapsed[idx] = !elementCollapsed[idx];
+        renderParameters();
+      });
+    });
+    document.querySelectorAll('.el-menu[data-context="element"]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        openActionMenu(btn, 'element', +btn.dataset.idx);
+      });
+    });
+
+    document.querySelectorAll('#parametersContent input').forEach(function (input) {
+      input.addEventListener('click', function (e) { e.stopPropagation(); });
+      input.addEventListener('input', function () {
+        if (input.readOnly || !input.dataset.field) return;
+        var idx = +input.dataset.idx, field = input.dataset.field;
+        supplierData[idx][field] = input.value;
+      });
+    });
+
+    // ---------- Manual reorder (Default order type): up/down + editable number ----------
+    document.querySelectorAll('.reorder-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (btn.disabled) return;
+        var idx = +btn.dataset.idx;
+        var target = btn.dataset.act === 'up' ? idx - 1 : idx + 1;
+        moveElement(idx, target);
+        renderParameters();
+      });
+    });
+    document.querySelectorAll('.reorder-num').forEach(function (input) {
+      function commit() {
+        var idx = +input.dataset.idx;
+        var val = parseInt(input.value, 10);
+        if (!val || isNaN(val)) { renderParameters(); return; }
+        moveElement(idx, val - 1);
+        renderParameters();
+      }
+      input.addEventListener('keydown', function (e) {
+        e.stopPropagation();
+        if (e.key === 'Enter') input.blur();
+      });
+      input.addEventListener('blur', commit);
+    });
+
+    var createBtn = document.getElementById('createItemBtn');
+    if (createBtn) {
+      createBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        supplierData.push({ name: '', code: '', date: '' });
+        renderParameters();
+      });
+    }
+
+    // ---------- Attribute-order icon tooltip ("this attribute drives the order") ----------
+    document.querySelectorAll('.attr-order-icon').forEach(function (icon) {
+      icon.addEventListener('mouseenter', function (e) {
+        e.stopPropagation();
+        showTooltip(icon, '', 'This attribute drives the order of the elements.');
+      });
+      icon.addEventListener('mouseleave', hideTooltip);
+      icon.addEventListener('click', function (e) { e.stopPropagation(); });
+    });
+
+    // ---------- Order by attribute: re-sort when the driving field (Date since) changes ----------
+    document.querySelectorAll('input[data-field="date"]').forEach(function (input) {
+      input.addEventListener('blur', function () {
+        if (input.readOnly) return;
+        if (paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since') {
+          sortSupplierByDate();
+          renderParameters();
+        }
+      });
+    });
+  }
+
+  // ---------- Shared floating action menu (Edit / Delete / Go to data type) ----------
+  function openActionMenu(anchorEl, context, idx) {
+    actionMenu.dataset.context = context;
+    actionMenu.dataset.idx = (idx === null || idx === undefined) ? '' : idx;
+    var isGroup = context === 'group';
+    document.getElementById('actionShowCode').classList.toggle('hidden-item', isGroup);
+    document.getElementById('actionEdit').classList.toggle('hidden-item', !isGroup);
+    document.getElementById('actionGoToType').classList.toggle('hidden-item', !isGroup);
+    actionMenu.classList.toggle('disabled', viewMode === 'child');
+    actionMenu.classList.add('open');
+    positionFloating(anchorEl, actionMenu, true);
+  }
+  document.getElementById('actionShowCode').addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (actionMenu.classList.contains('disabled')) return;
+    // Prototype no-op: shows nothing further yet, just closes the menu.
+    actionMenu.classList.remove('open');
+  });
+  document.getElementById('actionEdit').addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (actionMenu.classList.contains('disabled')) return;
+    actionMenu.classList.remove('open');
+    if (actionMenu.dataset.context === 'group') {
+      openModalForEdit();
+    }
+  });
+  document.getElementById('actionDelete').addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (actionMenu.classList.contains('disabled')) return;
+    actionMenu.classList.remove('open');
+    if (actionMenu.dataset.context === 'group') {
+      parameterCreated = false;
+      supplierData = [];
+      renderParameters();
+    } else {
+      var idx = +actionMenu.dataset.idx;
+      supplierData.splice(idx, 1);
+      renderParameters();
+    }
+  });
+  document.getElementById('actionGoToType').addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (actionMenu.classList.contains('disabled')) return;
+    actionMenu.classList.remove('open');
+  });
+
+  document.getElementById('layoutListBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    currentParamLayout = 'list';
+    this.classList.add('active');
+    document.getElementById('layoutTableBtn').classList.remove('active');
+    renderParameters();
+  });
+  document.getElementById('layoutTableBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    currentParamLayout = 'table';
+    this.classList.add('active');
+    document.getElementById('layoutListBtn').classList.remove('active');
+    renderParameters();
+  });
+
+  btnViewParent.addEventListener('click', function () {
+    viewMode = 'parent';
+    btnViewParent.classList.add('active');
+    btnViewChild.classList.remove('active');
+    updateParamsMenuDisabled();
+    renderParameters();
+  });
+  btnViewChild.addEventListener('click', function () {
+    viewMode = 'child';
+    btnViewChild.classList.add('active');
+    btnViewParent.classList.remove('active');
+    updateParamsMenuDisabled();
+    renderParameters();
+  });
+
+  renderParameters();
+  updateParamsMenuDisabled();
+
+  // ---------- Modal open/close ----------
+  var modalOverlay = document.getElementById('modalOverlay');
+  function openModal() {
+    paramsMenu.classList.remove('open');
+    modalOverlay.classList.add('open');
+  }
+  function closeModal() {
+    modalOverlay.classList.remove('open');
+  }
+  document.getElementById('openCreateParam').addEventListener('click', function (e) {
+    if (e.currentTarget.classList.contains('disabled')) return;
+    resetModalToDefaults();
+    openModal();
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalCreate').addEventListener('click', function () {
+    if (modalMode === 'create') {
+      paramConfig = {
+        name: document.getElementById('fieldName').value || 'Parameter',
+        code: document.getElementById('fieldCode').value,
+        description: document.getElementById('fieldDescription').value,
+        dataType: document.getElementById('fieldDataType').textContent,
+        multivalued: multivaluedToggle.classList.contains('on'),
+        collectionType: document.getElementById('ddCollectionType').querySelector('.dropdown-value').textContent,
+        orderType: document.getElementById('ddOrderType').querySelector('.dropdown-value').textContent,
+        selectAttribute: document.getElementById('ddSelectAttribute').querySelector('.dropdown-value').textContent
+      };
+      parameterCreated = true;
+      supplierData = defaultSupplierData();
+      elementCollapsed = {};
+      groupCollapsed = false;
+      viewMode = 'parent';
+      btnViewParent.classList.add('active');
+      btnViewChild.classList.remove('active');
+      updateParamsMenuDisabled();
+      renderParameters();
+    } else if (modalMode === 'edit') {
+      // Apply the edited settings to the existing parameter. The element list itself
+      // (its data and current order) is left untouched — switching order type only
+      // changes how that order can be changed, not what the order currently is.
+      paramConfig = {
+        name: document.getElementById('fieldName').value || 'Parameter',
+        code: document.getElementById('fieldCode').value,
+        description: document.getElementById('fieldDescription').value,
+        dataType: document.getElementById('fieldDataType').textContent,
+        multivalued: multivaluedToggle.classList.contains('on'),
+        collectionType: document.getElementById('ddCollectionType').querySelector('.dropdown-value').textContent,
+        orderType: document.getElementById('ddOrderType').querySelector('.dropdown-value').textContent,
+        selectAttribute: document.getElementById('ddSelectAttribute').querySelector('.dropdown-value').textContent
+      };
+      // Entering "Order by attribute" sorts once to reflect the attribute now driving order.
+      // Leaving it (back to None or Default order) intentionally leaves the resulting
+      // positions as-is rather than reshuffling them again.
+      if (paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since') {
+        sortSupplierByDate();
+      }
+      renderParameters();
+    }
+    closeModal();
+  });
+  modalOverlay.addEventListener('click', function (e) {
+    if (e.target === modalOverlay) closeModal();
+  });
+
+  // ---------- Multivalued toggle ----------
+  var multivaluedToggle = document.getElementById('multivaluedToggle');
+  var rowCollectionType = document.getElementById('rowCollectionType');
+  var rowOrderType = document.getElementById('rowOrderType');
+  var rowSelectAttribute = document.getElementById('rowSelectAttribute');
+
+  function setDropdownValue(ddId, value) {
+    var dd = document.getElementById(ddId);
+    dd.querySelector('.dropdown-value').textContent = value;
+    dd.querySelectorAll('.dropdown-option').forEach(function (opt) {
+      var isMatch = opt.dataset.value === value;
+      var check = opt.querySelector('.check, .check-spacer');
+      if (isMatch) {
+        check.outerHTML = '<svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
+      } else {
+        check.outerHTML = '<span class="check-spacer"></span>';
+      }
+    });
+  }
+
+  function resetModalToDefaults() {
+    modalMode = 'create';
+    document.getElementById('modalTitle').textContent = 'Create parameter';
+    document.getElementById('modalCreateLabel').textContent = 'Create';
+    document.getElementById('fieldName').value = 'Supplier';
+    document.getElementById('fieldCode').value = 'PARAM_SUPPLIER';
+    document.getElementById('fieldDescription').value = '';
+    document.getElementById('fieldDataType').textContent = 'Supplier';
+    multivaluedToggle.classList.remove('on');
+    rowCollectionType.classList.add('field-hidden');
+    rowOrderType.classList.add('field-hidden');
+    rowSelectAttribute.classList.add('field-hidden');
+    setDropdownValue('ddCollectionType', 'List (bulk)');
+    setDropdownValue('ddOrderType', 'None (order how added in time)');
+    setDropdownValue('ddSelectAttribute', 'Not selected');
+  }
+
+  function applyParamConfigToModal(config) {
+    modalMode = 'edit';
+    document.getElementById('modalTitle').textContent = 'Edit parameter';
+    document.getElementById('modalCreateLabel').textContent = 'Save';
+    document.getElementById('fieldName').value = config.name;
+    document.getElementById('fieldCode').value = config.code;
+    document.getElementById('fieldDescription').value = config.description || '';
+    document.getElementById('fieldDataType').textContent = config.dataType;
+    multivaluedToggle.classList.toggle('on', !!config.multivalued);
+    rowCollectionType.classList.toggle('field-hidden', !config.multivalued);
+    rowOrderType.classList.toggle('field-hidden', !config.multivalued);
+    setDropdownValue('ddCollectionType', config.collectionType);
+    setDropdownValue('ddOrderType', config.orderType);
+    var showAttr = !!config.multivalued && config.orderType === 'Order by attribute (selected attribute drives order)';
+    rowSelectAttribute.classList.toggle('field-hidden', !showAttr);
+    setDropdownValue('ddSelectAttribute', config.selectAttribute);
+  }
+
+  function openModalForEdit() {
+    applyParamConfigToModal(paramConfig);
+    openModal();
+  }
+
+  multivaluedToggle.addEventListener('click', function () {
+    var turningOn = !this.classList.contains('on');
+    this.classList.toggle('on');
+    rowCollectionType.classList.toggle('field-hidden', !turningOn);
+    rowOrderType.classList.toggle('field-hidden', !turningOn);
+    if (!turningOn) {
+      rowSelectAttribute.classList.add('field-hidden');
+      setDropdownValue('ddCollectionType', 'List (bulk)');
+      setDropdownValue('ddOrderType', 'None (order how added in time)');
+      setDropdownValue('ddSelectAttribute', 'Not selected');
+    }
+  });
+
+  // ---------- Generic dropdown open/close ----------
+  var allDropdowns = document.querySelectorAll('.dropdown');
+  allDropdowns.forEach(function (dd) {
+    var trigger = dd.querySelector('.select-fill');
+    var panel = dd.querySelector('.dropdown-panel');
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = dd.classList.contains('open');
+      allDropdowns.forEach(function (d) { d.classList.remove('open'); });
+      if (!isOpen) {
+        dd.classList.add('open');
+        positionFloating(trigger, panel, false);
+      }
+    });
+  });
+
+  document.addEventListener('click', function () {
+    allDropdowns.forEach(function (d) { d.classList.remove('open'); });
+    paramsMenu.classList.remove('open');
+    actionMenu.classList.remove('open');
+    hideTooltip();
+  });
+  var drawerBodyEl = document.querySelector('.drawer-body');
+  if (drawerBodyEl) drawerBodyEl.addEventListener('scroll', hideTooltip);
+
+  // Collection type: Map click is a no-op visually — value always resolves to List (bulk)
+  var ddCollectionType = document.getElementById('ddCollectionType');
+  ddCollectionType.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setDropdownValue('ddCollectionType', 'List (bulk)');
+      ddCollectionType.classList.remove('open');
+    });
+  });
+
+  // Order type: normal select behaviour + reveal "Select attribute" row
+  var ddOrderType = document.getElementById('ddOrderType');
+  ddOrderType.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var value = opt.dataset.value;
+      setDropdownValue('ddOrderType', value);
+      ddOrderType.classList.remove('open');
+      var showAttribute = value === 'Order by attribute (selected attribute drives order)';
+      rowSelectAttribute.classList.toggle('field-hidden', !showAttribute);
+    });
+  });
+
+  // Select attribute: normal select behaviour
+  var ddSelectAttribute = document.getElementById('ddSelectAttribute');
+  ddSelectAttribute.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setDropdownValue('ddSelectAttribute', opt.dataset.value);
+      ddSelectAttribute.classList.remove('open');
+    });
+  });
+
+  // ---------- Prototype-only: Reset ----------
+  btnResetProto.addEventListener('click', function () {
+    parameterCreated = false;
+    supplierData = [];
+    elementCollapsed = {};
+    groupCollapsed = false;
+    currentParamLayout = 'list';
+    document.getElementById('layoutListBtn').classList.add('active');
+    document.getElementById('layoutTableBtn').classList.remove('active');
+
+    viewMode = 'parent';
+    btnViewParent.classList.add('active');
+    btnViewChild.classList.remove('active');
+    updateParamsMenuDisabled();
+
+    paramConfig = {
+      name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
+      multivalued: true, collectionType: 'List (bulk)',
+      orderType: 'None (order how added in time)', selectAttribute: 'Not selected'
+    };
+    resetModalToDefaults();
+    closeModal();
+    actionMenu.classList.remove('open');
+    paramsMenu.classList.remove('open');
+
+    renderParameters();
+  });
+})();
+</script>
+
+</body>
+</html>
