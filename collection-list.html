@@ -796,17 +796,17 @@
         <div class="form-field">
           <div class="dropdown" id="ddOrderType">
             <button class="select-fill" type="button">
-              <span class="dropdown-value">None (order how added in time)</span>
+              <span class="dropdown-value">None (reorder not possible)</span>
               <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="dropdown-panel">
-              <div class="dropdown-option" data-value="None (order how added in time)">
+              <div class="dropdown-option" data-value="None (reorder not possible)">
                 <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                <span>None (order how added in time)</span>
+                <span>None (reorder not possible)</span>
               </div>
-              <div class="dropdown-option" data-value="Default order (by number, reoder possible)">
+              <div class="dropdown-option" data-value="Default order (by number, reorder possible)">
                 <span class="check-spacer"></span>
-                <span>Default order (by number, reoder possible)</span>
+                <span>Default order (by number, reorder possible)</span>
               </div>
               <div class="dropdown-option" data-value="Order by attribute (selected attribute drives order)">
                 <span class="check-spacer"></span>
@@ -993,7 +993,7 @@
   var paramConfig = {
     name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
     multivalued: true, collectionType: 'List (bulk)',
-    orderType: 'None (order how added in time)', selectAttribute: 'Not selected'
+    orderType: 'None (reorder not possible)', selectAttribute: 'Not selected'
   };
   var parameterCreated = true;
   var viewMode = 'parent';
@@ -1028,7 +1028,7 @@
   }
 
   // Order type that enables manual up/down/number reordering
-  var REORDER_ORDER_TYPE = 'Default order (by number, reoder possible)';
+  var REORDER_ORDER_TYPE = 'Default order (by number, reorder possible)';
   // Order type where a selected attribute (Date since, in this prototype) drives the order
   var ATTRIBUTE_ORDER_TYPE = 'Order by attribute (selected attribute drives order)';
 
@@ -1422,7 +1422,7 @@
     rowOrderType.classList.add('field-hidden');
     rowSelectAttribute.classList.add('field-hidden');
     setDropdownValue('ddCollectionType', 'List (bulk)');
-    setDropdownValue('ddOrderType', 'None (order how added in time)');
+    setDropdownValue('ddOrderType', 'None (reorder not possible)');
     setDropdownValue('ddSelectAttribute', 'Not selected');
   }
 
@@ -1457,7 +1457,7 @@
     if (!turningOn) {
       rowSelectAttribute.classList.add('field-hidden');
       setDropdownValue('ddCollectionType', 'List (bulk)');
-      setDropdownValue('ddOrderType', 'None (order how added in time)');
+      setDropdownValue('ddOrderType', 'None (reorder not possible)');
       setDropdownValue('ddSelectAttribute', 'Not selected');
     }
   });
@@ -1538,7 +1538,7 @@
     paramConfig = {
       name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
       multivalued: true, collectionType: 'List (bulk)',
-      orderType: 'None (order how added in time)', selectAttribute: 'Not selected'
+      orderType: 'None (reorder not possible)', selectAttribute: 'Not selected'
     };
     resetModalToDefaults();
     closeModal();
