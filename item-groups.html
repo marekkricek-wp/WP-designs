@@ -278,6 +278,83 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .hint{font:400 13px/18px 'Roboto';color:var(--text-disabled);margin-top:4px;}
 
 .empty-note{padding:24px;text-align:center;color:var(--text-disabled);font:400 14px 'Roboto';}
+/* ---------- History tab ---------- */
+.hist-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 16px;}
+.hist-head .htitle{font:500 24px/32px 'Roboto',sans-serif;color:var(--text-strong);}
+.hist-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px;}
+.hist-tools .search-box{width:330px;}
+.hf{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px;background:var(--surface-card);
+  border:1px solid var(--border-default);border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
+.hf svg{width:16px;height:16px;}
+.hf .op{color:var(--text-default);font-weight:500;}
+.hist-wrap{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;}
+.hist-table{width:100%;border-collapse:collapse;}
+.hist-table thead th{padding:0 16px;height:48px;text-align:left;font:700 14px/20px 'Roboto',sans-serif;color:var(--text-strong);border-bottom:1px solid var(--border-subtle);white-space:nowrap;}
+.hist-table tbody td{padding:10px 16px;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);border-bottom:1px solid var(--border-subtle);vertical-align:top;}
+.hist-table tbody tr:last-child td{border-bottom:none;}
+.hist-table tbody tr:hover td{background:var(--selectable-hover);}
+.hist-table .sorth{display:inline-flex;align-items:center;gap:4px;}
+.hist-new{font-weight:700;color:var(--text-strong);}
+.hist-old{color:var(--text-default);}
+.hist-chip{display:inline-flex;align-items:center;height:20px;padding:0 8px;margin:0 4px 2px 0;border-radius:var(--radius-round);
+  background:var(--secondary-subtle);color:var(--text-strong);font:400 12px/1 'Roboto',sans-serif;white-space:nowrap;}
+.hist-chip.new{background:var(--info-subtle);color:var(--text-strong);}
+.hist-typ{display:inline-flex;align-items:center;gap:6px;}
+.hist-grp{cursor:pointer;}
+.hist-exp{display:inline-flex;color:var(--text-default);transition:transform .15s;}
+.hist-exp svg{width:18px;height:18px;}
+.hist-exp.open{transform:rotate(90deg);}
+.hist-child td:first-child{padding-left:44px;}
+.hist-when{white-space:nowrap;}
+.hist-empty td{padding:24px 16px;text-align:center;color:var(--text-disabled);}
+/* interactive history filters */
+.hf{cursor:pointer;}
+.hf:hover{border-color:var(--border-strong);}
+.hf.act{border-color:var(--border-focus);color:var(--text-strong);background:var(--primary-subtle);}
+.hf.act svg{stroke:var(--primary);}
+.hf-wrap{position:relative;display:inline-flex;}
+.fmenu{position:absolute;top:36px;left:0;z-index:40000;background:var(--surface-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-md);box-shadow:0 8px 24px rgba(0,0,0,.14);padding:6px;min-width:210px;max-height:300px;overflow:auto;display:none;}
+.fmenu.open{display:block;}
+.fopt{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius-sm);cursor:pointer;
+  font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);white-space:nowrap;}
+.fopt:hover{background:var(--selectable-hover);}
+.fcb{width:16px;height:16px;border:1px solid var(--border-default);border-radius:var(--radius-sm);
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:transparent;}
+.fopt.on .fcb{background:var(--primary);border-color:var(--primary);color:#fff;}
+/* date-time picker */
+#histPopBackdrop{position:fixed;inset:0;z-index:39999;display:none;}
+.dtp{position:fixed;z-index:40000;background:var(--surface-card);border:1px solid var(--border-subtle);
+  border-radius:var(--radius-lg);box-shadow:0 12px 32px rgba(0,0,0,.18);display:none;}
+.dtp.open{display:flex;flex-direction:column;}
+.dtp-main{display:flex;}
+.dtp-cal{padding:16px;width:300px;}
+.dtp-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.dtp-mlabel{font:500 16px/24px 'Roboto',sans-serif;color:var(--text-strong);text-transform:capitalize;}
+.dtp-nav{display:flex;gap:2px;}
+.dtp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dtp-wd{height:28px;display:flex;align-items:center;justify-content:center;font:400 12px/16px 'Roboto',sans-serif;color:var(--text-disabled);}
+.dtp-day{height:34px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-round);
+  cursor:pointer;font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);}
+.dtp-day:hover{background:var(--selectable-hover);}
+.dtp-day.sel{background:var(--primary-subtle);color:var(--text-primary);border:1px solid var(--border-primary);}
+.dtp-day.empty{visibility:hidden;cursor:default;}
+.dtp-time{display:flex;border-left:1px solid var(--border-subtle);}
+.dtp-col{position:relative;width:58px;height:300px;overflow-y:auto;padding:8px 0;}
+.dtp-col+.dtp-col{border-left:1px solid var(--border-subtle);}
+.dtp-tm{height:36px;display:flex;align-items:center;justify-content:center;font:400 16px/1 'Roboto',sans-serif;color:var(--text-default);cursor:pointer;}
+.dtp-tm:hover{background:var(--selectable-hover);}
+.dtp-tm.sel{color:var(--primary);font-weight:700;}
+.dtp-foot{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-top:1px solid var(--border-subtle);}
+.dtp-foot .clr{background:none;border:none;color:var(--text-default);font:400 14px 'Roboto',sans-serif;cursor:pointer;padding:6px 8px;}
+.dtp-foot .ok{background:none;border:none;color:var(--text-link);font:500 14px 'Roboto',sans-serif;cursor:pointer;padding:6px 12px;}
+/* history row -> open historical state */
+.hist-table tbody tr[onclick]{cursor:pointer;}
+/* historical-state drawer: blue time badge + change highlights */
+.time-badge{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:var(--radius-round);
+  background:var(--primary-subtle);color:var(--text-primary);font:500 13px/1 'Roboto',sans-serif;}
+.time-badge svg{width:16px;height:16px;}
+.input-fill.hist-hl{background:var(--primary-subtle);border:1px solid var(--border-primary);}
 /* red-X cursor for clickable-looking elements that lead nowhere / to a placeholder */
 .dead,
 .status-btn,
@@ -743,6 +820,422 @@ function pager(inline){
   </div>`;
 }
 
+/* ============================================================= HISTORY (shared tab on every detail) */
+/* Data-driven so values can be randomized later. Rows with group:true are collapsible event groups. */
+const histSortIcon='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="2"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+/* fixed number of visible table rows ("levels") — stays constant on expand/collapse */
+const HIST_VISIBLE=12;
+
+/* ---- shared value pools (veterinary / animal-health PIM) ---- */
+const HIST_AUTHORS=['Ludmila Blahoskloná','Jana Nováková','Petra Svobodová','Eva Dvořáková','Kateřina Procházková','Lucie Veselá','Martina Horáková','Tereza Němcová','Hana Kučerová','Zuzana Marková'];
+const P_STATE=['Nový','V úpravě','Aktivní','Smazaný'];
+const P_ANIMALS=['Pes','Kočka','Kůň','Prase','Koza','Králík','Skot','Ovce','Drůbež','Fretka'];
+const P_COUNTRY=['ČR','SK','PL','DE','AT','HU'];
+const P_WEIGHT=['50 g','100 g','125 g','250 g','500 g','1 kg','2 kg'];
+const P_VOLUME=['30 ml','60 ml','90 ml','120 ml','150 ml','250 ml','500 ml'];
+const P_COUNT=['6 ks','10 ks','12 ks','24 ks','30 ks','50 ks','100 ks'];
+const P_PCT=['5 %','10 %','15 %','21 %'];
+const P_PRICE=['149 Kč','199 Kč','249 Kč','299 Kč','349 Kč','499 Kč','649 Kč'];
+const P_DATE=['15.10.2025','31.12.2025','01.01.2026','01.03.2026','01.06.2026','01.09.2026'];
+const P_STOCK=['Skladem','Na cestě','Vyprodáno'];
+const P_VERSTAT=['Aktivní','Neaktivní','Nový','Ukončený','Připravovaný'];
+const P_MARKET=['Pro veterinární použití','Doplněk stravy pro psy','Vhodné pro kočky','Novinka v nabídce','Akční balení','Prémiová řada','Tohle je pro obchoďáky','Sezónní nabídka'];
+const P_DOSE=['1x denně','2x denně','1 tableta denně','dle hmotnosti','5 ml na 10 kg','2 kapky ráno'];
+const P_INGRED=['Lysin','Taurin','Vápník','Omega-3','Probiotika','Vitamín D3','Zinek','Biotin'];
+const P_VIP=['Standard','Silver','Gold','Platinum','VIP'];
+const P_SEGMENT=['Veterináři','Chovatelé','Distributoři','Lékárny'];
+const P_CHANNEL=['E-shop','Pobočka','Telefon','Obchodní zástupce'];
+const P_MFR=['Cymedica','Bioveta','Vetoquinol','Zoetis','Virbac'];
+const P_CITY=['Praha','Brno','Ostrava','Plzeň','Olomouc','Liberec','Hradec Králové'];
+const P_FIRST=['Jan','Petr','Eva','Adam','Alena','Barbora','Tomáš','Lucie','Marek','Hana'];
+const P_LAST=['Novák','Svoboda','Dvořák','Král','Veselý','Horák','Němec','Procházka'];
+const P_EMAIL=['jan.novak@example.cz','info@vetklinika.cz','nakup@chovatel.cz','objednavky@lekarna.cz','servis@example.cz'];
+const P_YESNO=['Ano','Ne'];
+const P_LANG=['Čeština','Slovenština','Angličtina'];
+const P_TERMS=['7 dní','14 dní','30 dní','60 dní'];
+const P_ENTRY=['Výčtem','Filtrem','Kombinace'];
+const P_PRODMEMBERS=['Lysine 100 pasta pro kočky','Anaflex pasta pro psy','Biofresh pasta pro kočky','Calcivet gel pro plazy','Dermavet sprej pro psy','Elite Flex pasta','Fitocat pasta pro kočky'];
+const P_CUSTMEMBERS=['Jan Novák','Petr Svoboda','Eva Králová','Adam Král','Alena Dvořáková','Barbora Nová','Veterina Brno s.r.o.'];
+
+/* ---- per-context config: which change types exist + which fields they touch ---- */
+const HIST_CFG={
+  product:{
+    types:['Atribut','Element','Parametr','Obchodní verze','Alias','Změna stavu'],
+    fields:{
+      'Atribut':[
+        {place:'Základní parametry balení > Hmotnost',        vk:'num', pool:P_WEIGHT},
+        {place:'Základní parametry balení > Objem',           vk:'num', pool:P_VOLUME},
+        {place:'Základní parametry balení > Množství v balení',vk:'num', pool:P_COUNT},
+        {place:'Obchodní parametry > Sazba DPH',              vk:'num', pool:P_PCT},
+        {place:'Obchodní parametry > Druh zvířete',           vk:'chip',pool:P_ANIMALS},
+        {place:'Základní parametry balení > Země určení',      vk:'chip',pool:P_COUNTRY},
+        {place:'Skladové parametry > Dostupnost',             vk:'text',pool:P_STOCK}],
+      'Element':[
+        {place:'Balení > Velké',               vk:'num', pool:P_VOLUME},
+        {place:'Balení > Malé',                vk:'num', pool:P_VOLUME},
+        {place:'Složení > Účinná látka',       vk:'text',pool:P_INGRED},
+        {place:'Složení > Obsah účinné látky', vk:'num', pool:P_WEIGHT}],
+      'Parametr':[
+        {place:'Obchodní parametry > Popis',             vk:'text',pool:P_MARKET},
+        {place:'Obchodní parametry > Marketingový text', vk:'text',pool:P_MARKET},
+        {place:'Obchodní parametry > Dávkování',         vk:'text',pool:P_DOSE},
+        {place:'Obchodní parametry > Cena',              vk:'num', pool:P_PRICE}],
+      'Obchodní verze':[
+        {place:'Obchodní verze > Datum od', vk:'text',pool:P_DATE},
+        {place:'Obchodní verze > Datum do', vk:'text',pool:P_DATE},
+        {place:'Obchodní verze > Stav',     vk:'text',pool:P_VERSTAT}],
+      'Alias':[
+        {place:'Alias > EAN',            vk:'code',len:8},
+        {place:'Alias > Další EAN',      vk:'code',len:8},
+        {place:'Alias > Kód výrobce',    vk:'code',len:6},
+        {place:'Alias > Kód dodavatele', vk:'code',len:6}]
+    }
+  },
+  customer:{
+    types:['Atribut','Parametr','Alias','Změna stavu'],
+    fields:{
+      'Atribut':[
+        {place:'Základní údaje > IČO',        vk:'digits',len:8},
+        {place:'Základní údaje > Jméno',      vk:'text',pool:P_FIRST},
+        {place:'Základní údaje > Příjmení',   vk:'text',pool:P_LAST},
+        {place:'Kontakt > E-mail',            vk:'text',pool:P_EMAIL},
+        {place:'Kontakt > Telefon',           vk:'digits',len:9},
+        {place:'Kontakt > Město',             vk:'text',pool:P_CITY},
+        {place:'Zařazení > VIP skupina',      vk:'chip',pool:P_VIP},
+        {place:'Zařazení > Segment',          vk:'chip',pool:P_SEGMENT},
+        {place:'Fakturace > Splatnost',       vk:'text',pool:P_TERMS},
+        {place:'Obchodní parametry > Sleva',  vk:'num', pool:P_PCT}],
+      'Parametr':[
+        {place:'Obchodní parametry > Preferovaný jazyk',   vk:'text',pool:P_LANG},
+        {place:'Obchodní parametry > Marketingový souhlas',vk:'text',pool:P_YESNO},
+        {place:'Obchodní parametry > Prodejní kanál',      vk:'chip',pool:P_CHANNEL}],
+      'Alias':[
+        {place:'Alias > ID zákazníka',    vk:'code',len:6},
+        {place:'Alias > Kód pro pravidla',vk:'code',len:6}]
+    }
+  },
+  groupP:{
+    types:['Atribut','Parametr','Alias','Změna stavu','Změna filtru','Ručně přidané','Ručně odebrané'],
+    members:P_PRODMEMBERS,
+    filters:[
+      {place:'Filtr > Zaměření',      pool:P_SEGMENT},
+      {place:'Filtr > Druh zvířete',  pool:P_ANIMALS},
+      {place:'Filtr > Země původu',   pool:P_COUNTRY},
+      {place:'Filtr > Výrobce',       pool:P_MFR}],
+    fields:{
+      'Atribut':[
+        {place:'Obecné > Zahrnout budoucí položky', vk:'text',pool:P_YESNO},
+        {place:'Obecné > Způsob zadání',            vk:'text',pool:P_ENTRY}],
+      'Parametr':[
+        {place:'Obchodní parametry > Popis',             vk:'text',pool:P_MARKET},
+        {place:'Obchodní parametry > Marketingový text', vk:'text',pool:P_MARKET}],
+      'Alias':[
+        {place:'Alias > Kód pravidla', vk:'code',len:6}]
+    }
+  },
+  groupC:{
+    types:['Atribut','Parametr','Alias','Změna stavu','Změna filtru','Ručně přidané','Ručně odebrané'],
+    members:P_CUSTMEMBERS,
+    filters:[
+      {place:'Filtr > Segment',       pool:P_SEGMENT},
+      {place:'Filtr > VIP skupina',   pool:P_VIP},
+      {place:'Filtr > Prodejní kanál',pool:P_CHANNEL},
+      {place:'Filtr > Město',         pool:P_CITY}],
+    fields:{
+      'Atribut':[
+        {place:'Obecné > Zahrnout budoucí zákazníky', vk:'text',pool:P_YESNO},
+        {place:'Obecné > Způsob zadání',              vk:'text',pool:P_ENTRY}],
+      'Parametr':[
+        {place:'Obchodní parametry > Popis',             vk:'text',pool:P_MARKET},
+        {place:'Obchodní parametry > Marketingový text', vk:'text',pool:P_MARKET}],
+      'Alias':[
+        {place:'Alias > Kód pravidla', vk:'code',len:6}]
+    }
+  }
+};
+/* which drawer shows which context */
+const HIST_CTX={dwProduct:'product',dwPackage:'product',dwCustomer:'customer',dwProdGroup:'groupP',dwNewGroup:'groupP',dwCustGroup:'groupC',dwNewCustGroup:'groupC'};
+/* types that can appear inside an automated Import (manual/filter changes excluded) */
+const HIST_IMPORT_EXCL={'Ručně přidané':1,'Ručně odebrané':1,'Změna filtru':1};
+
+/* ---- small random helpers ---- */
+function rnd(n){return Math.floor(Math.random()*n);}
+function rpick(a){return a[rnd(a.length)];}
+function rpick2(a){const x=rpick(a);let y=x,g=0;while(y===x&&g++<20)y=rpick(a);return [x,y];}
+function rsubset(a,n){const c=a.slice(),out=[];for(let i=0;i<n&&c.length;i++)out.push(c.splice(rnd(c.length),1)[0]);return out;}
+function rcode(len){let s='';for(let i=0;i<len;i++)s+=rnd(10);return s;}
+/* value pair: same kind, different value (chips=array, num/text/digits=string) */
+function histVals(f){
+  if(f.vk==='code') return {oldC:[rcode(f.len)], newC:[rcode(f.len)]};
+  if(f.vk==='digits'){var a=rcode(f.len),b=rcode(f.len);return {old:a,neu:b};}
+  if(f.vk==='chip'){
+    const o=rsubset(f.pool,1+rnd(2));
+    let n,g=0;do{n=rsubset(f.pool,1+rnd(2));}while(n.join()===o.join()&&g++<20);
+    return {oldC:o, newC:n};
+  }
+  const pr=rpick2(f.pool);
+  return {old:pr[0], neu:pr[1]};
+}
+/* one change row for a context; optional forced type; importChild=true blocks manual/filter types */
+function histChange(cfg,type,importChild){
+  let t=type;
+  if(!t){ let pool=cfg.types; if(importChild) pool=pool.filter(x=>!HIST_IMPORT_EXCL[x]); t=rpick(pool); }
+  if(t==='Změna stavu'){ const pr=rpick2(P_STATE); return {type:t,place:'Stav',old:pr[0],neu:pr[1]}; }
+  if(t==='Změna filtru'){ const f=rpick(cfg.filters); const o=rsubset(f.pool,1+rnd(2)); let n,g=0;do{n=rsubset(f.pool,1+rnd(2));}while(n.join()===o.join()&&g++<20); return {type:t,place:f.place,oldC:o,newC:n}; }
+  if(t==='Ručně přidané'){ return {type:t,place:'Členové',newC:[rpick(cfg.members)]}; }
+  if(t==='Ručně odebrané'){ return {type:t,place:'Členové',oldC:[rpick(cfg.members)]}; }
+  const f=rpick(cfg.fields[t]); return Object.assign({type:t,place:f.place},histVals(f));
+}
+/* ---- build a stable event log per context: newest -> oldest, ~1 week span ---- */
+function fmtWhen(d){const p=n=>String(n).padStart(2,'0');return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+'  '+p(d.getHours())+':'+p(d.getMinutes());}
+const histLogs={};
+function buildHistory(ctx){
+  const cfg=HIST_CFG[ctx]||HIST_CFG.product;
+  const evs=[]; let seq=0;
+  const N=30, importAt=4;
+  for(let i=0;i<N;i++){
+    if(i===importAt){
+      const k=3+rnd(3), children=[];
+      for(let j=0;j<k;j++) children.push(histChange(cfg,null,true));
+      evs.push({kind:'import', id:ctx+'-imp'+(seq++), author:rpick(HIST_AUTHORS), expanded:true, children});
+    } else {
+      evs.push(Object.assign({kind:'single', author:rpick(HIST_AUTHORS)}, histChange(cfg)));
+    }
+  }
+  const anchor=new Date(2025,9,10,15,32), week=7*24*60;
+  const offs=evs.map(function(){return 5+rnd(week-5);}).sort(function(a,b){return a-b;});
+  evs.forEach(function(ev,i){ const t=anchor.getTime()-offs[i]*60000; ev.ts=t; ev.when=fmtWhen(new Date(t)); });
+  return evs;
+}
+function histLog(ctx){ if(!histLogs[ctx]) histLogs[ctx]=buildHistory(ctx); return histLogs[ctx]; }
+function ctxOf(id){ return HIST_CTX[id]||'product'; }
+
+/* ---- cell renderers ---- */
+function histOldCell(r){
+  if(r.oldC) return r.oldC.map(function(v){return '<span class="hist-chip">'+v+'</span>';}).join('');
+  return r.old?'<span class="hist-old">'+r.old+'</span>':'';
+}
+function histNewCell(r){
+  if(r.newC) return r.newC.map(function(v){return '<span class="hist-chip new">'+v+'</span>';}).join('');
+  return r.neu?'<span class="hist-new">'+r.neu+'</span>':'';
+}
+function histRowHtml(r,parent){
+  const child=!!parent, w=(parent||r).when, a=(parent||r).author;
+  return '<tr'+(child?' class="hist-child"':'')+' onclick="histOpenState(\''+w+'\')">'
+    +'<td>'+r.type+'</td>'
+    +'<td>'+(r.place||'')+'</td>'
+    +'<td>'+histOldCell(r)+'</td>'
+    +'<td>'+histNewCell(r)+'</td>'
+    +'<td class="hist-when">'+w+'</td>'
+    +'<td>'+a+'</td></tr>';
+}
+/* window the log to exactly HIST_VISIBLE rows; expanding trims trailing rows, collapsing refills */
+function renderHistoryRows(id){
+  const evs=histLog(ctxOf(id));
+  let out='', rows=0;
+  for(const ev of evs){
+    if(rows>=HIST_VISIBLE) break;
+    if(!histEvMatch(id,ev)) continue;
+    if(ev.kind==='import'){
+      out+='<tr class="hist-grp" onclick="histToggle(\''+ev.id+'\',this)">'
+        +'<td><span class="hist-typ"><span class="hist-exp'+(ev.expanded?' open':'')+'">'+I.caret+'</span>Import</span></td>'
+        +'<td></td><td></td><td></td><td class="hist-when">'+ev.when+'</td><td>'+ev.author+'</td></tr>';
+      rows++;
+      if(ev.expanded){ for(const c of ev.children){ if(rows>=HIST_VISIBLE) break; out+=histRowHtml(c,ev); rows++; } }
+    } else { out+=histRowHtml(ev,null); rows++; }
+  }
+  return out || '<tr class="hist-empty"><td colspan="6">Žádné změny neodpovídají zvolenému filtru.</td></tr>';
+}
+function histToggle(evId,el){
+  const tb=el.closest('tbody'), id=tb.id.replace('-hisbody','');
+  const ev=histLog(ctxOf(id)).find(function(e){return e.id===evId;}); if(!ev) return;
+  ev.expanded=!ev.expanded;
+  tb.innerHTML=renderHistoryRows(id);
+}
+const FCB='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-11"/></svg>';
+function fopt(id,kind,val){const v=val.replace(/'/g,"\\'");return '<div class="fopt" onclick="histOptToggle(event,\''+id+'\',\''+kind+'\',\''+v+'\')"><span class="fcb">'+FCB+'</span>'+val+'</div>';}
+function historyTab(id){
+  const ctx=ctxOf(id);
+  histFilters[id]={from:null,to:null,authors:{},types:{},q:''};   // fresh markup -> fresh filter state
+  const typeOpts=HIST_CFG[ctx].types.concat(['Import']);
+  return `<div class="tabpanel" data-k="his" id="${id}-his">
+    <div class="hist-head"><span class="htitle">Historie</span><button class="icon-btn dead">${I.dotsh}</button></div>
+    <div class="hist-tools">
+      <div class="search-box"><span class="si">${I.search}</span><input placeholder="" oninput="histSearch('${id}',this.value)"></div>
+      <div class="hf" id="${id}-hf-from" onclick="histOpenDtp(this,'${id}','from')">${I.filter}<span class="hflab">Datum od</span><span class="op">≥</span></div>
+      <div class="hf" id="${id}-hf-to" onclick="histOpenDtp(this,'${id}','to')">${I.filter}<span class="hflab">Datum do</span><span class="op">≤</span></div>
+      <div class="hf-wrap">
+        <div class="hf" id="${id}-hf-aut" onclick="histToggleMenu(event,'${id}','aut')">${I.filter}<span class="hflab">Autor</span><span class="op">:</span></div>
+        <div class="fmenu" id="${id}-m-aut">${HIST_AUTHORS.map(a=>fopt(id,'aut',a)).join('')}</div>
+      </div>
+      <div class="hf-wrap">
+        <div class="hf" id="${id}-hf-typ" onclick="histToggleMenu(event,'${id}','typ')">${I.filter}<span class="hflab">Typ změny</span><span class="op">:</span></div>
+        <div class="fmenu" id="${id}-m-typ">${typeOpts.map(t=>fopt(id,'typ',t)).join('')}</div>
+      </div>
+      <button class="icon-btn" title="Zrušit filtry" onclick="histResetFilters('${id}')">${I.reset}</button>
+    </div>
+    <div class="hist-wrap"><table class="hist-table">
+      <thead><tr><th>Typ změny</th><th>Místo změny</th><th>Původní hodnota</th><th>Nová hodnota</th><th><span class="sorth">Kdy ${histSortIcon}</span></th><th>Autor</th></tr></thead>
+      <tbody id="${id}-hisbody">${renderHistoryRows(id)}</tbody>
+    </table></div>
+    ${pager(true)}
+  </div>`;
+}
+
+/* ================= HISTORY FILTERS + DATE-TIME PICKER ================= */
+const histFilters={};
+function histFilt(id){ if(!histFilters[id]) histFilters[id]={from:null,to:null,authors:{},types:{},q:''}; return histFilters[id]; }
+function bagCount(o){ let n=0; for(const k in o) if(o[k]) n++; return n; }
+function evValsStr(r){ return [].concat(r.oldC||[], r.newC||[], (r.old!=null?[r.old]:[]), (r.neu!=null?[r.neu]:[])).join(' '); }
+function evHay(ev){
+  let s=(ev.type||'')+' '+(ev.place||'')+' '+(ev.author||'')+' '+(ev.when||'')+' '+evValsStr(ev);
+  if(ev.children) ev.children.forEach(c=>{ s+=' '+(c.type||'')+' '+(c.place||'')+' '+evValsStr(c); });
+  return s.toLowerCase();
+}
+function histEvMatch(id,ev){
+  const f=histFilt(id);
+  if(f.from!=null && ev.ts<f.from) return false;           // Kdy must not be older than "Datum od"
+  if(f.to!=null && ev.ts>f.to) return false;               // Kdy must not be newer than "Datum do"
+  if(bagCount(f.authors) && !f.authors[ev.author]) return false;
+  if(bagCount(f.types)){ const t=ev.kind==='import'?'Import':ev.type; if(!f.types[t]) return false; }
+  if(f.q && evHay(ev).indexOf(f.q)<0) return false;
+  return true;
+}
+function histRerender(id){ const tb=document.getElementById(id+'-hisbody'); if(tb) tb.innerHTML=renderHistoryRows(id); histSyncChips(id); }
+function histSearch(id,v){ histFilt(id).q=(v||'').trim().toLowerCase(); histRerender(id); }
+function histResetFilters(id){
+  histFilters[id]={from:null,to:null,authors:{},types:{},q:''};
+  const inp=document.querySelector('#'+id+'-his .search-box input'); if(inp) inp.value='';
+  document.querySelectorAll('#'+id+'-m-aut .fopt,#'+id+'-m-typ .fopt').forEach(o=>o.classList.remove('on'));
+  histClosePopovers(); histRerender(id);
+}
+function histSyncChips(id){
+  const f=histFilt(id);
+  const setc=(sfx,lab,active)=>{ const el=document.getElementById(id+'-hf-'+sfx); if(!el)return; el.classList.toggle('act',active); const l=el.querySelector('.hflab'); if(l)l.textContent=lab; };
+  setc('from', f.from!=null?fmtWhen(new Date(f.from)):'Datum od', f.from!=null);
+  setc('to',   f.to!=null?fmtWhen(new Date(f.to)):'Datum do',   f.to!=null);
+  const na=bagCount(f.authors), nt=bagCount(f.types);
+  setc('aut', na?('Autor ('+na+')'):'Autor', na>0);
+  setc('typ', nt?('Typ změny ('+nt+')'):'Typ změny', nt>0);
+}
+/* multiselect menus */
+function histOptToggle(e,id,kind,val){ e.stopPropagation(); const f=histFilt(id); const bag=kind==='aut'?f.authors:f.types; bag[val]=!bag[val]; e.currentTarget.classList.toggle('on',!!bag[val]); histRerender(id); }
+function histToggleMenu(e,id,kind){ e.stopPropagation(); const m=document.getElementById(id+'-m-'+kind); const wasOpen=m.classList.contains('open'); histClosePopovers(); if(!wasOpen){ m.classList.add('open'); } }
+/* close open multiselect menus when clicking anywhere outside them (chip toggles + options stopPropagation) */
+document.addEventListener('click',function(e){
+  if(e.target.closest && (e.target.closest('.fmenu')||e.target.closest('.hf'))) return;
+  document.querySelectorAll('.fmenu.open').forEach(m=>m.classList.remove('open'));
+});
+/* shared popover machinery */
+function histBackdrop(show){ let b=document.getElementById('histPopBackdrop'); if(!b){ b=document.createElement('div'); b.id='histPopBackdrop'; b.onclick=histClosePopovers; document.body.appendChild(b);} b.style.display=show?'block':'none'; }
+function histClosePopovers(){ document.querySelectorAll('.fmenu.open').forEach(m=>m.classList.remove('open')); const p=document.getElementById('histDtp'); if(p)p.classList.remove('open'); const b=document.getElementById('histPopBackdrop'); if(b)b.style.display='none'; }
+/* ---- date + time picker ---- */
+const CZ_MONTHS=['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+const CZ_WD=['P','Ú','S','Č','P','S','N'];
+const NAV_L='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6f6f6f" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>';
+const NAV_R='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6f6f6f" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+let dtpState=null;
+function ensureDtp(){ let p=document.getElementById('histDtp'); if(!p){ p=document.createElement('div'); p.id='histDtp'; p.className='dtp'; document.body.appendChild(p);} return p; }
+function histOpenDtp(chip,id,which){
+  if(window.event) window.event.stopPropagation();
+  histClosePopovers();
+  const f=histFilt(id), cur=which==='from'?f.from:f.to;
+  const d=cur!=null?new Date(cur):new Date(2025,9,10, which==='from'?0:23, which==='from'?0:55);
+  dtpState={id,which,y:d.getFullYear(),m:d.getMonth(),d:d.getDate(),h:d.getHours(),min:(Math.round(d.getMinutes()/5)*5)%60};
+  renderDtp();
+  const p=ensureDtp(); p.classList.add('open'); positionDtp(chip,p); histBackdrop(true);
+}
+function renderDtp(){
+  const p=ensureDtp(), s=dtpState;
+  const off=(new Date(s.y,s.m,1).getDay()+6)%7, dim=new Date(s.y,s.m+1,0).getDate();
+  let cells=''; for(let i=0;i<off;i++) cells+='<div class="dtp-day empty"></div>';
+  for(let dd=1;dd<=dim;dd++) cells+='<div class="dtp-day'+(dd===s.d?' sel':'')+'" onclick="dtpPick(\'d\','+dd+')">'+dd+'</div>';
+  let hrs=''; for(let h=0;h<24;h++) hrs+='<div class="dtp-tm'+(h===s.h?' sel':'')+'" id="dtp-h-'+h+'" onclick="dtpPick(\'h\','+h+')">'+String(h).padStart(2,'0')+'</div>';
+  let mins=''; for(let mm=0;mm<60;mm+=5) mins+='<div class="dtp-tm'+(mm===s.min?' sel':'')+'" id="dtp-min-'+mm+'" onclick="dtpPick(\'min\','+mm+')">'+String(mm).padStart(2,'0')+'</div>';
+  p.innerHTML=
+    '<div class="dtp-main"><div class="dtp-cal">'
+    +'<div class="dtp-calhead"><span class="dtp-mlabel">'+CZ_MONTHS[s.m]+' '+s.y+'</span>'
+    +'<span class="dtp-nav"><button class="icon-btn" onclick="dtpNav(-1)">'+NAV_L+'</button><button class="icon-btn" onclick="dtpNav(1)">'+NAV_R+'</button></span></div>'
+    +'<div class="dtp-grid">'+CZ_WD.map(w=>'<div class="dtp-wd">'+w+'</div>').join('')+cells+'</div></div>'
+    +'<div class="dtp-time"><div class="dtp-col" id="dtp-hcol">'+hrs+'</div><div class="dtp-col" id="dtp-mcol">'+mins+'</div></div></div>'
+    +'<div class="dtp-foot"><button class="clr" onclick="dtpClear()">Vymazat</button><button class="ok" onclick="dtpOk()">OK</button></div>';
+  setTimeout(function(){
+    const hc=document.getElementById('dtp-hcol'), mc=document.getElementById('dtp-mcol');
+    const hs=document.getElementById('dtp-h-'+s.h), ms=document.getElementById('dtp-min-'+s.min);
+    if(hc&&hs) hc.scrollTop=hs.offsetTop-hc.clientHeight/2+hs.offsetHeight/2;
+    if(mc&&ms) mc.scrollTop=ms.offsetTop-mc.clientHeight/2+ms.offsetHeight/2;
+  },0);
+}
+function dtpPick(k,v){ dtpState[k]=v; renderDtp(); }
+function dtpNav(dir){ let m=dtpState.m+dir,y=dtpState.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} dtpState.m=m; dtpState.y=y; const dim=new Date(y,m+1,0).getDate(); if(dtpState.d>dim)dtpState.d=dim; renderDtp(); }
+function dtpClear(){ const f=histFilt(dtpState.id); if(dtpState.which==='from')f.from=null; else f.to=null; const id=dtpState.id; histClosePopovers(); histRerender(id); }
+function dtpOk(){ const s=dtpState, f=histFilt(s.id); const t=new Date(s.y,s.m,s.d,s.h,s.min,0).getTime(); if(s.which==='from')f.from=t; else f.to=t; histClosePopovers(); histRerender(s.id); }
+function positionDtp(chip,p){
+  const r=chip.getBoundingClientRect(), pw=p.offsetWidth||440, ph=p.offsetHeight||430;
+  let left=r.left, top=r.bottom+6;
+  if(left+pw>window.innerWidth-8) left=window.innerWidth-8-pw;
+  if(left<8) left=8;
+  if(top+ph>window.innerHeight-8) top=Math.max(8, r.top-6-ph);
+  p.style.left=left+'px'; p.style.top=top+'px';
+}
+
+/* ---- historical state: clicking a history row opens the item as it looked at that moment ---- */
+/* (static showcase — only the first tab, no randomization; highlights show WHERE the change happened) */
+const CLOCK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1770c8" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+/* shell — its header/tabs/body are filled from the source detail on open */
+function drawer_histState(){
+  const id='dwHistState';
+  return `<div class="drawer" id="${id}">
+    <div class="drawer-head">
+      <div class="dh-top">
+        <button class="icon-btn sq" onclick="closeDrawer('${id}')">${I.x}</button>
+        <button class="icon-btn sq">${I.panelL}</button>
+        <button class="icon-btn sq">${I.panelR}</button>
+        <span class="time-badge">${CLOCK}<span id="${id}-time"></span></span>
+        <div class="dh-status"><button class="status-btn lg" id="${id}-status">Nový ${I.chevsm}</button><button class="icon-btn sq">${I.dotsh}</button></div>
+      </div>
+      <div class="dh-title"><span id="${id}-title"></span></div>
+      <div class="dh-sub">
+        <span class="it">${I.info} <span id="${id}-code"></span></span>
+        <span class="typ">${I.link} <span id="${id}-type"></span></span>
+      </div>
+    </div>
+    <div class="tabs" id="${id}-tabs"></div>
+    <div class="drawer-body" id="${id}-body"></div>
+  </div>`;
+}
+/* mirror the source detail's first tab (context-aware) + tint one input blue */
+function histStatePopulate(src,whenStr){
+  const from=document.getElementById(src), hs=document.getElementById('dwHistState');
+  if(!from||!hs) return;
+  const gv=sfx=>{const e=document.getElementById(src+'-'+sfx);return e?e.textContent:'';};
+  const setT=(elid,v)=>{const e=document.getElementById(elid);if(e)e.textContent=v;};
+  setT('dwHistState-title',gv('title')); setT('dwHistState-code',gv('code')); setT('dwHistState-type',gv('type')); setT('dwHistState-time',whenStr);
+  const srcStatus=from.querySelector('.dh-status .status-btn'), hsStatus=document.getElementById('dwHistState-status');
+  if(hsStatus){ if(srcStatus){ hsStatus.style.display=''; hsStatus.innerHTML=srcStatus.innerHTML; } else hsStatus.style.display='none'; }
+  // tab labels (inert copy, first active)
+  const tabs=document.getElementById('dwHistState-tabs');
+  tabs.innerHTML=[...from.querySelectorAll('.tabs .tab')].map((t,i)=>'<div class="tab '+(i===0?'active':'dead')+'">'+t.innerHTML+'</div>').join('');
+  // clone the first tab panel, strip ids/handlers, tint first input
+  const panel=from.querySelector('.drawer-body > .tabpanel');
+  const tmp=document.createElement('div'); tmp.innerHTML=panel?panel.innerHTML:'';
+  tmp.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  tmp.querySelectorAll('[onclick]').forEach(n=>n.removeAttribute('onclick'));
+  const inp=tmp.querySelector('.input-fill'); if(inp) inp.classList.add('hist-hl');
+  document.getElementById('dwHistState-body').innerHTML='<div class="tabpanel active" data-k="obecne">'+tmp.innerHTML+'</div>';
+}
+function histOpenState(whenStr){
+  let src=drawerStack[drawerStack.length-1];
+  if(src==='dwHistState') src=drawerStack[drawerStack.length-2];
+  if(!src) return;
+  histStatePopulate(src,whenStr);
+  if(!drawerStack.includes('dwHistState')){
+    document.getElementById(src).classList.add('stacked');
+    const hs=document.getElementById('dwHistState'); hs.classList.add('open'); hs.classList.remove('stacked');
+    drawerStack.push('dwHistState'); updateStackUI();
+  }
+}
+
 /* ============================================================= VIEWS */
 function view_katItems(){
   let rows = itemsData.map((d,i)=>`
@@ -865,7 +1358,7 @@ function drawerHead(opts){
   </div>`;
 }
 /* tabs whose panels have real content; everything else is a placeholder -> red-X cursor */
-const contentTabs=new Set(['produkt','balprod','zar','bal','allpkg','obecne','prody','zaks']);
+const contentTabs=new Set(['produkt','balprod','zar','bal','allpkg','obecne','prody','zaks','his']);
 function tabbar(id,tabs){
   return `<div class="tabs">${tabs.map((t,i)=>`<div class="tab ${i===0?'active':''} ${contentTabs.has(t.k)?'':'dead'}" data-k="${t.k}" onclick="switchTab('${id}','${t.k}',this)">${t.label}${t.chev?(' '+I.chev):''}</div>`).join('')}</div>`;
 }
@@ -911,7 +1404,7 @@ function packagesTab(id,key,title,addLabel,rowAction){
 function drawer_product(){
   const id='dwProduct';
   const tabs=[{k:'produkt',label:'Produkt'},{k:'balprod',label:'Balení produktu'},{k:'zar',label:'Zařazení ve skupinách'},
-    {k:'h',label:'Hierarchie'},{k:'sp',label:'Specifikace'},{k:'cr',label:'ČR'},{k:'sk',label:'SK'},{k:'pr',label:'Přílohy'},{k:'seo',label:'SEO'},{k:'val',label:'Validace'}];
+    {k:'h',label:'Hierarchie'},{k:'sp',label:'Specifikace'},{k:'cr',label:'ČR'},{k:'sk',label:'SK'},{k:'pr',label:'Přílohy'},{k:'seo',label:'SEO'},{k:'val',label:'Validace'},{k:'his',label:'Historie'}];
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Lysine 100 pasta pro kočky',code:'C01275',type:'MASTER KARTA',status:'Nový'})}
     ${tabbar(id,tabs)}
@@ -927,6 +1420,7 @@ function drawer_product(){
       ${packagesTab(id,'balprod','Balení produktu','Balení','drill')}
       ${membershipTab(id,'zar')}
       ${['h','sp','cr','sk','pr','seo','val'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -936,7 +1430,7 @@ function drawer_package(){
   const id='dwPackage';
   const tabs=[{k:'bal',label:'Balení'},{k:'allpkg',label:'Všechna balení'},{k:'zar',label:'Zařazení ve skupinách'},
     {k:'h',label:'Hierarchie'},{k:'sp',label:'Specifikace'},{k:'cr',label:'ČR'},{k:'sk',label:'SK'},
-    {k:'pp',label:'Přílohy produkt'},{k:'pb',label:'Přílohy balení'},{k:'seo',label:'SEO'},{k:'skl',label:'Sklady'},{k:'more',label:'',chev:true}];
+    {k:'pp',label:'Přílohy produkt'},{k:'pb',label:'Přílohy balení'},{k:'seo',label:'SEO'},{k:'skl',label:'Sklady'},{k:'his',label:'Historie'},{k:'more',label:'',chev:true}];
   return `<div class="drawer" id="${id}">
     ${drawerHead({id,title:'Lysine 100 pasta pro kočky 30 ml',code:'C01275-01496',type:'BALENÍ',status:'Nový produkt'})}
     ${tabbar(id,tabs)}
@@ -968,6 +1462,7 @@ function drawer_package(){
       ${packagesTab(id,'allpkg','Všechna balení','Balení','select')}
       ${membershipTab(id,'zar')}
       ${['h','sp','cr','sk','pp','pb','seo','skl','more'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1038,7 +1533,8 @@ function drawer_prodGroup(){
     <div class="drawer-body">
       ${generalTab(id,'prodgrp','Produkty pro segment Veterináři','SKUGROUP_9470583')}
       <div class="tabpanel" data-k="prody" id="${id}-prody"></div>
-      ${['ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${['ic','sl','nb'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1088,7 +1584,8 @@ function drawer_customer(){
         <div class="sub-table"><table><thead><tr><th style="width:40px"><span class="cb"></span></th><th>Kód</th><th>Název</th><th>Poslední změna</th><th>Změnil(a)</th><th>Důvod zařazení</th><th>Způsob přidání</th></tr></thead><tbody id="dwCustomer-zarbody">${memRows}</tbody></table></div>
         ${pager(true)}
       </div>
-      ${['dp','ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${['dp','ic','sl','nb'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1105,7 +1602,8 @@ function drawer_custGroup(){
     <div class="drawer-body">
       ${generalTab(id,'custgrp','Cymedica+','CUSTGROUP_2192758')}
       <div class="tabpanel" data-k="zaks" id="${id}-zaks"></div>
-      ${['dp','ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${['dp','ic','sl','nb'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1276,7 +1774,8 @@ function drawer_newGroup(){
         </div>
       </div>
       <div class="tabpanel" data-k="prody" id="${id}-prody"></div>
-      ${['ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${['ic','sl','nb'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1525,7 +2024,8 @@ function drawer_newCustGroup(){
         </div>
       </div>
       <div class="tabpanel" data-k="zaks" id="${id}-zaks"></div>
-      ${['dp','ic','sl','nb','his'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${['dp','ic','sl','nb'].map(k=>`<div class="tabpanel" data-k="${k}" id="${id}-${k}"><div class="empty-note">Obsah záložky (prototyp)</div></div>`).join('')}
+      ${historyTab(id)}
     </div>
   </div>`;
 }
@@ -1647,6 +2147,7 @@ let currentView='kat-items';
 function showView(name){
   currentView=name;
   document.getElementById('main').innerHTML=views[name]();
+  document.getElementById('main').insertAdjacentHTML('beforeend', drawer_histState()); // shared historical-state drawer
   // sidebar active states — clear all, set mapped
   document.querySelectorAll('.side-item').forEach(s=>s.classList.remove('active'));
   const map={'kat-items':'sbk-items','kat-groups':'sbk-groups','zak-customers':'sbz-customers','zak-groups':'sbz-groups'};
