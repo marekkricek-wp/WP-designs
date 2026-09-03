@@ -104,6 +104,10 @@
   .proto-btn.active { background: var(--secondary-active); color: var(--text-inverse); }
   .proto-btn-reset { background: var(--warning); color: var(--warning-text); }
   .proto-btn[hidden] { display: none; }
+  .proto-btn-red { background: var(--danger-subtle); color: var(--danger); }
+  .proto-btn-red:hover { background: #fbdada; }
+  .proto-btn-red.active { background: var(--danger); color: var(--text-inverse); }
+  .proto-divider { width: 1px; height: 20px; background: var(--border-subtle); }
 
   /* ---------- Typography ---------- */
   .title-xl { font: 300 32px/44px 'Roboto', sans-serif; color: var(--text-strong); }
@@ -341,35 +345,49 @@
     padding: var(--sp-10) var(--sp-12); border-bottom: 1px solid var(--border-subtle);
     background: var(--surface-card); white-space: nowrap;
   }
-  table.param-table th.num-col { width: 72px; }
+  table.param-table th.num-col { width: 40px; }
+  table.param-table th.sortable-col { cursor: pointer; }
+  table.param-table th.sortable-col:hover { background: var(--selectable-hover); }
   table.param-table td { padding: var(--sp-6) var(--sp-12); vertical-align: middle; }
   table.param-table tbody tr { border-bottom: 1px solid var(--border-subtle); }
   table.param-table tbody tr:last-child { border-bottom: none; }
-  .num-label { display: flex; align-items: center; gap: var(--sp-2); font: 700 13px/1 'Roboto', sans-serif; color: var(--text-strong); white-space: nowrap; }
 
-  /* ---------- Manual reorder controls (Default order type) ---------- */
-  .reorder-controls { display: flex; align-items: center; gap: var(--sp-4); flex-shrink: 0; }
-  .reorder-btn {
-    width: 24px; height: 24px; padding: 0; flex-shrink: 0;
-    border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-card);
-    display: flex; align-items: center; justify-content: center; color: var(--text-default); cursor: pointer;
-  }
-  .reorder-btn svg { width: 14px; height: 14px; }
-  .reorder-btn:hover:not(:disabled) { background: var(--selectable-hover); color: var(--text-strong); }
-  .reorder-btn:disabled { color: var(--text-disabled); border-color: var(--border-subtle); cursor: not-allowed; }
-  .reorder-num {
-    width: 34px; height: 24px; padding: 0; text-align: center;
-    border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-card);
-    font: 700 13px/1 'Roboto', sans-serif; color: var(--text-strong);
-  }
-  .reorder-num:focus { outline: none; border-color: var(--border-focus); }
-  .reorder-num::-webkit-outer-spin-button, .reorder-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  /* ---------- Live "this field currently drives the sort" indicator ---------- */
+  /* Neutral (non-directional) marker — direction now lives solely in the direction
+     button next to the "Sort by attribute" select, not duplicated per field. */
+  .sort-active-icon { display: inline-flex; vertical-align: middle; margin-left: var(--sp-4); color: var(--primary); cursor: help; }
+  .sort-active-icon svg { width: 14px; height: 14px; }
+  .sort-active-icon:hover, .sort-active-icon:focus { color: var(--primary-hover); outline: none; }
+  th .sort-active-icon { margin-left: var(--sp-6); }
 
-  /* ---------- Attribute-drives-order icon (Order by attribute) ---------- */
-  .attr-order-icon { display: inline-flex; vertical-align: middle; margin-left: var(--sp-4); color: var(--text-disabled); cursor: help; }
-  .attr-order-icon svg { width: 14px; height: 14px; }
-  .attr-order-icon:hover, .attr-order-icon:focus { color: var(--text-strong); outline: none; }
-  th .attr-order-icon { margin-left: var(--sp-6); }
+  /* ---------- Card/list view "Sort by attribute" control (view-only, non-persisted sort) ---------- */
+  .group-header-right { display: flex; align-items: center; gap: var(--sp-12); flex-shrink: 0; }
+  .sort-by-attribute { display: flex; align-items: center; gap: var(--sp-8); }
+  .sort-by-label { color: var(--text-default); white-space: nowrap; }
+  .sort-trigger {
+    width: auto; min-width: 170px; height: 30px; padding: 0 var(--sp-8) 0 var(--sp-10);
+    background: var(--surface-default); border: 1px solid transparent; border-radius: var(--radius-md);
+    font: 400 13px/1 'Roboto', sans-serif; color: var(--text-default);
+    display: flex; align-items: center; gap: var(--sp-6); cursor: pointer;
+  }
+  .sort-trigger:hover { border-color: var(--border-default); }
+  .sort-trigger svg.chevron-down { margin-left: auto; color: var(--text-disabled); flex-shrink: 0; }
+  .sort-direction-btn { width: 30px; height: 30px; border-radius: var(--radius-md); flex-shrink: 0; }
+  .sort-menu {
+    position: fixed; top: 0; left: 0; min-width: 200px; max-height: 280px; overflow: auto;
+    background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(38,38,38,0.14), 0 1px 3px rgba(38,38,38,0.08);
+    padding: var(--sp-4); z-index: 140; display: none;
+  }
+  .sort-menu.open { display: block; }
+  .sort-menu-option {
+    display: flex; align-items: center; gap: var(--sp-8);
+    padding: var(--sp-8) var(--sp-10); border-radius: var(--radius-sm);
+    font: 400 14px/20px 'Roboto', sans-serif; color: var(--text-default); cursor: pointer; white-space: nowrap;
+  }
+  .sort-menu-option svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-disabled); }
+  .sort-menu-option:hover { background: var(--selectable-hover); }
+  .sort-menu-option.selected { background: var(--selectable-selected); color: var(--text-primary); font-weight: 700; }
 
   /* ---------- Shared floating tooltip ---------- */
   .tooltip-bubble {
@@ -501,6 +519,17 @@
   }
   .toggle.on::after { left: 18px; }
 
+  .radio-group { display: flex; align-items: center; gap: var(--sp-20); height: 32px; }
+  .radio-option { display: flex; align-items: center; gap: var(--sp-8); cursor: pointer; font: 400 14px/20px 'Roboto', sans-serif; color: var(--text-default); }
+  .radio-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-default); flex-shrink: 0; position: relative; box-sizing: border-box; }
+  .radio-option:hover .radio-dot { border-color: var(--border-strong); }
+  .radio-option.selected { color: var(--text-strong); }
+  .radio-option.selected .radio-dot { border-color: var(--primary); }
+  .radio-option.selected .radio-dot::after {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--primary);
+  }
+
   .section-title { font: 700 16px/24px 'Roboto', sans-serif; color: var(--text-strong); margin: var(--sp-24) 0 var(--sp-16); }
   .section-title:first-child { margin-top: 0; }
 
@@ -533,6 +562,9 @@
 
 <!-- ===================== PROTOTYPE-ONLY CONTROLS ===================== -->
 <div class="proto-bar">
+  <button class="proto-btn proto-btn-red" id="btnOptionA">Option A</button>
+  <button class="proto-btn proto-btn-red active" id="btnOptionB">Option B</button>
+  <div class="proto-divider"></div>
   <button class="proto-btn active" id="btnViewParent" hidden>I am a parent</button>
   <button class="proto-btn" id="btnViewChild" hidden>I am a child</button>
   <button class="proto-btn proto-btn-reset" id="btnResetProto">Reset</button>
@@ -762,26 +794,53 @@
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-label">Multivalued</div>
-        <div class="form-field"><button class="toggle" id="multivaluedToggle"></button></div>
-      </div>
-
-      <!-- Collection type -->
-      <div class="form-row field-hidden" id="rowCollectionType">
-        <div class="form-label">Collection type</div>
+      <!-- Value structure — new design (Option B): single dropdown replacing the old
+           Multivalued toggle + Collection type dropdown -->
+      <div class="form-row field-hidden" id="rowValueStructure">
+        <div class="form-label">Value structure</div>
         <div class="form-field">
-          <div class="dropdown" id="ddCollectionType">
+          <div class="dropdown" id="ddValueStructure">
             <button class="select-fill" type="button">
-              <span class="dropdown-value">List (bulk)</span>
+              <span class="dropdown-value">Singlevalued</span>
               <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="dropdown-panel">
-              <div class="dropdown-option" data-value="List (bulk)">
+              <div class="dropdown-option" data-value="Singlevalued">
                 <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                <span>List (bulk)</span>
+                <span>Singlevalued</span>
               </div>
-              <div class="dropdown-option" data-value="Map (specific)">
+              <div class="dropdown-option" data-value="List">
+                <span class="check-spacer"></span>
+                <span>List</span>
+              </div>
+              <div class="dropdown-option" data-value="Map (key-value pairs)">
+                <span class="check-spacer"></span>
+                <span>Map (key-value pairs)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Value structure — old design (Option A): Multivalued toggle + Collection type -->
+      <div class="form-row field-hidden" id="rowMultivalued">
+        <div class="form-label">Multivalued</div>
+        <div class="form-field"><button class="toggle" type="button" id="toggleMultivalued"></button></div>
+      </div>
+      <div class="form-row field-hidden" id="rowCollectionType">
+        <div class="form-label">Collection type</div>
+        <div class="form-field">
+          <div class="dropdown" id="ddCollectionType" data-value="List">
+            <button class="select-fill" type="button">
+              <span class="dropdown-value">List</span>
+              <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel">
+              <div class="dropdown-option" data-value="List">
+                <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                <span>List</span>
+              </div>
+              <div class="dropdown-option" data-value="Map (key-value pairs)">
                 <span class="check-spacer"></span>
                 <span>Map (specific)</span>
               </div>
@@ -790,34 +849,41 @@
         </div>
       </div>
 
-      <!-- Order type -->
+      <!-- Sort type — new design (Option B): radio buttons -->
+      <div class="form-row field-hidden" id="rowSortType">
+        <div class="form-label">Sort type</div>
+        <div class="form-field">
+          <div class="radio-group" id="radioSortType">
+            <div class="radio-option selected" data-value="Default"><span class="radio-dot"></span><span>Default</span></div>
+            <div class="radio-option" data-value="By attribute"><span class="radio-dot"></span><span>By attribute</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort type — old design (Option A): "Order type" dropdown -->
       <div class="form-row field-hidden" id="rowOrderType">
         <div class="form-label">Order type</div>
         <div class="form-field">
           <div class="dropdown" id="ddOrderType">
             <button class="select-fill" type="button">
-              <span class="dropdown-value">None (reorder not possible)</span>
+              <span class="dropdown-value">Default</span>
               <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="dropdown-panel">
-              <div class="dropdown-option" data-value="None (reorder not possible)">
+              <div class="dropdown-option" data-value="Default">
                 <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                <span>None (reorder not possible)</span>
+                <span>Default</span>
               </div>
-              <div class="dropdown-option" data-value="Default order (by number, reorder possible)">
+              <div class="dropdown-option" data-value="By attribute">
                 <span class="check-spacer"></span>
-                <span>Default order (by number, reorder possible)</span>
-              </div>
-              <div class="dropdown-option" data-value="Order by attribute (selected attribute drives order)">
-                <span class="check-spacer"></span>
-                <span>Order by attribute (selected attribute drives order)</span>
+                <span>By attribute</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Select attribute -->
+      <!-- Select attribute — identical widget in both designs -->
       <div class="form-row field-hidden" id="rowSelectAttribute">
         <div class="form-label">Select attribute</div>
         <div class="form-field">
@@ -842,6 +908,42 @@
               <div class="dropdown-option" data-value="Date since">
                 <span class="check-spacer"></span>
                 <span>Date since</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort order — new design (Option B): radio buttons, shared wording for both sort types -->
+      <div class="form-row field-hidden" id="rowSortOrder">
+        <div class="form-label">Sort order</div>
+        <div class="form-field">
+          <div class="radio-group" id="radioSortOrder">
+            <div class="radio-option selected" data-value="A>Z, 1>9, Old>New"><span class="radio-dot"></span><span>A&gt;Z, 1&gt;9, Old&gt;New</span></div>
+            <div class="radio-option" data-value="Z>A, 9>1, New>Old"><span class="radio-dot"></span><span>Z&gt;A, 9&gt;1, New&gt;Old</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort order — old design (Option A): "Default sort" dropdown, its two option
+           labels depend on the current Order type (First/Last to last for Default,
+           Ascending/Descending for By attribute) -->
+      <div class="form-row field-hidden" id="rowDefaultSort">
+        <div class="form-label">Default sort</div>
+        <div class="form-field">
+          <div class="dropdown" id="ddDefaultSort">
+            <button class="select-fill" type="button">
+              <span class="dropdown-value">First to last</span>
+              <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel">
+              <div class="dropdown-option" data-value="A>Z, 1>9, Old>New">
+                <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                <span>First to last</span>
+              </div>
+              <div class="dropdown-option" data-value="Z>A, 9>1, New>Old">
+                <span class="check-spacer"></span>
+                <span>Last to first</span>
               </div>
             </div>
           </div>
@@ -883,6 +985,9 @@
   <div class="tooltip-text" id="tooltipText"></div>
   <div class="tooltip-arrow"></div>
 </div>
+
+<!-- ===================== SHARED FLOATING SORT MENU (card/list "Sorting" control) ===================== -->
+<div class="sort-menu" id="sortMenu"></div>
 
 <script>
 (function () {
@@ -992,8 +1097,8 @@
   // ---------- Parameters state ----------
   var paramConfig = {
     name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
-    multivalued: true, collectionType: 'List (bulk)',
-    orderType: 'None (reorder not possible)', selectAttribute: 'Not selected'
+    valueStructure: 'List',
+    sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z, 1>9, Old>New'
   };
   var parameterCreated = true;
   var viewMode = 'parent';
@@ -1010,27 +1115,68 @@
   var groupCollapsed = false;
   var currentParamLayout = 'list';
 
+  // Ad-hoc VIEW sort override: null = "at rest", showing the parameter's configured
+  // default. {field, direction} = an explicit override chosen from a column header or
+  // the card view's Sorting menu. Sorting is purely a display concern: it never
+  // touches supplierData's underlying (creation) order.
+  var viewSort = null;
+
+  // Which of the two competing UI designs is currently shown: 'A' = the original
+  // (pre-meeting) design, 'B' = the redesign Marek sent from the meeting (modal fields,
+  // "Sort by attribute" control, and the table's uniform 3-state columns). Defaults to
+  // 'B' since that's the design already built and visible.
+  var DESIGN_VERSION = 'B';
+
   var btnViewParent = document.getElementById('btnViewParent');
   var btnViewChild = document.getElementById('btnViewChild');
   var btnResetProto = document.getElementById('btnResetProto');
   var actionMenu = document.getElementById('actionMenu');
+  var sortMenu = document.getElementById('sortMenu');
 
-  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  // ---------- Prototype-only: Option A / Option B header switch ----------
+  // Placeholder toggle — visual only for now, no behavior wired yet. Marek is sending
+  // the actual design differences this should drive next.
+  var btnOptionA = document.getElementById('btnOptionA');
+  var btnOptionB = document.getElementById('btnOptionB');
+  btnOptionA.addEventListener('click', function () { setDesignVersion('A'); });
+  btnOptionB.addEventListener('click', function () { setDesignVersion('B'); });
 
   var CHEVRON_SVG = '<svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>';
   var DOTS_SVG = '<svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>';
-  var SORT_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M4 6h9M4 12h6M4 18h3"/><path d="M18 7v10m0 0-3-3m3 3 3-3"/></svg>';
   var ARROW_UP_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
   var ARROW_DOWN_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>';
+  // Neutral "this field is the active sort field" marker — direction is no longer
+  // duplicated here; it's shown solely by the direction button next to the select.
+  var SORT_NEUTRAL_SVG = '<svg class="icon" viewBox="0 0 24 24"><path d="M7 14l5 5 5-5M7 10l5-5 5 5"/></svg>';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   }
 
-  // Order type that enables manual up/down/number reordering
-  var REORDER_ORDER_TYPE = 'Default order (by number, reorder possible)';
-  // Order type where a selected attribute (Date since, in this prototype) drives the order
-  var ATTRIBUTE_ORDER_TYPE = 'Order by attribute (selected attribute drives order)';
+  // Sort type where a selected attribute drives the order
+  var ATTRIBUTE_SORT_TYPE = 'By attribute';
+  // Sentinel field for the non-attribute "Default" sort type: there, no real
+  // column/attribute is "the" default, they're all symmetric guests.
+  var DEFAULT_FIELD = '__default__';
+  // The two Sort order choices (shared by both Sort type = Default and By attribute —
+  // "A>Z, 1>9, Old>New" means ascending / earliest-created-first; the other means descending).
+  var SORT_ORDER_ASC = 'A>Z, 1>9, Old>New';
+  var SORT_ORDER_DESC = 'Z>A, 9>1, New>Old';
+
+  // Maps a sortable data field to its label / the modal's "Select attribute" value / value type.
+  var FIELD_META = [
+    { key: 'name', label: 'Supplier name', attrValue: 'Supplier name', type: 'string' },
+    { key: 'code', label: 'Supplier code', attrValue: 'Supplier code', type: 'string' },
+    { key: 'date', label: 'Date since', attrValue: 'Date since', type: 'date' }
+  ];
+  function fieldMeta(key) {
+    for (var i = 0; i < FIELD_META.length; i++) if (FIELD_META[i].key === key) return FIELD_META[i];
+    return null;
+  }
+  function fieldKeyForAttribute(attrValue) {
+    for (var i = 0; i < FIELD_META.length; i++) if (FIELD_META[i].attrValue === attrValue) return FIELD_META[i].key;
+    return null;
+  }
 
   function parseCzechDate(str) {
     var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(str || '').trim());
@@ -1038,37 +1184,210 @@
     return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
   }
 
-  function sortSupplierByDate() {
-    supplierData.sort(function (a, b) {
-      var da = parseCzechDate(a.date), db = parseCzechDate(b.date);
-      if (da === null && db === null) return 0;
-      if (da === null) return 1;
-      if (db === null) return -1;
-      return da - db;
-    });
+  // ---------- Sorting model: the parameter's configured default vs. the active (view) sort ----------
+  // The configured default is derived from paramConfig alone (never from viewSort). This
+  // remains attribute-aware — it's what the card/list "Sort by attribute" control treats
+  // as its floor and marks "(Default)".
+  function getConfiguredDefault() {
+    // Sort order is shared by both Sort types — it's the same "A>Z, 1>9, Old>New" vs.
+    // "Z>A, 9>1, New>Old" choice whether it's driving a real attribute or the plain
+    // creation order.
+    var direction = paramConfig.sortOrder === SORT_ORDER_DESC ? 'Descending' : 'Ascending';
+    if (paramConfig.sortType === ATTRIBUTE_SORT_TYPE) {
+      var key = fieldKeyForAttribute(paramConfig.selectAttribute);
+      if (key) return { field: key, direction: direction };
+    }
+    // Default sort type (or "By attribute" with nothing selected yet)
+    return { field: DEFAULT_FIELD, direction: direction };
   }
-
-  function buildReorderControls(idx, total) {
-    return (
-      '<button class="reorder-btn" type="button" data-act="up" data-idx="' + idx + '"' + (idx === 0 ? ' disabled' : '') + ' title="Move up">' + ARROW_UP_SVG + '</button>' +
-      '<input class="reorder-num" type="number" min="1" max="' + total + '" value="' + (idx + 1) + '" data-idx="' + idx + '">' +
-      '<button class="reorder-btn" type="button" data-act="down" data-idx="' + idx + '"' + (idx === total - 1 ? ' disabled' : '') + ' title="Move down">' + ARROW_DOWN_SVG + '</button>'
-    );
+  // Design B only: the table view has no "smart" pinned default column — every column
+  // behaves identically (see applySortClick) and its floor is always plain creation
+  // order ("newest at the end"), regardless of what's configured as the parameter's
+  // default. Design A's table floor is still the configured default (see getActiveSort).
+  var TABLE_FLOOR = { field: DEFAULT_FIELD, direction: 'Ascending' };
+  // The sort actually driving the current display: an explicit view override if one is
+  // set; otherwise floor behavior depends on the active design. Design B: table view
+  // falls back to its fixed creation-order floor while card/list falls back to the
+  // parameter's configured (attribute-aware) default. Design A (original): both views
+  // share the same floor — the configured default — since the table's default column
+  // used to be pinned there too.
+  function getActiveSort() {
+    if (viewSort) return viewSort;
+    if (DESIGN_VERSION === 'A') return getConfiguredDefault();
+    return currentParamLayout === 'table' ? TABLE_FLOOR : getConfiguredDefault();
   }
-
-  function moveElement(fromIdx, toIdx) {
-    var total = supplierData.length;
-    if (toIdx < 0) toIdx = 0;
-    if (toIdx > total - 1) toIdx = total - 1;
-    if (toIdx === fromIdx) return;
-    var item = supplierData.splice(fromIdx, 1)[0];
-    supplierData.splice(toIdx, 0, item);
+  function compareEntries(entryA, entryB, sort) {
+    var cmp;
+    if (sort.field === DEFAULT_FIELD) {
+      cmp = entryA.idx - entryB.idx;
+    } else {
+      var meta = fieldMeta(sort.field);
+      var va = entryA.item[sort.field], vb = entryB.item[sort.field];
+      if (meta && meta.type === 'date') {
+        var da = parseCzechDate(va), db = parseCzechDate(vb);
+        if (da === null && db === null) cmp = 0;
+        else if (da === null) cmp = 1;
+        else if (db === null) cmp = -1;
+        else cmp = da - db;
+      } else {
+        cmp = String(va || '').localeCompare(String(vb || ''), undefined, { sensitivity: 'base' });
+      }
+      if (cmp === 0) cmp = entryA.idx - entryB.idx;
+    }
+    return sort.direction === 'Descending' ? -cmp : cmp;
+  }
+  // Returns {item, idx} pairs (idx = true index in supplierData) sorted for display only —
+  // supplierData itself is never reordered.
+  function getSortedSupplierView() {
+    var entries = supplierData.map(function (item, idx) { return { item: item, idx: idx }; });
+    var sort = getActiveSort();
+    entries.sort(function (a, b) { return compareEntries(a, b, sort); });
+    return entries;
+  }
+  // Table header clicks: every column is a uniform 3-state cycle (up / down / none),
+  // with no column pinned as a permanent 2-state default anymore — "none" always lands
+  // back on the table's fixed floor (creation order, newest at the end).
+  function applySortClick(field) {
+    var active = getActiveSort();
+    if (DESIGN_VERSION === 'A') {
+      var def = getConfiguredDefault();
+      var isPinnedDefaultCol = def.field !== DEFAULT_FIELD && field === def.field;
+      if (isPinnedDefaultCol) {
+        // The configured-attribute column is pinned: it always shows an arrow and only
+        // ever toggles between its two directions, it can never be switched off.
+        if (active.field === field) {
+          viewSort = { field: field, direction: active.direction === 'Ascending' ? 'Descending' : 'Ascending' };
+        } else {
+          viewSort = null; // back to the default, which is this same column at its configured direction
+        }
+      } else {
+        // Every other column is a 3-state guest; its "none" hands the arrow back to the
+        // default (the pinned column in its configured direction, or no arrow at all
+        // when Sort type = Default).
+        if (active.field === field && active.direction === 'Ascending') {
+          viewSort = { field: field, direction: 'Descending' };
+        } else if (active.field === field && active.direction === 'Descending') {
+          viewSort = null;
+        } else {
+          viewSort = { field: field, direction: 'Ascending' };
+        }
+      }
+    } else {
+      // Design B: every column is a uniform 3-state guest (up / down / none), and
+      // "none" always lands back on plain creation order, never the configured default.
+      if (active.field === field && active.direction === 'Ascending') {
+        viewSort = { field: field, direction: 'Descending' };
+      } else if (active.field === field && active.direction === 'Descending') {
+        viewSort = null;
+      } else {
+        viewSort = { field: field, direction: 'Ascending' };
+      }
+    }
+    renderParameters();
   }
 
   function updateViewToggleVisibility() {
     var show = parameterCreated;
     btnViewParent.hidden = !show;
     btnViewChild.hidden = !show;
+  }
+
+  // ---------- Card/list view "Sort by attribute" control + its dropdown menu ----------
+  // Options name a FIELD only — direction is no longer chosen per-row here, it's driven
+  // by the separate direction button next to the select.
+  function buildSortMenuOptions() {
+    var def = getConfiguredDefault();
+    var options = [];
+    if (def.field === DEFAULT_FIELD) {
+      options.push({ field: DEFAULT_FIELD, label: 'Creation order' });
+    }
+    FIELD_META.forEach(function (m) {
+      options.push({ field: m.key, label: m.label });
+    });
+    return options;
+  }
+  function buildSortMenuHtml() {
+    var active = getActiveSort();
+    var def = getConfiguredDefault();
+    return buildSortMenuOptions().map(function (opt) {
+      var selected = active.field === opt.field;
+      var label = opt.label + (def.field === opt.field ? ' (Default)' : '');
+      return '<div class="sort-menu-option' + (selected ? ' selected' : '') + '" data-field="' + opt.field + '">' + esc(label) + '</div>';
+    }).join('');
+  }
+  function openSortMenuNew(anchorEl) {
+    sortMenu.innerHTML = buildSortMenuHtml();
+    sortMenu.classList.add('open');
+    positionFloating(anchorEl, sortMenu, true);
+    sortMenu.querySelectorAll('.sort-menu-option').forEach(function (opt) {
+      opt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var def = getConfiguredDefault();
+        var field = opt.dataset.field;
+        // Switching field keeps the current direction (defaulting to Ascending if the
+        // parameter is currently showing table's non-directional floor).
+        var direction = getActiveSort().direction || 'Ascending';
+        viewSort = (field === def.field && direction === def.direction) ? null : { field: field, direction: direction };
+        sortMenu.classList.remove('open');
+        renderParameters();
+      });
+    });
+  }
+  // The direction button next to "Sort by attribute": flips the current field's
+  // direction, keeping the field itself unchanged. Design B only — Design A has no
+  // separate direction button, direction is chosen per-row in the old flat menu.
+  function toggleSortDirection() {
+    var def = getConfiguredDefault();
+    var active = getActiveSort();
+    var newDirection = active.direction === 'Descending' ? 'Ascending' : 'Descending';
+    viewSort = (active.field === def.field && newDirection === def.direction) ? null : { field: active.field, direction: newDirection };
+    renderParameters();
+  }
+
+  // ---------- Design A (original): the single "Sorting" control, one row per field
+  // PER DIRECTION (no separate direction button) ----------
+  function buildSortMenuOptionsOld() {
+    var def = getConfiguredDefault();
+    var options = [];
+    if (def.field === DEFAULT_FIELD) {
+      options.push({ field: DEFAULT_FIELD, direction: 'Ascending', label: 'First to last' });
+      options.push({ field: DEFAULT_FIELD, direction: 'Descending', label: 'Last to first' });
+    }
+    FIELD_META.forEach(function (m) {
+      options.push({ field: m.key, direction: 'Ascending', label: m.label });
+      options.push({ field: m.key, direction: 'Descending', label: m.label });
+    });
+    return options;
+  }
+  function buildSortMenuHtmlOld() {
+    var active = getActiveSort();
+    var def = getConfiguredDefault();
+    return buildSortMenuOptionsOld().map(function (opt) {
+      var selected = active.field === opt.field && active.direction === opt.direction;
+      var isDefaultRow = def.field === opt.field && def.direction === opt.direction;
+      var icon = opt.direction === 'Descending' ? ARROW_DOWN_SVG : ARROW_UP_SVG;
+      var label = opt.label + (isDefaultRow ? ' (Default)' : '');
+      return '<div class="sort-menu-option' + (selected ? ' selected' : '') + '" data-field="' + opt.field + '" data-direction="' + opt.direction + '">' + icon + '<span>' + esc(label) + '</span></div>';
+    }).join('');
+  }
+  function openSortMenuOld(anchorEl) {
+    sortMenu.innerHTML = buildSortMenuHtmlOld();
+    sortMenu.classList.add('open');
+    positionFloating(anchorEl, sortMenu, true);
+    sortMenu.querySelectorAll('.sort-menu-option').forEach(function (opt) {
+      opt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var def = getConfiguredDefault();
+        var field = opt.dataset.field, direction = opt.dataset.direction;
+        viewSort = (field === def.field && direction === def.direction) ? null : { field: field, direction: direction };
+        sortMenu.classList.remove('open');
+        renderParameters();
+      });
+    });
+  }
+  function openSortMenu(anchorEl) {
+    if (DESIGN_VERSION === 'A') openSortMenuOld(anchorEl);
+    else openSortMenuNew(anchorEl);
   }
 
   function renderParameters() {
@@ -1083,30 +1402,73 @@
     var isChild = viewMode === 'child';
     var inputClass = isChild ? 'input-readonly' : 'input-fill';
     var roAttr = isChild ? ' readonly' : '';
-    var canReorder = !isChild && paramConfig.orderType === REORDER_ORDER_TYPE;
-    var canAttributeOrder = paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since';
-    var attrIconHtml = '<span class="attr-order-icon" tabindex="0">' + SORT_SVG + '</span>';
-    var dateLabelText = 'Date since' + (canAttributeOrder ? attrIconHtml : '');
+    var activeSort = getActiveSort();
+    var sortedEntries = getSortedSupplierView();
+
+    // Live "this field currently drives the sort" icon, shown next to a field's label
+    // wherever it appears (list rows and the table header) so the active sort stays
+    // visible even once the Sorting control has scrolled out of view. Shows nothing
+    // while the non-attribute First to last / Last to first default is active.
+    function sortIcon(fieldKey) {
+      if (activeSort.field !== fieldKey) return '';
+      var dirWord = activeSort.direction === 'Descending' ? 'descending' : 'ascending';
+      var svg = DESIGN_VERSION === 'A' ? (activeSort.direction === 'Descending' ? ARROW_DOWN_SVG : ARROW_UP_SVG) : SORT_NEUTRAL_SVG;
+      return '<span class="sort-active-icon" tabindex="0" title="Sorted by this field (' + dirWord + ')">' +
+        svg + '</span>';
+    }
+    var nameLabelText = 'Supplier name' + sortIcon('name');
+    var codeLabelText = 'Supplier code' + sortIcon('code');
+    var dateLabelText = 'Date since' + sortIcon('date');
+
+    var sortTriggerHtml = '';
+    if (currentParamLayout === 'list') {
+      if (DESIGN_VERSION === 'A') {
+        // Design A: a single combined "Sorting" button — its own icon reflects the
+        // active direction, its label names the active option (a field, or the generic
+        // First to last / Last to first pair), suffixed " (Default)" while at rest.
+        var activeOptionLabelOld = (activeSort.field === DEFAULT_FIELD)
+          ? (activeSort.direction === 'Descending' ? 'Last to first' : 'First to last')
+          : (fieldMeta(activeSort.field) ? fieldMeta(activeSort.field).label : '');
+        var sortTriggerLabelOld = activeOptionLabelOld + (viewSort === null ? ' (Default)' : '');
+        var sortTriggerDirIconOld = activeSort.direction === 'Descending' ? ARROW_DOWN_SVG : ARROW_UP_SVG;
+        sortTriggerHtml = '<div class="sort-trigger-wrap"><button class="sort-trigger" type="button" id="sortTriggerBtn">' + sortTriggerDirIconOld + '<span>' + esc(sortTriggerLabelOld) + '</span>' +
+          '<svg class="icon chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>';
+      } else {
+        // Design B: static "Sort by attribute" label + field-only dropdown + a
+        // separate direction-toggle button.
+        var activeOptionLabel = (activeSort.field === DEFAULT_FIELD)
+          ? 'Creation order'
+          : (fieldMeta(activeSort.field) ? fieldMeta(activeSort.field).label : '');
+        var sortTriggerLabel = activeOptionLabel + (viewSort === null ? ' (Default)' : '');
+        var sortDirIcon = activeSort.direction === 'Descending' ? ARROW_DOWN_SVG : ARROW_UP_SVG;
+        var sortDirTitle = activeSort.direction === 'Descending' ? 'Descending' : 'Ascending';
+        sortTriggerHtml = '<div class="sort-by-attribute">' +
+            '<span class="sort-by-label">Sort by attribute</span>' +
+            '<button class="sort-trigger" type="button" id="sortTriggerBtn"><span>' + esc(sortTriggerLabel) + '</span>' +
+              '<svg class="icon chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>' +
+            '<button class="icon-btn sort-direction-btn" type="button" id="sortDirectionBtn" title="Sort direction: ' + sortDirTitle + '">' + sortDirIcon + '</button>' +
+          '</div>';
+      }
+    }
+
     var bodyHtml = '';
 
     if (!groupCollapsed) {
       if (currentParamLayout === 'list') {
         bodyHtml += '<div class="group-body">';
-        supplierData.forEach(function (item, idx) {
+        sortedEntries.forEach(function (entry) {
+          var item = entry.item, idx = entry.idx;
           var collapsed = !!elementCollapsed[idx];
-          var numBlock = canReorder
-            ? '<div class="el-num reorder-controls">' + buildReorderControls(idx, supplierData.length) + '</div>'
-            : '<span class="text-md-bold el-num" style="color:var(--text-strong)">' + pad2(idx + 1) + '</span>';
           bodyHtml +=
             '<div class="element-item">' +
               '<div class="element-header' + (collapsed ? ' collapsed' : '') + '" data-idx="' + idx + '">' +
                 CHEVRON_SVG +
-                numBlock +
+                '<span class="el-num"></span>' +
                 '<button class="icon-btn el-menu" type="button" data-context="element" data-idx="' + idx + '" title="More">' + DOTS_SVG + '</button>' +
               '</div>' +
               '<div class="element-fields' + (collapsed ? ' collapsed' : '') + '">' +
-                '<div class="form-row"><div class="form-label">Supplier name</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="name" value="' + esc(item.name) + '"' + roAttr + '></div></div>' +
-                '<div class="form-row"><div class="form-label">Supplier code</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="code" value="' + esc(item.code) + '"' + roAttr + '></div></div>' +
+                '<div class="form-row"><div class="form-label">' + nameLabelText + '</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="name" value="' + esc(item.name) + '"' + roAttr + '></div></div>' +
+                '<div class="form-row"><div class="form-label">' + codeLabelText + '</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="code" value="' + esc(item.code) + '"' + roAttr + '></div></div>' +
                 '<div class="form-row"><div class="form-label">' + dateLabelText + '</div><div class="form-field"><input class="' + inputClass + '" data-idx="' + idx + '" data-field="date" value="' + esc(item.date) + '"' + roAttr + '></div></div>' +
               '</div>' +
             '</div>';
@@ -1114,16 +1476,16 @@
         bodyHtml += '</div>';
       } else {
         bodyHtml += '<div class="group-table-wrap"><table class="param-table"><thead><tr>' +
-          '<th class="num-col">' + (canAttributeOrder ? '' : SORT_SVG) + '</th>' +
-          '<th>Supplier name</th><th>Supplier code</th><th>' + dateLabelText + '</th>' +
+          '<th class="num-col"></th>' +
+          '<th class="sortable-col" data-field="name">' + nameLabelText + '</th>' +
+          '<th class="sortable-col" data-field="code">' + codeLabelText + '</th>' +
+          '<th class="sortable-col" data-field="date">' + dateLabelText + '</th>' +
           '</tr></thead><tbody>';
-        supplierData.forEach(function (item, idx) {
-          var numLabelContent = canReorder
-            ? buildReorderControls(idx, supplierData.length)
-            : pad2(idx + 1);
+        sortedEntries.forEach(function (entry) {
+          var item = entry.item, idx = entry.idx;
           bodyHtml +=
             '<tr>' +
-              '<td class="num-col"><span class="num-label">' + numLabelContent +
+              '<td class="num-col"><span class="num-label">' +
                 '<button class="icon-btn el-menu" type="button" data-context="element" data-idx="' + idx + '" title="More" style="width:22px;height:22px;">' + DOTS_SVG + '</button></span></td>' +
               '<td><input class="' + inputClass + '" data-idx="' + idx + '" data-field="name" value="' + esc(item.name) + '"' + roAttr + '></td>' +
               '<td><input class="' + inputClass + '" data-idx="' + idx + '" data-field="code" value="' + esc(item.code) + '"' + roAttr + '></td>' +
@@ -1142,7 +1504,10 @@
       '<div class="group-card">' +
         '<div class="group-header' + (groupCollapsed ? ' collapsed' : '') + '" id="groupHeader">' +
           '<div class="group-header-left">' + CHEVRON_SVG + '<span class="title-md">' + esc(paramConfig.name) + '</span></div>' +
-          '<button class="icon-btn" type="button" id="groupMoreBtn" data-context="group" title="More">' + DOTS_SVG + '</button>' +
+          '<div class="group-header-right">' +
+            sortTriggerHtml +
+            '<button class="icon-btn" type="button" id="groupMoreBtn" data-context="group" title="More">' + DOTS_SVG + '</button>' +
+          '</div>' +
         '</div>' +
         bodyHtml +
       '</div>';
@@ -1166,7 +1531,7 @@
 
     document.querySelectorAll('.element-header').forEach(function (header) {
       header.addEventListener('click', function (e) {
-        if (e.target.closest('.el-menu') || e.target.closest('.reorder-controls')) return;
+        if (e.target.closest('.el-menu')) return;
         var idx = +header.dataset.idx;
         elementCollapsed[idx] = !elementCollapsed[idx];
         renderParameters();
@@ -1186,32 +1551,12 @@
         var idx = +input.dataset.idx, field = input.dataset.field;
         supplierData[idx][field] = input.value;
       });
-    });
-
-    // ---------- Manual reorder (Default order type): up/down + editable number ----------
-    document.querySelectorAll('.reorder-btn').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (btn.disabled) return;
-        var idx = +btn.dataset.idx;
-        var target = btn.dataset.act === 'up' ? idx - 1 : idx + 1;
-        moveElement(idx, target);
-        renderParameters();
+      // A value edited while its field is the one currently driving the sort can change
+      // where that row belongs — this is purely a view recomputation, never a data move.
+      input.addEventListener('blur', function () {
+        if (input.readOnly || !input.dataset.field) return;
+        if (getActiveSort().field === input.dataset.field) renderParameters();
       });
-    });
-    document.querySelectorAll('.reorder-num').forEach(function (input) {
-      function commit() {
-        var idx = +input.dataset.idx;
-        var val = parseInt(input.value, 10);
-        if (!val || isNaN(val)) { renderParameters(); return; }
-        moveElement(idx, val - 1);
-        renderParameters();
-      }
-      input.addEventListener('keydown', function (e) {
-        e.stopPropagation();
-        if (e.key === 'Enter') input.blur();
-      });
-      input.addEventListener('blur', commit);
     });
 
     var createBtn = document.getElementById('createItemBtn');
@@ -1223,26 +1568,41 @@
       });
     }
 
-    // ---------- Attribute-order icon tooltip ("this attribute drives the order") ----------
-    document.querySelectorAll('.attr-order-icon').forEach(function (icon) {
+    // ---------- Live sort-indicator icon tooltip ("this field currently drives the sort") ----------
+    document.querySelectorAll('.sort-active-icon').forEach(function (icon) {
       icon.addEventListener('mouseenter', function (e) {
         e.stopPropagation();
-        showTooltip(icon, '', 'This attribute drives the order of the elements.');
+        showTooltip(icon, '', 'This field currently drives the sort.');
       });
       icon.addEventListener('mouseleave', hideTooltip);
       icon.addEventListener('click', function (e) { e.stopPropagation(); });
     });
 
-    // ---------- Order by attribute: re-sort when the driving field (Date since) changes ----------
-    document.querySelectorAll('input[data-field="date"]').forEach(function (input) {
-      input.addEventListener('blur', function () {
-        if (input.readOnly) return;
-        if (paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since') {
-          sortSupplierByDate();
-          renderParameters();
-        }
+    // ---------- Table view: every sortable column header is independently clickable ----------
+    document.querySelectorAll('th.sortable-col').forEach(function (th) {
+      th.addEventListener('click', function (e) {
+        e.stopPropagation();
+        applySortClick(th.dataset.field);
       });
     });
+
+    // ---------- Card/list view: the "Sorting" control near the group title ----------
+    var sortTriggerBtn = document.getElementById('sortTriggerBtn');
+    if (sortTriggerBtn) {
+      sortTriggerBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var willOpen = !sortMenu.classList.contains('open');
+        sortMenu.classList.remove('open');
+        if (willOpen) openSortMenu(sortTriggerBtn);
+      });
+    }
+    var sortDirectionBtn = document.getElementById('sortDirectionBtn');
+    if (sortDirectionBtn) {
+      sortDirectionBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleSortDirection();
+      });
+    }
   }
 
   // ---------- Shared floating action menu (Edit / Delete / Go to data type) ----------
@@ -1296,6 +1656,7 @@
     currentParamLayout = 'list';
     this.classList.add('active');
     document.getElementById('layoutTableBtn').classList.remove('active');
+    paramsMenu.classList.remove('open');
     renderParameters();
   });
   document.getElementById('layoutTableBtn').addEventListener('click', function (e) {
@@ -1303,6 +1664,7 @@
     currentParamLayout = 'table';
     this.classList.add('active');
     document.getElementById('layoutListBtn').classList.remove('active');
+    paramsMenu.classList.remove('open');
     renderParameters();
   });
 
@@ -1342,20 +1704,12 @@
   document.getElementById('modalCancel').addEventListener('click', closeModal);
   document.getElementById('modalCreate').addEventListener('click', function () {
     if (modalMode === 'create') {
-      paramConfig = {
-        name: document.getElementById('fieldName').value || 'Parameter',
-        code: document.getElementById('fieldCode').value,
-        description: document.getElementById('fieldDescription').value,
-        dataType: document.getElementById('fieldDataType').textContent,
-        multivalued: multivaluedToggle.classList.contains('on'),
-        collectionType: document.getElementById('ddCollectionType').querySelector('.dropdown-value').textContent,
-        orderType: document.getElementById('ddOrderType').querySelector('.dropdown-value').textContent,
-        selectAttribute: document.getElementById('ddSelectAttribute').querySelector('.dropdown-value').textContent
-      };
+      paramConfig = readParamConfigFromModal();
       parameterCreated = true;
       supplierData = defaultSupplierData();
       elementCollapsed = {};
       groupCollapsed = false;
+      viewSort = null;
       viewMode = 'parent';
       btnViewParent.classList.add('active');
       btnViewChild.classList.remove('active');
@@ -1363,24 +1717,11 @@
       renderParameters();
     } else if (modalMode === 'edit') {
       // Apply the edited settings to the existing parameter. The element list itself
-      // (its data and current order) is left untouched — switching order type only
-      // changes how that order can be changed, not what the order currently is.
-      paramConfig = {
-        name: document.getElementById('fieldName').value || 'Parameter',
-        code: document.getElementById('fieldCode').value,
-        description: document.getElementById('fieldDescription').value,
-        dataType: document.getElementById('fieldDataType').textContent,
-        multivalued: multivaluedToggle.classList.contains('on'),
-        collectionType: document.getElementById('ddCollectionType').querySelector('.dropdown-value').textContent,
-        orderType: document.getElementById('ddOrderType').querySelector('.dropdown-value').textContent,
-        selectAttribute: document.getElementById('ddSelectAttribute').querySelector('.dropdown-value').textContent
-      };
-      // Entering "Order by attribute" sorts once to reflect the attribute now driving order.
-      // Leaving it (back to None or Default order) intentionally leaves the resulting
-      // positions as-is rather than reshuffling them again.
-      if (paramConfig.orderType === ATTRIBUTE_ORDER_TYPE && paramConfig.selectAttribute === 'Date since') {
-        sortSupplierByDate();
-      }
+      // (its data and current order) is left untouched — sorting is a view-only concern,
+      // so changing the sort type never moves anything in supplierData. Any ad-hoc view
+      // override is cleared so the newly configured default takes effect immediately.
+      paramConfig = readParamConfigFromModal();
+      viewSort = null;
       renderParameters();
     }
     closeModal();
@@ -1389,15 +1730,37 @@
     if (e.target === modalOverlay) closeModal();
   });
 
-  // ---------- Multivalued toggle ----------
-  var multivaluedToggle = document.getElementById('multivaluedToggle');
+  // ---------- Value structure / Sort type / Select attribute / Sort order rows ----------
+  // Design B (new) rows:
+  var rowValueStructure = document.getElementById('rowValueStructure');
+  var rowSortType = document.getElementById('rowSortType');
+  var rowSortOrder = document.getElementById('rowSortOrder');
+  // Design A (original) rows:
+  var rowMultivalued = document.getElementById('rowMultivalued');
   var rowCollectionType = document.getElementById('rowCollectionType');
   var rowOrderType = document.getElementById('rowOrderType');
+  var rowDefaultSort = document.getElementById('rowDefaultSort');
+  // Shared by both designs:
   var rowSelectAttribute = document.getElementById('rowSelectAttribute');
 
-  function setDropdownValue(ddId, value) {
+  function getRadioValue(groupId) {
+    var sel = document.getElementById(groupId).querySelector('.radio-option.selected');
+    return sel ? sel.dataset.value : null;
+  }
+  function setRadioValue(groupId, value) {
+    document.getElementById(groupId).querySelectorAll('.radio-option').forEach(function (opt) {
+      opt.classList.toggle('selected', opt.dataset.value === value);
+    });
+  }
+
+  // Every dropdown remembers its own CANONICAL value in a data-value attribute on the
+  // container (separate from the displayed label) — needed because the old design's
+  // "Default sort" dropdown shows different label text for the same underlying value
+  // depending on Order type (e.g. "First to last" vs "Ascending" both mean SORT_ORDER_ASC).
+  function setDropdownValue(ddId, value, label) {
     var dd = document.getElementById(ddId);
-    dd.querySelector('.dropdown-value').textContent = value;
+    dd.dataset.value = value;
+    dd.querySelector('.dropdown-value').textContent = (label !== undefined ? label : value);
     dd.querySelectorAll('.dropdown-option').forEach(function (opt) {
       var isMatch = opt.dataset.value === value;
       var check = opt.querySelector('.check, .check-spacer');
@@ -1408,6 +1771,101 @@
       }
     });
   }
+  function getDropdownValue(ddId) {
+    var dd = document.getElementById(ddId);
+    return dd.dataset.value !== undefined ? dd.dataset.value : dd.querySelector('.dropdown-value').textContent;
+  }
+
+  // The live "Value structure" / "Sort type" reading, from whichever widget set the
+  // active design is currently showing.
+  function currentValueStructure() {
+    if (DESIGN_VERSION === 'A') {
+      return toggleMultivalued.classList.contains('on') ? getDropdownValue('ddCollectionType') : 'Singlevalued';
+    }
+    return getDropdownValue('ddValueStructure');
+  }
+  function currentSortType() {
+    if (DESIGN_VERSION === 'A') return getDropdownValue('ddOrderType');
+    return getRadioValue('radioSortType') || 'Default';
+  }
+
+  function readParamConfigFromModal() {
+    var sortOrder = DESIGN_VERSION === 'A' ? getDropdownValue('ddDefaultSort') : (getRadioValue('radioSortOrder') || SORT_ORDER_ASC);
+    return {
+      name: document.getElementById('fieldName').value || 'Parameter',
+      code: document.getElementById('fieldCode').value,
+      description: document.getElementById('fieldDescription').value,
+      dataType: document.getElementById('fieldDataType').textContent,
+      valueStructure: currentValueStructure(),
+      sortType: currentSortType(),
+      selectAttribute: document.getElementById('ddSelectAttribute').querySelector('.dropdown-value').textContent,
+      sortOrder: sortOrder
+    };
+  }
+
+  // The old design's "Default sort" dropdown re-labels its two (canonically unchanged)
+  // options depending on Order type — "First to last"/"Last to first" for Default,
+  // "Ascending"/"Descending" for By attribute.
+  function renderDefaultSortLabels(orderType) {
+    var isAttr = orderType === ATTRIBUTE_SORT_TYPE;
+    var ascLabel = isAttr ? 'Ascending' : 'First to last';
+    var descLabel = isAttr ? 'Descending' : 'Last to first';
+    var dd = document.getElementById('ddDefaultSort');
+    dd.querySelector('.dropdown-option[data-value="' + SORT_ORDER_ASC + '"] span:last-child').textContent = ascLabel;
+    dd.querySelector('.dropdown-option[data-value="' + SORT_ORDER_DESC + '"] span:last-child').textContent = descLabel;
+    var current = getDropdownValue('ddDefaultSort');
+    setDropdownValue('ddDefaultSort', current, current === SORT_ORDER_DESC ? descLabel : ascLabel);
+  }
+
+  // Show/hide every structure-dependent row for whichever design is active, consistently
+  // for reset, edit, and version switching.
+  function runCascade() {
+    var valueStructure = currentValueStructure();
+    var sortType = currentSortType();
+    var isSingle = valueStructure === 'Singlevalued';
+    var isA = DESIGN_VERSION === 'A';
+
+    rowCollectionType.classList.toggle('field-hidden', !(isA && !isSingle));
+    rowSortType.classList.toggle('field-hidden', !(!isA && !isSingle));
+    rowOrderType.classList.toggle('field-hidden', !(isA && !isSingle));
+    rowSortOrder.classList.toggle('field-hidden', !(!isA && !isSingle));
+    rowDefaultSort.classList.toggle('field-hidden', !(isA && !isSingle));
+
+    var showAttr = !isSingle && sortType === ATTRIBUTE_SORT_TYPE;
+    rowSelectAttribute.classList.toggle('field-hidden', !showAttr);
+
+    if (isA) renderDefaultSortLabels(sortType);
+  }
+
+  // Push a canonical value into BOTH widget sets, so switching design version mid-edit
+  // never loses what was chosen in the other one.
+  function applyValueStructureToWidgets(valueStructure) {
+    setDropdownValue('ddValueStructure', valueStructure);
+    var isSingle = valueStructure === 'Singlevalued';
+    toggleMultivalued.classList.toggle('on', !isSingle);
+    var collValue = isSingle ? 'List' : valueStructure;
+    var collLabel = collValue === 'Map (key-value pairs)' ? 'Map (specific)' : 'List';
+    setDropdownValue('ddCollectionType', collValue, collLabel);
+  }
+  function applySortTypeToWidgets(sortType) {
+    setRadioValue('radioSortType', sortType);
+    setDropdownValue('ddOrderType', sortType);
+  }
+  function applySortOrderToWidgets(sortOrder) {
+    setRadioValue('radioSortOrder', sortOrder);
+    var isAttr = currentSortType() === ATTRIBUTE_SORT_TYPE;
+    var label = sortOrder === SORT_ORDER_DESC ? (isAttr ? 'Descending' : 'Last to first') : (isAttr ? 'Ascending' : 'First to last');
+    setDropdownValue('ddDefaultSort', sortOrder, label);
+  }
+
+  // Show/hide the two Value structure / Sort type / Sort order row PAIRS (old vs new
+  // widget) for whichever design is currently active, then re-run the shared cascade.
+  function refreshModalRowsForVersion() {
+    var isA = DESIGN_VERSION === 'A';
+    rowValueStructure.classList.toggle('field-hidden', isA);
+    rowMultivalued.classList.toggle('field-hidden', !isA);
+    runCascade();
+  }
 
   function resetModalToDefaults() {
     modalMode = 'create';
@@ -1417,13 +1875,11 @@
     document.getElementById('fieldCode').value = 'PARAM_SUPPLIER';
     document.getElementById('fieldDescription').value = '';
     document.getElementById('fieldDataType').textContent = 'Supplier';
-    multivaluedToggle.classList.remove('on');
-    rowCollectionType.classList.add('field-hidden');
-    rowOrderType.classList.add('field-hidden');
-    rowSelectAttribute.classList.add('field-hidden');
-    setDropdownValue('ddCollectionType', 'List (bulk)');
-    setDropdownValue('ddOrderType', 'None (reorder not possible)');
+    applyValueStructureToWidgets('Singlevalued');
+    applySortTypeToWidgets('Default');
     setDropdownValue('ddSelectAttribute', 'Not selected');
+    applySortOrderToWidgets(SORT_ORDER_ASC);
+    refreshModalRowsForVersion();
   }
 
   function applyParamConfigToModal(config) {
@@ -1434,14 +1890,11 @@
     document.getElementById('fieldCode').value = config.code;
     document.getElementById('fieldDescription').value = config.description || '';
     document.getElementById('fieldDataType').textContent = config.dataType;
-    multivaluedToggle.classList.toggle('on', !!config.multivalued);
-    rowCollectionType.classList.toggle('field-hidden', !config.multivalued);
-    rowOrderType.classList.toggle('field-hidden', !config.multivalued);
-    setDropdownValue('ddCollectionType', config.collectionType);
-    setDropdownValue('ddOrderType', config.orderType);
-    var showAttr = !!config.multivalued && config.orderType === 'Order by attribute (selected attribute drives order)';
-    rowSelectAttribute.classList.toggle('field-hidden', !showAttr);
+    applyValueStructureToWidgets(config.valueStructure);
+    applySortTypeToWidgets(config.sortType || 'Default');
     setDropdownValue('ddSelectAttribute', config.selectAttribute);
+    applySortOrderToWidgets(config.sortOrder || SORT_ORDER_ASC);
+    refreshModalRowsForVersion();
   }
 
   function openModalForEdit() {
@@ -1449,17 +1902,116 @@
     openModal();
   }
 
-  multivaluedToggle.addEventListener('click', function () {
-    var turningOn = !this.classList.contains('on');
-    this.classList.toggle('on');
-    rowCollectionType.classList.toggle('field-hidden', !turningOn);
-    rowOrderType.classList.toggle('field-hidden', !turningOn);
-    if (!turningOn) {
-      rowSelectAttribute.classList.add('field-hidden');
-      setDropdownValue('ddCollectionType', 'List (bulk)');
-      setDropdownValue('ddOrderType', 'None (reorder not possible)');
-      setDropdownValue('ddSelectAttribute', 'Not selected');
+  // Switch which of the two competing designs is shown. If the modal is open, whatever
+  // was live in the widgets being left is read out and pushed into the other design's
+  // widgets first, so an in-progress edit survives switching mid-edit.
+  function setDesignVersion(v) {
+    if (DESIGN_VERSION === v) return;
+    var modalIsOpen = modalOverlay.classList.contains('open');
+    var liveConfig = modalIsOpen ? readParamConfigFromModal() : null;
+    DESIGN_VERSION = v;
+    btnOptionA.classList.toggle('active', v === 'A');
+    btnOptionB.classList.toggle('active', v === 'B');
+    if (modalIsOpen) {
+      applyValueStructureToWidgets(liveConfig.valueStructure);
+      applySortTypeToWidgets(liveConfig.sortType);
+      setDropdownValue('ddSelectAttribute', liveConfig.selectAttribute);
+      applySortOrderToWidgets(liveConfig.sortOrder);
+      refreshModalRowsForVersion();
     }
+    renderParameters();
+  }
+
+  // Value structure (new dropdown): Singlevalued hides Sort type/Select attribute/Sort
+  // order and resets them to their defaults; List/Map (key-value pairs) reveal them.
+  var ddValueStructure = document.getElementById('ddValueStructure');
+  ddValueStructure.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var value = opt.dataset.value;
+      setDropdownValue('ddValueStructure', value);
+      ddValueStructure.classList.remove('open');
+      if (value === 'Singlevalued') {
+        applySortTypeToWidgets('Default');
+        setDropdownValue('ddSelectAttribute', 'Not selected');
+        applySortOrderToWidgets(SORT_ORDER_ASC);
+      }
+      runCascade();
+    });
+  });
+
+  // Multivalued toggle (old design): off resets Order type/Select attribute/Default
+  // sort to their defaults, mirroring the new design's Singlevalued reset behavior.
+  var toggleMultivalued = document.getElementById('toggleMultivalued');
+  toggleMultivalued.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var turningOn = !toggleMultivalued.classList.contains('on');
+    toggleMultivalued.classList.toggle('on', turningOn);
+    if (!turningOn) {
+      applySortTypeToWidgets('Default');
+      setDropdownValue('ddSelectAttribute', 'Not selected');
+      applySortOrderToWidgets(SORT_ORDER_ASC);
+    }
+    runCascade();
+  });
+
+  // Collection type (old design): List | Map (specific)
+  var ddCollectionType = document.getElementById('ddCollectionType');
+  ddCollectionType.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var value = opt.dataset.value;
+      var label = opt.querySelector('span:last-child').textContent;
+      setDropdownValue('ddCollectionType', value, label);
+      ddCollectionType.classList.remove('open');
+      runCascade();
+    });
+  });
+
+  // Sort type (new design, radio): Default | By attribute — reveals "Select attribute"
+  var radioSortType = document.getElementById('radioSortType');
+  radioSortType.querySelectorAll('.radio-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setRadioValue('radioSortType', opt.dataset.value);
+      if (opt.dataset.value !== ATTRIBUTE_SORT_TYPE) setDropdownValue('ddSelectAttribute', 'Not selected');
+      runCascade();
+    });
+  });
+
+  // Order type (old design, dropdown): Default | By attribute
+  var ddOrderType = document.getElementById('ddOrderType');
+  ddOrderType.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var value = opt.dataset.value;
+      setDropdownValue('ddOrderType', value);
+      ddOrderType.classList.remove('open');
+      if (value !== ATTRIBUTE_SORT_TYPE) setDropdownValue('ddSelectAttribute', 'Not selected');
+      runCascade();
+    });
+  });
+
+  // Sort order (new design, radio): A>Z, 1>9, Old>New | Z>A, 9>1, New>Old
+  var radioSortOrder = document.getElementById('radioSortOrder');
+  radioSortOrder.querySelectorAll('.radio-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setRadioValue('radioSortOrder', opt.dataset.value);
+    });
+  });
+
+  // Default sort (old design, dropdown) — its two options' labels are (re)rendered by
+  // renderDefaultSortLabels() to match the current Order type.
+  var ddDefaultSort = document.getElementById('ddDefaultSort');
+  ddDefaultSort.querySelectorAll('.dropdown-option').forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var value = opt.dataset.value;
+      var label = opt.querySelector('span:last-child').textContent;
+      setDropdownValue('ddDefaultSort', value, label);
+      ddDefaultSort.classList.remove('open');
+    });
   });
 
   // ---------- Generic dropdown open/close ----------
@@ -1482,35 +2034,14 @@
     allDropdowns.forEach(function (d) { d.classList.remove('open'); });
     paramsMenu.classList.remove('open');
     actionMenu.classList.remove('open');
+    sortMenu.classList.remove('open');
     hideTooltip();
   });
   var drawerBodyEl = document.querySelector('.drawer-body');
   if (drawerBodyEl) drawerBodyEl.addEventListener('scroll', hideTooltip);
 
-  // Collection type: Map click is a no-op visually — value always resolves to List (bulk)
-  var ddCollectionType = document.getElementById('ddCollectionType');
-  ddCollectionType.querySelectorAll('.dropdown-option').forEach(function (opt) {
-    opt.addEventListener('click', function (e) {
-      e.stopPropagation();
-      setDropdownValue('ddCollectionType', 'List (bulk)');
-      ddCollectionType.classList.remove('open');
-    });
-  });
-
-  // Order type: normal select behaviour + reveal "Select attribute" row
-  var ddOrderType = document.getElementById('ddOrderType');
-  ddOrderType.querySelectorAll('.dropdown-option').forEach(function (opt) {
-    opt.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var value = opt.dataset.value;
-      setDropdownValue('ddOrderType', value);
-      ddOrderType.classList.remove('open');
-      var showAttribute = value === 'Order by attribute (selected attribute drives order)';
-      rowSelectAttribute.classList.toggle('field-hidden', !showAttribute);
-    });
-  });
-
-  // Select attribute: normal select behaviour
+  // Select attribute: normal select behaviour (Sort order stays visible regardless —
+  // it no longer gates on whether a real attribute has been picked)
   var ddSelectAttribute = document.getElementById('ddSelectAttribute');
   ddSelectAttribute.querySelectorAll('.dropdown-option').forEach(function (opt) {
     opt.addEventListener('click', function (e) {
@@ -1537,9 +2068,10 @@
 
     paramConfig = {
       name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
-      multivalued: true, collectionType: 'List (bulk)',
-      orderType: 'None (reorder not possible)', selectAttribute: 'Not selected'
+      valueStructure: 'List',
+      sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z, 1>9, Old>New'
     };
+    viewSort = null;
     resetModalToDefaults();
     closeModal();
     actionMenu.classList.remove('open');
