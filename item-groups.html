@@ -294,6 +294,10 @@ body.resizing{cursor:ew-resize;user-select:none;}
 .hist-table tbody tr:last-child td{border-bottom:none;}
 .hist-table tbody tr:hover td{background:var(--selectable-hover);}
 .hist-table .sorth{display:inline-flex;align-items:center;gap:4px;}
+.hist-table th.hsort{cursor:pointer;user-select:none;white-space:nowrap;}
+.hist-table th.hsort:hover{color:var(--primary);}
+.hsort-ar{display:inline-flex;vertical-align:middle;margin-left:4px;}
+.hsort-ar svg{display:block;}
 .hist-new{font-weight:700;color:var(--text-strong);}
 .hist-old{color:var(--text-default);}
 .hist-chip{display:inline-flex;align-items:center;height:20px;padding:0 8px;margin:0 4px 2px 0;border-radius:var(--radius-round);
@@ -1030,12 +1034,34 @@ function histRowHtml(r,parent){
     +'<td>'+a+'</td></tr>';
 }
 /* window the log to exactly HIST_VISIBLE rows; expanding trims trailing rows, collapsing refills */
+/* ---- sorting (one column at a time; import stays a group, children keep their order) ---- */
+const histSort={};
+function histSortState(id){ if(!histSort[id]) histSort[id]={col:'when',dir:'desc'}; return histSort[id]; }
+function histSortKey(ev,col){
+  switch(col){
+    case 'when': return ev.ts;
+    case 'typ': return (ev.kind==='import'?'Import':ev.type)||'';
+    case 'author': return ev.author||'';
+    case 'place': return ev.place||'';
+    case 'old': return ev.oldC?ev.oldC.join(' '):(ev.old||'');
+    case 'new': return ev.newC?ev.newC.join(' '):(ev.neu||'');
+  }
+  return '';
+}
+function histSortEvents(id,evs){
+  const s=histSortState(id), dir=s.dir==='asc'?1:-1;
+  evs.sort((a,b)=>{
+    let ka=histSortKey(a,s.col), kb=histSortKey(b,s.col);
+    if(s.col==='when') return (ka-kb)*dir;
+    return String(ka).localeCompare(String(kb),'cs',{numeric:true,sensitivity:'base'})*dir;
+  });
+}
 function renderHistoryRows(id){
-  const evs=histLog(ctxOf(id));
+  const evs=histLog(ctxOf(id)).filter(e=>histEvMatch(id,e));
+  histSortEvents(id,evs);
   let out='', rows=0;
   for(const ev of evs){
     if(rows>=HIST_VISIBLE) break;
-    if(!histEvMatch(id,ev)) continue;
     if(ev.kind==='import'){
       out+='<tr class="hist-grp" onclick="histToggle(\''+ev.id+'\',this)">'
         +'<td><span class="hist-typ"><span class="hist-exp'+(ev.expanded?' open':'')+'">'+I.caret+'</span>Import</span></td>'
@@ -1045,6 +1071,19 @@ function renderHistoryRows(id){
     } else { out+=histRowHtml(ev,null); rows++; }
   }
   return out || '<tr class="hist-empty"><td colspan="6">Žádné změny neodpovídají zvolenému filtru.</td></tr>';
+}
+const SORT_UP='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 15l6-6 6 6"/></svg>';
+const SORT_DN='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>';
+function hth(id,col,label){ const ar=(col==='when')?SORT_DN:''; return '<th class="hsort" onclick="histSetSort(\''+id+'\',\''+col+'\')">'+label+'<span class="hsort-ar" id="'+id+'-sort-'+col+'">'+ar+'</span></th>'; }
+function histSyncSortHeader(id){
+  const s=histSortState(id);
+  ['typ','place','old','new','when','author'].forEach(c=>{ const el=document.getElementById(id+'-sort-'+c); if(el) el.innerHTML=(c===s.col)?(s.dir==='asc'?SORT_UP:SORT_DN):''; });
+}
+function histSetSort(id,col){
+  const s=histSortState(id);
+  if(s.col===col) s.dir=(s.dir==='asc'?'desc':'asc');
+  else { s.col=col; s.dir=(col==='when')?'desc':'asc'; }
+  histRerender(id); histSyncSortHeader(id);
 }
 function histToggle(evId,el){
   const tb=el.closest('tbody'), id=tb.id.replace('-hisbody','');
@@ -1057,6 +1096,7 @@ function fopt(id,kind,val){const v=val.replace(/'/g,"\\'");return '<div class="f
 function historyTab(id){
   const ctx=ctxOf(id);
   histFilters[id]={from:null,to:null,authors:{},types:{},q:''};   // fresh markup -> fresh filter state
+  histSort[id]={col:'when',dir:'desc'};                            // default sort: newest first
   const typeOpts=HIST_CFG[ctx].types.concat(['Import']);
   return `<div class="tabpanel" data-k="his" id="${id}-his">
     <div class="hist-head"><span class="htitle">Historie</span><button class="icon-btn dead">${I.dotsh}</button></div>
@@ -1075,7 +1115,7 @@ function historyTab(id){
       <button class="icon-btn" title="Zrušit filtry" onclick="histResetFilters('${id}')">${I.reset}</button>
     </div>
     <div class="hist-wrap"><table class="hist-table">
-      <thead><tr><th>Typ změny</th><th>Místo změny</th><th>Původní hodnota</th><th>Nová hodnota</th><th><span class="sorth">Kdy ${histSortIcon}</span></th><th>Autor</th></tr></thead>
+      <thead><tr>${hth(id,'typ','Typ změny')}${hth(id,'place','Místo změny')}${hth(id,'old','Původní hodnota')}${hth(id,'new','Nová hodnota')}${hth(id,'when','Kdy')}${hth(id,'author','Autor')}</tr></thead>
       <tbody id="${id}-hisbody">${renderHistoryRows(id)}</tbody>
     </table></div>
     ${pager(true)}
