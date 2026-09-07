@@ -929,13 +929,14 @@
         </div>
       </div>
 
-      <!-- Sort order — new design (Option B): radio buttons, shared wording for both sort types -->
+      <!-- Sort order — new design (Option B): radio buttons, shared wording for both sort
+           types AND every attribute (plain A>Z / Z>A regardless of data type) -->
       <div class="form-row field-hidden" id="rowSortOrder">
         <div class="form-label">Sort order</div>
         <div class="form-field">
           <div class="radio-group" id="radioSortOrder">
-            <div class="radio-option selected" data-value="A>Z, 1>9, Old>New"><span class="radio-dot"></span><span>A&gt;Z, 1&gt;9, Old&gt;New</span></div>
-            <div class="radio-option" data-value="Z>A, 9>1, New>Old"><span class="radio-dot"></span><span>Z&gt;A, 9&gt;1, New&gt;Old</span></div>
+            <div class="radio-option selected" data-value="A>Z"><span class="radio-dot"></span><span>A&gt;Z</span></div>
+            <div class="radio-option" data-value="Z>A"><span class="radio-dot"></span><span>Z&gt;A</span></div>
           </div>
         </div>
       </div>
@@ -952,11 +953,11 @@
               <svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="dropdown-panel">
-              <div class="dropdown-option" data-value="A>Z, 1>9, Old>New">
+              <div class="dropdown-option" data-value="A>Z">
                 <svg class="icon check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
                 <span>First to last</span>
               </div>
-              <div class="dropdown-option" data-value="Z>A, 9>1, New>Old">
+              <div class="dropdown-option" data-value="Z>A">
                 <span class="check-spacer"></span>
                 <span>Last to first</span>
               </div>
@@ -1113,7 +1114,7 @@
   var paramConfig = {
     name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
     valueStructure: 'List',
-    sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z, 1>9, Old>New'
+    sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z'
   };
   var parameterCreated = true;
   var viewMode = 'parent';
@@ -1173,10 +1174,11 @@
   // Sentinel field for the non-attribute "Default" sort type: there, no real
   // column/attribute is "the" default, they're all symmetric guests.
   var DEFAULT_FIELD = '__default__';
-  // The two Sort order choices (shared by both Sort type = Default and By attribute —
-  // "A>Z, 1>9, Old>New" means ascending / earliest-created-first; the other means descending).
-  var SORT_ORDER_ASC = 'A>Z, 1>9, Old>New';
-  var SORT_ORDER_DESC = 'Z>A, 9>1, New>Old';
+  // The two Sort order choices (shared by both Sort type = Default and By attribute, and
+  // by every attribute regardless of its data type — plain "A>Z" means ascending /
+  // earliest-created-first; "Z>A" means descending).
+  var SORT_ORDER_ASC = 'A>Z';
+  var SORT_ORDER_DESC = 'Z>A';
 
   // Maps a sortable data field to its label / the modal's "Select attribute" value / value type.
   var FIELD_META = [
@@ -1204,9 +1206,8 @@
   // remains attribute-aware — it's what the card/list "Sort by attribute" control treats
   // as its floor and marks "(Default)".
   function getConfiguredDefault() {
-    // Sort order is shared by both Sort types — it's the same "A>Z, 1>9, Old>New" vs.
-    // "Z>A, 9>1, New>Old" choice whether it's driving a real attribute or the plain
-    // creation order.
+    // Sort order is shared by both Sort types — it's the same "A>Z" vs. "Z>A" choice
+    // whether it's driving a real attribute or the plain creation order.
     var direction = paramConfig.sortOrder === SORT_ORDER_DESC ? 'Descending' : 'Ascending';
     if (paramConfig.sortType === ATTRIBUTE_SORT_TYPE) {
       var key = fieldKeyForAttribute(paramConfig.selectAttribute);
@@ -2007,7 +2008,7 @@
     });
   });
 
-  // Sort order (new design, radio): A>Z, 1>9, Old>New | Z>A, 9>1, New>Old
+  // Sort order (new design, radio): A>Z | Z>A
   var radioSortOrder = document.getElementById('radioSortOrder');
   radioSortOrder.querySelectorAll('.radio-option').forEach(function (opt) {
     opt.addEventListener('click', function (e) {
@@ -2084,7 +2085,7 @@
     paramConfig = {
       name: 'Supplier', code: 'PARAM_SUPPLIER', description: '', dataType: 'Supplier',
       valueStructure: 'List',
-      sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z, 1>9, Old>New'
+      sortType: 'Default', selectAttribute: 'Not selected', sortOrder: 'A>Z'
     };
     viewSort = null;
     resetModalToDefaults();
