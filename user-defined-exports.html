@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WisePorter — Export do souboru</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --surface-default:#f6f6f6; --surface-card:#ffffff;
+  --selectable-hover:#f6f6f6; --selectable-selected:#e6f7ff; --selectable-selected-hover:#ddedf5;
+  --primary:#1770c8; --primary-hover:#00539a; --primary-active:#003a6e;
+  --primary-disabled:#a5caf5; --primary-subtle:#e6f7ff;
+  --secondary:#6f6f6f; --secondary-hover:#525252; --secondary-active:#393939;
+  --secondary-disabled:#c6c6c6; --secondary-subtle:#f6f6f6;
+  --danger:#c83f32; --danger-subtle:#fef0f0;
+  --warning:#f2bf46; --warning-text:#7c4500; --warning-subtle:#fff6ae;
+  --success:#597931; --success-subtle:#e1fcca;
+  --info:#007b88; --info-subtle:#def8ff;
+  --text-default:#525252; --text-strong:#262626; --text-disabled:#8e8e8e;
+  --text-inverse:#ffffff; --text-link:#1770c8; --text-primary:#00539a;
+  --border-default:#a8a8a8; --border-strong:#6f6f6f; --border-subtle:#dfdfdf;
+  --border-primary:#77abf0; --border-focus:#1770c8;
+  --sp-2:2px; --sp-4:4px; --sp-6:6px; --sp-8:8px; --sp-10:10px; --sp-12:12px;
+  --sp-16:16px; --sp-20:20px; --sp-24:24px; --sp-32:32px; --sp-40:40px; --sp-48:48px;
+  --radius-sm:2px; --radius-md:4px; --radius-lg:8px; --radius-round:320px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Roboto',sans-serif;background:var(--surface-default);color:var(--text-default);font-size:14px;line-height:20px;}
+button{font-family:'Roboto',sans-serif;}
+
+/* ── typography ─────────────────────────────────────────── */
+.title-xl{font-size:32px;font-weight:300;line-height:44px;color:var(--text-strong);}
+.title-lg{font-size:24px;font-weight:500;line-height:32px;color:var(--text-strong);}
+.title-md{font-size:18px;font-weight:600;line-height:24px;color:var(--text-strong);}
+.title-sm{font-size:14px;font-weight:900;line-height:20px;color:var(--text-strong);}
+.title-xs{font-size:12px;font-weight:700;line-height:16px;text-transform:uppercase;color:var(--text-strong);}
+.text-md{font-size:14px;font-weight:400;line-height:20px;}
+.text-md-bold{font-size:14px;font-weight:700;line-height:20px;}
+.text-sm{font-size:12px;font-weight:400;line-height:16px;}
+.text-sm-bold{font-size:12px;font-weight:700;line-height:16px;}
+
+/* ── prototype screen switcher ──────────────────────────── */
+#switcher{
+  position:fixed;top:0;left:0;right:0;height:36px;z-index:9999;
+  background:#262626;display:flex;align-items:center;gap:4px;padding:0 12px;
+}
+#switcher .lbl{color:#8e8e8e;font-size:12px;line-height:16px;margin-right:8px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;}
+#switcher button{
+  background:transparent;border:1px solid #4a4a4a;color:#dfdfdf;
+  height:22px;padding:0 10px;border-radius:var(--radius-md);
+  font-size:12px;line-height:16px;cursor:pointer;
+}
+#switcher button:hover{background:#393939;}
+#switcher button.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:500;}
+#stage{padding-top:36px;}
+
+/* ── app shell ──────────────────────────────────────────── */
+.app{position:relative;background:var(--surface-card);min-height:calc(100vh - 36px);overflow:hidden;}
+.apphdr{
+  height:44px;background:var(--surface-card);border-bottom:1px solid var(--border-subtle);
+  display:flex;align-items:center;padding:0 16px;gap:24px;position:relative;z-index:2;
+}
+.logo{display:flex;align-items:center;gap:8px;font-size:18px;line-height:24px;color:var(--text-strong);}
+.logo b{font-weight:700;} .logo span{font-weight:300;}
+.logomark{width:22px;height:22px;flex:none;}
+.topnav{display:flex;align-items:center;gap:2px;height:44px;}
+.topnav a{
+  display:flex;align-items:center;height:44px;padding:0 12px;text-decoration:none;
+  color:var(--text-default);font-size:14px;line-height:20px;border-bottom:2px solid transparent;
+}
+.topnav a:hover{background:var(--selectable-hover);}
+.topnav a.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:500;}
+.hdricons{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--secondary);}
+.hdricons .ic{width:32px;height:32px;display:grid;place-items:center;border-radius:var(--radius-md);cursor:pointer;}
+.hdricons .ic:hover{background:var(--selectable-hover);}
+
+.body{display:flex;align-items:stretch;min-height:calc(100vh - 80px);}
+.sidebar{width:240px;flex:none;border-right:1px solid var(--border-subtle);padding:8px 0;background:var(--surface-card);}
+.navitem{
+  display:flex;align-items:center;gap:10px;height:32px;padding:0 16px;margin:0 8px 2px;
+  border-radius:var(--radius-md);font-size:14px;line-height:20px;color:var(--text-default);cursor:pointer;
+}
+.navitem:hover{background:var(--selectable-hover);}
+.navitem.on{background:var(--selectable-selected);color:var(--text-primary);font-weight:500;}
+.navitem .dot{width:14px;height:14px;flex:none;border:1px dashed var(--border-default);border-radius:var(--radius-sm);}
+.content{flex:1;min-width:0;padding-bottom:24px;}
+
+.pagetitle{padding:16px 24px 0;}
+.filters{padding:12px 24px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.searchbox{
+  width:236px;height:32px;border:1px solid var(--border-default);border-radius:var(--radius-md);
+  display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--surface-card);color:var(--text-disabled);
+}
+.searchbox input{border:none;outline:none;flex:1;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);background:transparent;}
+.fchip{
+  height:28px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  font-size:13px;line-height:16px;color:var(--text-default);background:var(--surface-card);cursor:pointer;white-space:nowrap;
+}
+.fchip:hover{background:var(--selectable-hover);}
+.fchip .fi{color:var(--text-disabled);}
+.ficon{width:28px;height:28px;display:grid;place-items:center;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;}
+.ficon:hover{background:var(--selectable-hover);}
+
+.toolbar{padding:16px 24px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-md);font:500 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-primary:hover{background:var(--primary-hover);}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:transparent;color:var(--text-default);border:1px solid var(--border-default);border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-secondary:hover{background:var(--selectable-hover);}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:0 10px;height:32px;background:transparent;color:var(--text-default);border:1px solid transparent;border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-ghost:hover{background:var(--selectable-hover);}
+
+/* ── table ──────────────────────────────────────────────── */
+.tablewrap{margin:16px 24px 0;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;}
+.table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.table thead th{padding:0 16px;height:48px;text-align:left;font:700 14px/20px 'Roboto',sans-serif;color:var(--text-strong);background:var(--surface-card);border-bottom:1px solid var(--border-subtle);}
+.table tbody tr{border-bottom:1px solid var(--border-subtle);}
+.table tbody tr:last-child{border-bottom:none;}
+.table tbody tr:hover{background:var(--selectable-hover);cursor:pointer;}
+.table tbody tr.selected{background:var(--selectable-selected);}
+.table tbody tr.selected:hover{background:var(--selectable-selected-hover);}
+.table tbody td{padding:0 16px;height:40px;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.col-chk{width:48px;} .col-code{width:140px;} .col-brand{width:110px;} .col-store{width:170px;}
+.col-p1{width:190px;text-align:right;} .col-p2{width:190px;text-align:right;}
+.selbar{height:48px;background:#b6ddf5;display:flex;align-items:center;gap:24px;padding:0 16px;border-bottom:1px solid var(--border-subtle);}
+.selbar .cnt{font:700 14px/20px 'Roboto',sans-serif;color:var(--text-strong);}
+.selbar label{display:flex;align-items:center;gap:10px;cursor:pointer;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-strong);}
+.chipbrand{display:inline-flex;align-items:center;padding:0 8px;height:20px;background:var(--secondary-subtle);color:var(--text-strong);border-radius:var(--radius-round);font:400 12px/1 'Roboto',sans-serif;}
+.pager{display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:14px;line-height:20px;color:var(--text-default);}
+.pagebtn{min-width:28px;height:28px;padding:0 6px;display:grid;place-items:center;border-radius:var(--radius-md);cursor:pointer;color:var(--text-default);}
+.pagebtn:hover{background:var(--selectable-hover);}
+.pagebtn.on{background:var(--primary-subtle);color:var(--text-primary);font-weight:500;}
+.selmini{height:28px;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 24px 0 8px;font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);background:var(--surface-card);appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238e8e8e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;}
+
+/* ── checkbox ───────────────────────────────────────────── */
+.cb{width:16px;height:16px;flex:none;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface-card);display:inline-grid;place-items:center;cursor:pointer;position:relative;}
+.cb svg{display:none;}
+.cb.on{background:var(--primary);border-color:var(--primary);}
+.cb.on svg.tick{display:block;}
+.cb.ind{background:var(--primary);border-color:var(--primary);}
+.cb.ind svg.dash{display:block;}
+.cb.dis{background:var(--secondary-disabled);border-color:var(--secondary-disabled);cursor:not-allowed;}
+.cb.dis svg.tick{display:block;}
+.cb.off-dis{background:var(--surface-default);border-color:var(--secondary-disabled);cursor:not-allowed;}
+
+/* ── toggle ─────────────────────────────────────────────── */
+.toggle{width:32px;height:16px;border-radius:var(--radius-round);background:var(--border-default);border:none;cursor:pointer;position:relative;transition:background .2s;padding:0;flex-shrink:0;}
+.toggle.on{background:var(--primary);}
+.toggle.dis{background:var(--secondary-disabled);cursor:default;}
+.togglelbl.dis{cursor:default;color:var(--text-disabled);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .2s;}
+.toggle.on::after{left:18px;}
+
+/* ── dialog ─────────────────────────────────────────────── */
+.scrim{position:absolute;inset:0;background:rgba(38,38,38,.45);z-index:10;display:none;}
+.scrim.show{display:block;}
+.dialog{
+  position:absolute;z-index:11;top:24px;left:24px;right:24px;bottom:24px;
+  background:var(--surface-card);border-radius:var(--radius-lg);
+  box-shadow:0 8px 32px rgba(0,0,0,.24);display:none;flex-direction:column;overflow:hidden;
+}
+.dialog.show{display:flex;}
+.dlghdr{display:flex;align-items:center;gap:12px;padding:16px 24px;}
+.dlgtitle{font-size:24px;font-weight:500;line-height:32px;color:var(--text-strong);white-space:nowrap;}
+/* saved-export picker — custom combobox so the list can always drop down */
+.dlgselwrap{position:relative;flex:none;}
+.dlgsel{display:flex;align-items:center;gap:8px;width:300px;height:32px;padding:0 8px 0 10px;
+  background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);
+  font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);text-align:left;outline:none;cursor:pointer;}
+.dlgsel .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dlgsel .chev{flex:none;color:var(--secondary);transition:transform .12s;}
+.dlgsel.open{border-color:var(--border-primary);}
+.dlgsel.open .chev{transform:rotate(180deg);}
+.selmenu{position:absolute;left:0;top:100%;margin-top:2px;width:300px;z-index:45;
+  background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  box-shadow:0 8px 24px rgba(0,0,0,.16);padding:4px 0;max-height:460px;overflow-y:auto;}
+.selopt{display:flex;align-items:center;gap:8px;width:100%;height:38px;padding:0 14px 0 10px;
+  border:none;background:none;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);
+  text-align:left;cursor:pointer;}
+.selopt .ck{width:18px;height:18px;flex:none;display:grid;place-items:center;color:var(--text-strong);}
+.selopt:hover{background:var(--selectable-hover);}
+.selopt.on{background:var(--selectable-selected);}
+.selopt.on:hover{background:var(--selectable-selected-hover);}
+.selmenu .menuhead{padding:10px 14px 4px 38px;}
+.kebab{width:28px;height:28px;display:grid;place-items:center;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;flex:none;}
+.kebab:hover{background:var(--selectable-hover);}
+.dlghdr .right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.itemcount{font-size:14px;line-height:20px;color:var(--text-default);white-space:nowrap;}
+.itemcount b{font-weight:700;color:var(--text-strong);}
+.togglelbl{display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;color:var(--text-default);cursor:pointer;white-space:nowrap;}
+
+.panes{flex:1;display:flex;min-height:0;border-top:1px solid transparent;}
+.pane{flex:1;min-width:0;display:flex;flex-direction:column;padding:0 24px 0 24px;}
+.pane.left{border-right:1px solid var(--border-subtle);padding-left:24px;}
+.panehead{font-size:24px;font-weight:300;line-height:32px;color:var(--text-strong);padding:0 0 12px;}
+
+.tabs{display:flex;align-items:flex-end;gap:0;border-bottom:1px solid var(--border-subtle);position:relative;}
+.tab{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border:none;background:transparent;color:var(--text-default);font:400 13px/16px 'Roboto',sans-serif;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab:hover{color:var(--text-strong);}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:500;}
+.tab.dis{color:var(--text-disabled);cursor:not-allowed;}
+.tabbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-round);background:var(--secondary-subtle);color:var(--text-default);font:700 11px/1 'Roboto',sans-serif;}
+.tab.on .tabbadge{background:var(--primary-subtle);color:var(--text-primary);}
+.tabs .kebab{margin-left:auto;margin-bottom:4px;}
+
+.panebody{flex:1;min-height:0;overflow-y:auto;padding:12px 0 16px;}
+.searchrow{display:flex;align-items:center;gap:12px;margin:12px 0 4px;}
+.treesearch{width:236px;flex:none;height:32px;border:1px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--surface-card);}
+.segbtns{margin-left:auto;display:flex;}
+.segbtn{width:34px;height:32px;display:grid;place-items:center;background:var(--surface-card);
+  border:1px solid var(--border-default);color:var(--secondary);cursor:pointer;padding:0;}
+.segbtn:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md);}
+.segbtn:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0;margin-left:-1px;}
+.segbtn:hover{background:var(--selectable-hover);color:var(--text-strong);}
+.segbtn.on{background:var(--surface-default);color:var(--text-strong);border-color:var(--border-strong);z-index:1;}
+.treesearch input{border:none;outline:none;flex:1;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);background:transparent;}
+.treesearch input::placeholder{color:var(--text-disabled);}
+
+/* ── tree rows ──────────────────────────────────────────── */
+.tnode{display:flex;align-items:flex-start;gap:8px;min-height:28px;padding:4px 8px 4px 0;border-radius:var(--radius-md);cursor:pointer;}
+.tnode:hover{background:var(--selectable-hover);}
+.tnode.dis{cursor:not-allowed;}
+.tnode.dis:hover{background:transparent;}
+.tnode.flash{background:var(--selectable-selected);box-shadow:inset 3px 0 0 var(--primary);}
+@media (prefers-reduced-motion:no-preference){.tnode.flash{transition:background .2s;}}
+.tw{width:20px;height:20px;flex:none;display:grid;place-items:center;color:var(--secondary);border-radius:var(--radius-sm);}
+.tw.empty{visibility:hidden;}
+.tw:hover{background:var(--selectable-hover);}
+.tbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;padding-top:1px;}
+.tlabel{font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.tnode.group > .tbody > .tlabel{font-weight:700;color:var(--text-strong);}
+.tnode.elem > .tbody > .tlabel{font-weight:500;color:var(--text-strong);}
+.tnode.dis .tlabel{color:var(--text-disabled);}
+.tpath{font:400 11px/14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text-disabled);word-break:break-all;}
+.tbadges{display:flex;align-items:center;gap:4px;flex:none;padding-top:3px;flex-wrap:wrap;justify-content:flex-end;}
+.bdg{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:var(--radius-round);font:400 12px/1 'Roboto',sans-serif;white-space:nowrap;}
+.bdg-cols{background:var(--secondary-subtle);color:var(--text-strong);}
+/* title rows with a selection: outlined, "vybrané / dostupné" */
+.bdg-sel{background:var(--surface-card);color:var(--text-primary);font-weight:500;
+  border:1px solid var(--border-primary);padding:0 7px;}
+.bdg-sel b{font-weight:700;}
+.bdg-coll{background:var(--info-subtle);color:var(--info);}
+.bdg-sheet{background:var(--success-subtle);color:var(--success);}
+.bdg-enum{background:var(--warning-subtle);color:var(--warning-text);}
+.bdg-dis{background:var(--danger-subtle);color:var(--danger);}
+.indent-1{margin-left:20px;} .indent-2{margin-left:40px;}
+
+/* ── right pane ─────────────────────────────────────────── */
+.greenbar{
+  display:flex;align-items:center;gap:24px;height:48px;padding:0 16px;margin:12px 0 12px;
+  background:var(--success-subtle);border-radius:var(--radius-md);color:var(--text-strong);
+}
+.greenbar .ok{color:var(--success);display:grid;place-items:center;}
+.greenbar .st{font:400 14px/20px 'Roboto',sans-serif;}
+.greenbar .st b{font-weight:700;}
+.hasTip{position:relative;cursor:help;border-bottom:1px dotted var(--secondary);}
+.tip{
+  position:absolute;left:0;top:26px;z-index:30;width:280px;padding:10px 12px;
+  background:#262626;color:#fff;border-radius:var(--radius-md);
+  font:400 12px/17px 'Roboto',sans-serif;display:none;box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+.hasTip:hover .tip{display:block;}
+.tip b{font-weight:700;} .tip ul{margin:6px 0 0;padding-left:16px;} .tip li{margin:2px 0;}
+
+.sellist{display:flex;flex-direction:column;gap:8px;}
+.selcard{
+  display:flex;align-items:flex-start;gap:12px;padding:10px 12px;
+  background:transparent;border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+}
+.selcard:hover{background:var(--selectable-hover);}
+.selcard.dragging{background:var(--selectable-selected);border-color:var(--border-primary);}
+.selcard.dragover{border-top:2px solid var(--primary);}
+.grip{width:16px;height:20px;flex:none;display:grid;place-items:center;color:var(--text-disabled);cursor:grab;padding-top:2px;}
+.grip:active{cursor:grabbing;}
+.ordinput{
+  width:34px;height:26px;flex:none;text-align:center;border:1px solid transparent;border-radius:var(--radius-md);
+  background:transparent;font:700 14px/1 'Roboto',sans-serif;color:var(--text-strong);outline:none;
+}
+.ordinput:hover{border-color:var(--border-subtle);background:var(--surface-card);}
+.ordinput:focus{border-color:var(--border-focus);background:var(--surface-card);}
+.selbodyc{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.selname{font:700 14px/20px 'Roboto',sans-serif;color:var(--text-strong);}
+.selmeta{font:400 12px/16px 'Roboto',sans-serif;color:var(--text-disabled);}
+.selpath{font:400 11px/14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text-disabled);word-break:break-all;}
+.selacts{display:flex;align-items:center;gap:4px;flex:none;padding-top:2px;}
+.iconbtn{width:26px;height:26px;display:grid;place-items:center;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;border:none;background:transparent;}
+.iconbtn:hover{background:var(--selectable-hover);color:var(--text-strong);}
+.subitems{margin:6px 0 0 62px;display:flex;flex-direction:column;gap:2px;}
+.subitem{display:flex;align-items:center;gap:8px;font:400 12px/18px 'Roboto',sans-serif;color:var(--text-default);}
+.subitem .sp{font:400 11px/14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text-disabled);}
+.emptysel{padding:24px 0;color:var(--text-disabled);font:400 14px/20px 'Roboto',sans-serif;}
+
+/* ── settings tab ───────────────────────────────────────── */
+.sect{margin:0 0 28px;}
+.sect > .title-md{margin-bottom:16px;}
+/* one two-column grid per section: labels / radios left, controls right */
+.setgrid{display:grid;grid-template-columns:minmax(150px,44%) minmax(0,1fr);
+  column-gap:16px;row-gap:16px;align-items:center;max-width:840px;}
+.setgrid > label{font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);align-self:center;}
+.setgrid .c2{display:flex;align-items:center;gap:12px;min-width:0;}
+.setgrid .c2.col{flex-direction:column;align-items:flex-start;gap:12px;}
+.setgrid .top{align-self:start;}
+.radiostack{display:flex;flex-direction:column;gap:14px;}
+.selfill{height:32px;padding:0 32px 0 10px;background:var(--surface-default);border:1px solid transparent;border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);appearance:none;outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e8e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.selfill:hover{border-color:var(--border-default);}
+.selfill--sm{width:82px;}
+.langbox{flex:1;min-height:32px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 32px 4px 8px;border:1px solid transparent;border-radius:var(--radius-md);background:var(--surface-default);position:relative;}
+.langbox:hover{border-color:var(--border-default);}
+.langbox::after{content:'';position:absolute;right:10px;top:50%;width:14px;height:14px;margin-top:-7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e8e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center/contain;}
+.langchip{display:inline-flex;align-items:center;gap:8px;height:22px;padding:0 6px 0 8px;background:var(--secondary);border:none;border-radius:var(--radius-sm);font:400 13px/1 'Roboto',sans-serif;color:var(--text-inverse);}
+.langchip i{font-style:normal;color:var(--text-inverse);cursor:pointer;opacity:.85;}
+.langchip i:hover{opacity:1;}
+.radio{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.radio .rd{width:16px;height:16px;flex:none;border:1.5px solid var(--border-strong);border-radius:50%;display:grid;place-items:center;margin-top:2px;}
+.radio.on .rd{border-color:var(--primary);}
+.radio.on .rd::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--primary);}
+.cbrow{display:flex;align-items:center;gap:10px;cursor:pointer;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.hlp{width:16px;height:16px;flex:none;color:var(--text-disabled);cursor:help;}
+.note{font:400 13px/19px 'Roboto',sans-serif;color:var(--text-default);max-width:840px;margin:0 0 18px;}
+.note b{font-weight:700;color:var(--text-strong);}
+.numinput{width:208px;height:32px;padding:0 10px;text-align:right;background:var(--surface-default);border:1px solid transparent;border-radius:var(--radius-md);font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);outline:none;}
+.numinput:hover{border-color:var(--border-default);}
+.numinput:focus{border-color:var(--border-focus);background:var(--surface-card);}
+
+/* ── dialog footer ──────────────────────────────────────── */
+.dlgfoot{display:flex;align-items:center;gap:12px;padding:12px 24px;border-top:1px solid var(--border-subtle);}
+.dlgfoot .right{margin-left:auto;display:flex;gap:12px;}
+
+/* ── buttons: danger / warning / disabled ───────────────── */
+.btn-danger{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-md);font:500 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-danger:hover{background:#a8332a;}
+.btn-warn{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:var(--warning);color:var(--warning-text);border:none;border-radius:var(--radius-md);font:500 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-warn:hover{background:#e5b038;}
+.btn-outline{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:var(--surface-card);color:var(--primary);border:1px solid var(--primary);border-radius:var(--radius-md);font:500 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-outline:hover{background:var(--primary-subtle);}
+.btn-primary:disabled,.btn-outline:disabled,.btn-secondary:disabled{
+  background:var(--surface-card);color:var(--text-disabled);border:1px solid var(--border-subtle);cursor:not-allowed;}
+.btn-primary:disabled{background:var(--primary-disabled);color:#fff;border:none;}
+.btn-restart{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:32px;background:#b5392e;color:#fff;border:none;border-radius:var(--radius-md);font:500 14px/1 'Roboto',sans-serif;cursor:pointer;}
+.btn-restart:hover{background:#95291f;}
+
+/* ── overflow menu ──────────────────────────────────────── */
+.menu{position:absolute;z-index:40;min-width:224px;background:var(--surface-card);
+  border:1px solid var(--border-subtle);border-radius:var(--radius-md);
+  box-shadow:0 6px 20px rgba(0,0,0,.18);padding:4px 0;}
+.menuitem{display:flex;align-items:center;gap:10px;height:36px;padding:0 14px;
+  font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);cursor:pointer;background:none;border:none;width:100%;text-align:left;}
+.menuitem:hover{background:var(--selectable-hover);}
+.menuitem.dis{color:var(--text-disabled);cursor:not-allowed;}
+.menuitem.dis:hover{background:transparent;}
+.menuitem svg{flex:none;}
+.menusep{height:1px;background:var(--border-subtle);margin:4px 0;}
+.menuhead{padding:12px 14px 10px;font:700 12px/16px 'Roboto',sans-serif;
+  text-transform:uppercase;letter-spacing:.04em;color:var(--text-disabled);}
+/* a section that follows another one is separated by a rule */
+.menuhead--div{margin-top:6px;padding-top:16px;border-top:1px solid var(--border-subtle);}
+.menu--exportbtn{min-width:246px;padding:4px 0 6px;}
+.menu--exportbtn .menuitem{height:36px;}
+.reqmark{color:var(--danger);}
+.namefield input.invalid{border-color:var(--danger);}
+
+/* ── inline name field in the dialog header ─────────────── */
+.namefield{display:flex;align-items:center;gap:10px;}
+.namefield[hidden]{display:none;}
+.namefield label{font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.namefield input{width:260px;height:32px;padding:0 10px;background:var(--surface-card);
+  border:1px solid var(--border-default);border-radius:var(--radius-md);
+  font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);outline:none;}
+.namefield input:focus{border-color:var(--border-focus);}
+
+/* ── small modals on top of the big dialog ──────────────── */
+.mscrim{position:absolute;inset:0;background:rgba(38,38,38,.45);z-index:60;display:none;}
+.mscrim.show{display:block;}
+.modal{position:absolute;z-index:61;left:50%;top:120px;transform:translateX(-50%);
+  width:480px;background:var(--surface-card);border-radius:var(--radius-lg);
+  box-shadow:0 12px 40px rgba(0,0,0,.28);display:none;flex-direction:column;overflow:hidden;}
+.modal.show{display:flex;}
+.modal.wide{width:520px;}
+.mhead{display:flex;align-items:flex-start;gap:12px;padding:20px 24px 0;}
+.mhead h3{margin:0;font:500 20px/28px 'Roboto',sans-serif;color:var(--text-strong);flex:1;}
+.mhead .x{width:28px;height:28px;display:grid;place-items:center;border-radius:var(--radius-md);color:var(--secondary);cursor:pointer;}
+.mhead .x:hover{background:var(--selectable-hover);}
+.mbody{padding:8px 24px 24px;min-height:64px;display:flex;flex-direction:column;gap:14px;}
+.mbody p{margin:0;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.mbody p b{font-weight:700;color:var(--text-strong);}
+.mfoot{display:flex;align-items:center;gap:12px;padding:12px 24px;border-top:1px solid var(--border-subtle);}
+.mfoot .right{margin-left:auto;display:flex;gap:12px;}
+.mrow{display:flex;align-items:center;gap:16px;}
+.mrow label{width:60px;flex:none;font:400 14px/20px 'Roboto',sans-serif;color:var(--text-default);}
+.mrow input{flex:1;height:32px;padding:0 10px;background:var(--surface-card);
+  border:1px solid var(--border-default);border-radius:var(--radius-md);
+  font:400 14px/1 'Roboto',sans-serif;color:var(--text-default);outline:none;}
+.mrow input:focus{border-color:var(--border-focus);}
+.statusline{display:flex;align-items:center;gap:10px;font:700 14px/20px 'Roboto',sans-serif;color:var(--text-strong);}
+.pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:var(--radius-round);
+  background:var(--info-subtle);color:var(--info);font:400 12px/1 'Roboto',sans-serif;}
+.infobox{display:flex;gap:10px;padding:12px 14px;background:var(--info-subtle);
+  border-radius:var(--radius-md);font:400 13px/19px 'Roboto',sans-serif;color:var(--text-default);}
+.infobox .ic{color:var(--info);flex:none;}
+</style>
+</head>
+<body>
+
+<div id="switcher">
+  <span class="lbl">Obrazovky</span>
+  <button data-s="1">1 · Seznam</button>
+  <button data-s="2">2 · Seznam — výběr</button>
+  <button data-s="3">3 · Dialog — Základní údaje</button>
+  <button data-s="4">4 · Dialog — Nastavení exportu</button>
+  <button data-s="5">5 · Dialog — Parametry</button>
+  <button id="restartBtn1" style="margin-left:auto;background:#b5392e;border-color:#b5392e;color:#fff;font-weight:500">Restartovat prototyp</button>
+</div>
+
+<div id="stage">
+<div class="app">
+
+  <!-- app header -->
+  <div class="apphdr">
+    <div class="logo">
+      <svg class="logomark" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#1770c8" stroke-width="3"/>
+        <path d="M12 2a10 10 0 0 1 8.66 5" stroke="#c83f32" stroke-width="3" stroke-linecap="round"/>
+        <path d="M20.66 17A10 10 0 0 1 12 22" stroke="#f2bf46" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span>wise<b>porter</b></span>
+    </div>
+    <nav class="topnav">
+      <a href="#" class="on">Katalog</a><a href="#">Sestavy</a><a href="#">Administrace</a>
+      <a href="#">Model</a><a href="#">Provoz</a><a href="#">Reporty</a>
+    </nav>
+    <div class="hdricons">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4"/><path d="M12 17h.01"/></svg></div>
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></div>
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg></div>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- sidebar -->
+    <aside class="sidebar">
+      <div class="navitem on"><span class="dot"></span>Všechny produkty</div>
+      <div class="navitem"><span class="dot"></span>Produkty skladem</div>
+      <div class="navitem"><span class="dot"></span>Cenové hladiny</div>
+      <div class="navitem"><span class="dot"></span>Dezény</div>
+      <div class="navitem"><span class="dot"></span>Prodejní akce</div>
+      <div class="navitem"><span class="dot"></span>Výrobci</div>
+      <div class="navitem"><span class="dot"></span>Interní sklady</div>
+      <div class="navitem"><span class="dot"></span>Skladové položky interní</div>
+      <div class="navitem"><span class="dot"></span>Externí sklady</div>
+      <div class="navitem"><span class="dot"></span>Skladové položky externí</div>
+      <div class="navitem"><span class="dot"></span>Služby</div>
+    </aside>
+
+    <!-- content -->
+    <main class="content">
+      <div class="pagetitle"><div class="title-xl">Všechny produkty</div></div>
+
+      <div class="filters">
+        <div class="searchbox">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" placeholder="">
+        </div>
+        <span class="fchip"><span class="fi">▽</span>Hierarchie</span>
+        <span class="fchip"><span class="fi">▽</span>Typ skladu <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Sklad <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Trojrozměr <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Kód <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Výrobce <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Typ pneumatiky <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Období <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Akce <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Další štítky <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>DOT <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Šířka <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Profil <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Průměr <span class="fi">:</span></span>
+        <span class="fchip"><span class="fi">▽</span>Celní sazebník <span class="fi">:</span></span>
+        <span class="ficon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h13M3 12h9M3 19h6"/><path d="M18 9v8M14 13h8"/></svg></span>
+        <span class="ficon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 20v-5h5"/></svg></span>
+        <span class="ficon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.2"/></svg></span>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Přidat</button>
+        <button class="btn-secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>Import</button>
+        <span style="position:relative"><button class="btn-secondary" id="btnExport"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M4 19h16"/></svg>Export</button><span id="exportMenuHost"></span></span>
+        <button class="btn-secondary">Změny dat <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="btn-secondary">Ceny <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="btn-secondary">Přílohy <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="btn-secondary">AI scénáře <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="btn-secondary">Ostatní <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+
+      <div class="tablewrap">
+        <div id="tableHead"></div>
+        <table class="table">
+          <colgroup>
+            <col class="col-chk"><col><col class="col-code"><col class="col-brand">
+            <col class="col-store"><col class="col-p1"><col class="col-p2">
+          </colgroup>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="pager">
+          <span class="pagebtn">‹</span>
+          <span class="pagebtn on">1</span><span class="pagebtn">2</span><span class="pagebtn">3</span>
+          <span class="pagebtn">4</span><span class="pagebtn">5</span><span class="pagebtn">…</span><span class="pagebtn">101</span>
+          <span class="pagebtn">›</span>
+          <span style="margin-left:8px">1-100 z 3848</span>
+          <span class="ficon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 20v-5h5"/></svg></span>
+          <span style="margin-left:8px">Počet řádků na stránku:</span>
+          <select class="selmini"><option>100</option><option>50</option><option>25</option></select>
+          <span class="ficon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg></span>
+          <span class="ficon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg></span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── dialog ───────────────────────────────────────────── -->
+  <div class="scrim" id="scrim"></div>
+  <div class="dialog" id="dialog">
+    <div class="dlghdr">
+      <span class="dlgtitle">Export do souboru</span>
+      <span class="dlgselwrap" id="expSelWrap">
+        <button type="button" class="dlgsel" id="expSel">
+          <span class="lbl" id="expSelLabel"></span>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <span id="expSelMenuHost"></span>
+      </span>
+      <span class="kebab" id="expMenuBtn" title="Správa uložených exportů">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>
+      </span>
+      <span class="namefield" id="nameField" hidden>
+        <label for="nameInput">Název</label>
+        <input type="text" id="nameInput" autocomplete="off">
+      </span>
+      <div class="right">
+        <span class="itemcount" id="dlgCount"></span>
+        <span class="togglelbl" id="allItemsWrap"><button class="toggle" id="allItemsTgl"></button>Vybrat všechny položky</span>
+        <span class="kebab" id="dlgClose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+      </div>
+    </div>
+
+    <div class="panes">
+      <!-- LEFT -->
+      <section class="pane left">
+        <div class="panehead">Dostupné sloupce pro výběr</div>
+        <div class="tabs" id="leftTabs"></div>
+        <div class="searchrow">
+          <div class="treesearch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="text" id="treeSearch" placeholder="Search ..">
+          </div>
+          <div class="segbtns" id="expandBtns"></div>
+        </div>
+        <div class="panebody" id="tree"></div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="pane right">
+        <div class="panehead">Vybrané sloupce do exportu</div>
+        <div class="tabs" id="rightTabs">
+          <button class="tab on" data-rt="content">Obsah exportu</button>
+          <button class="tab" data-rt="settings">Nastavení exportu</button>
+        </div>
+        <div class="panebody" id="rightBody"></div>
+      </section>
+    </div>
+
+    <div class="dlgfoot">
+      <span class="togglelbl"><button class="toggle" id="advTgl"></button>Pokročilé zobrazení</span>
+      <button class="btn-restart" id="restartBtn2">Restartovat prototyp</button>
+      <div class="right">
+        <button class="btn-secondary" id="dlgCancel">Zrušit</button>
+        <button class="btn-outline" id="dlgSaveExport">Uložit a exportovat</button>
+        <button class="btn-primary" id="dlgExport">Exportovat</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- small modals: siblings of the big dialog, so they also work from the list -->
+  <div class="mscrim" id="mscrim"></div>
+  <div class="modal" id="modal"></div>
+
+</div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   DATA
+   ══════════════════════════════════════════════════════════ */
+
+/* leaf: {id,label,path,cols,locked,badges[],disabled}
+   group: {id,label,kind:'group',coll:'map'|'list'|null,children:[]}
+   element level (map collections): {id,label,kind:'elem',children:[]}          */
+
+const BASIC = [
+  {id:'g_ident', label:'Identifikace', kind:'group', children:[
+    {id:'b_code',  label:'Kód položky',   path:'CODE',           cols:1, locked:true},
+    {id:'b_name',  label:'Název položky', path:'NAME.cs',        cols:1},
+    {id:'b_desc',  label:'Popis položky', path:'DESCRIPTION.cs', cols:1},
+    {id:'b_type',  label:'Typ položky',   path:'ITEM_TYPE',      cols:1, locked:true}
+  ]},
+  {id:'b_state', label:'Stav', kind:'leafgroup', path:'STATE', cols:1},
+  {id:'g_bv', label:'Obchodní verze', kind:'group', children:[
+    {id:'v_code', label:'Kód obchodní verze',   path:'IBV_CODE',        cols:1, locked:true},
+    {id:'v_name', label:'Název obchodní verze', path:'IBV_NAME.cs',     cols:1},
+    {id:'v_desc', label:'Popis obchodní verze', path:'IBV_DESCRIPTION.cs', cols:1},
+    {id:'v_from', label:'Datum od',             path:'IBV_VALID_FROM',  cols:1},
+    {id:'v_to',   label:'Datum do',             path:'IBV_VALID_TO',    cols:1}
+  ]},
+  {id:'g_zar', label:'Zařazení', kind:'group', children:[
+    {id:'z_hier', label:'Hierarchie', path:'PATHS',    cols:1},
+    {id:'z_cat',  label:'Kategorie',  path:'CATEGORY', cols:1}
+  ]}
+];
+
+function attrs(prefix, list){ return list.map(([lab,code,cols,badges])=>(
+  {id:prefix+'_'+code, label:lab, path:prefix+':ATTRIBUTE.'+code, cols:cols||1, badges:badges||[]}
+)); }
+
+function mapColl(id,label,elements,attrList,extra){
+  const kids = elements.map(e=>({
+    id:id+'_'+e, label:e, kind:'elem',
+    children: attrList.map(([lab,code,badges])=>({
+      id:id+'_'+e+'_'+code, label:lab,
+      path:'PARAM.'+id+':ELEMENT.'+e+':ATTRIBUTE.'+code, cols:1, badges:badges||[]
+    }))
+  }));
+  return Object.assign({id:'g_'+id,label:label,kind:'group',coll:'map',children:kids}, extra||{});
+}
+
+const PARAMS = [
+  {id:'g_celni', label:'Celní sazebník', kind:'group', children:
+    attrs('PARAM.customsCode:ELEMENT.customsCode',[['HS kód','hsCode'],['Země původu','originCountry',1,[['Číselník','enum']]]])},
+
+  mapColl('taxRates','Daňové sazby',['CZ','SK','HU'],
+    [['Země','country',[['Číselník','enum']]],['Daňová sazba','taxRate',[['Číselník','enum']]]]),
+
+  {id:'g_dot', label:'DOT', kind:'group', children:
+    attrs('PARAM.tireDot:ELEMENT.tireDot',[['DOT kód','dotCode'],['Rok výroby','productionYear']])},
+
+  {id:'g_eu', label:'EU štítek', kind:'group', children:
+    attrs('PARAM.euLabel:ELEMENT.euLabel',[
+      ['Třídy','classes'],['PMSF','pmsf'],['MS','ms'],['Hlučnost','noise'],
+      ['Hlučnost třída','noiseClass',1,[['Číselník','enum']]],
+      ['Záběr na mokru','wetGrip',1,[['Číselník','enum']]],
+      ['Vlastnosti na ledu','iceGrip'],['Označení typu pneu / EPREL','eprel'],
+      ['QR kód','qrCode'],['Spotřeba','consumption',1,[['Číselník','enum']]]])},
+
+  {id:'g_garance', label:'Garance a záruka', kind:'group', children:
+    attrs('PARAM.tireWarranty:ELEMENT.tireWarranty',[
+      ['Záruka (měsíce)','warrantyMonths'],['Typ záruky','warrantyType',1,[['Číselník','enum']]],
+      ['Rozšířená záruka','extendedWarranty']])},
+
+  {id:'g_hmot', label:'Hmotnost', kind:'group', children:
+    attrs('PARAM.tireWeight:ELEMENT.tireWeight',[['Hmotnost netto','nettoWeight'],['Hmotnost brutto','bruttoWeight']])},
+
+  {id:'g_homol', label:'Homologace', kind:'group', children:
+    attrs('PARAM.tireApproval:ELEMENT.tireApproval',[['Homologace','approval',1,[['Číselník','enum']]],['Číslo homologace','approvalNumber']])},
+
+  {id:'g_chyby', label:'Chybové stavy', kind:'group', children:
+    attrs('PARAM.errorStates:ELEMENT.errorStates',[
+      ['Chyby ceny','priceErrors'],['Chyby parametrů','paramErrors'],
+      ['Chyby dodavatele','vendorErrors'],['Chyby při zpracování příloh','attachmentErrors']])},
+
+  {id:'g_cenotvorba', label:'Konfigurace cenotvorby', kind:'group', children:
+    attrs('PARAM.pricingConfig:ELEMENT.pricingConfig',[
+      ['Cenotvorba aktivní','active'],['Minimální marže','minMargin'],['Maximální sleva','maxDiscount'],
+      ['Zaokrouhlení','rounding',1,[['Číselník','enum']]],['Cenová strategie','strategy',1,[['Číselník','enum']]],
+      ['Ruční cena','manualPrice'],['Platnost ruční ceny','manualPriceValidity']])},
+
+  {id:'g_naklady', label:'Nákladové složky', kind:'group', coll:'list', sheet:true, children:
+    attrs('PARAM.costComponents:ELEMENT.costComponents',[
+      ['Typ nákladové složky','type',1,[['Číselník','enum']]],['Částka','amount'],
+      ['Měna','currency',1,[['Číselník','enum']]],['Platnost od','validFrom'],['Platnost do','validTo']])},
+
+  {id:'g_disk', label:'Parametry disku', kind:'group', children:
+    attrs('PARAM.discParams:ELEMENT.discParams',[
+      ['Materiál','material',1,[['Číselník','enum']]],['Povrchová úprava','finish',1,[['Číselník','enum']]],
+      ['Barva','color',1,[['Číselník','enum']]],['Počet paprsků','spokes'],
+      ['Maximální zatížení','maxLoad'],['Homologace disku','discApproval']])},
+
+  mapColl('salesTextsDezen','Prodejní texty – dezén',['CZ-RETAIL','SK-RETAIL','CZ-WHOLESALE','HU-RETAIL'],
+    [['Prodejní kanál','salesChannel',[['Číselník','enum']]],['Popisek','description',[['Vícejazyčné','enum']]]]),
+
+  {id:'g_prilohy', label:'Přílohy – dezén', kind:'group', coll:'list', sheet:true, children:
+    attrs('PARAM.salesAttachmentsDezen:ELEMENT.wisAttachments',[
+      ['ID','wisId'],['Název přílohy','wisName'],['Popis','wisDescription'],
+      ['Typ přílohy','wisAttachmentType',1,[['Číselník','enum']]],
+      ['Typ zdroje','wisSourceType',1,[['Číselník','enum']]],
+      ['Prodejní kanál','salesChannel',1,[['Číselník','enum']]],
+      ['Původ','wisOrigin',1,[['Číselník','enum']]],
+      ['Stav zpracování','wisProcessingState',1,[['Číselník','enum']]],
+      ['Chyby zpracování','wisErrors'],['URL lokální přílohy','wisLocalUrl'],
+      ['Externí URL','wisExternalURL'],['MIME typ','wisMimeType'],
+      ['Velikost','wisSize'],['Šířka','wisImageWidth'],['Výška','wisImageHeight'],
+      ['Slot priority','wisPrioritySlot',1,[['Číselník','enum']]],['Pořadí','wisOrder']])},
+
+  {id:'g_rozmery', label:'Rozměry pneu', kind:'group', children:
+    attrs('PARAM.tireDimensions:ELEMENT.tireDimensions',[
+      ['Šířka','width',1,[['Číselník','enum']]],['Profil','profile',1,[['Číselník','enum']]],
+      ['Průměr','diameter',1,[['Číselník','enum']]],['Trojrozměr','tripleSize']])},
+
+  mapColl('webSorting','Řazení na webu',['CZ-RETAIL','SK-RETAIL','CZ-WHOLESALE','HU-RETAIL'],
+    [['Prodejní kanál','salesChannel',[['Číselník','enum']]],['Priorita','priority'],['Bonus řazení','bonus']]),
+
+  {id:'g_stats', label:'Statistiky skladů', kind:'group', children:
+    attrs('PARAM.stockStatsSKU:ELEMENT.stockStatsSKU',[
+      ['Celkový počet interní','totalInternal'],['Disponibilní počet interní','availableInternal'],
+      ['Celkový počet externí','totalExternal'],['MOC','moc'],['Poslední aktualizace','lastUpdate']])},
+
+  {id:'g_ucto', label:'Účetnictví', kind:'group', children:
+    attrs('PARAM.accounting:ELEMENT.accounting',[
+      ['Předkontace','preAccounting'],['Nákladové středisko','costCenter',1,[['Číselník','enum']]],
+      ['DPH režim – OSS – typ dodání','dhpOssDeliveryType',1,[['Číselník','enum']]]])},
+
+  mapColl('priceLevels','Vybrané údaje z cenových hladin',['MOC.CZ','MOC.SK','VOC.CZ','MOC.HU'],
+    [['Cenová hladina','priceLevel',[['Číselník','enum']]],['Typ skladu','stockType',[['Číselník','enum']]],
+     ['Sklad','stock'],['Disponibilní počet','available'],
+     ['Ref. nákupní cena bez DPH','refPriceExclVat'],['Ref. nákupní cena s DPH','refPriceInclVat'],
+     ['Cena s min. marží','minMarginPrice'],['Doba dodání','deliveryTime'],
+     ['Dostupnost','availability',[['Číselník','enum']]]]),
+
+  {id:'g_vyrobce', label:'Výrobce', kind:'group', children:
+    attrs('PARAM.manufacturer:ELEMENT.manufacturer',[
+      ['Výrobce','manufacturer',1,[['Číselník','enum']]],['Dezén','tread',1,[['Číselník','enum']]],
+      ['Kvalitativní třída','qualityClass',1,[['Číselník','enum']]]])},
+
+  {id:'g_zarazeni', label:'Zařazení pneumatik', kind:'group', children:
+    attrs('PARAM.tireType:ELEMENT.tireType',[
+      ['Typ pneumatiky','tireType',1,[['Číselník','enum']]],['Období','season',1,[['Číselník','enum']]]])},
+
+  {id:'g_zaklad', label:'Základní parametry pneu', kind:'group', children:
+    attrs('PARAM.tireParams:ELEMENT.tireParams',[
+      ['Konstrukce','construction',1,[['Číselník','enum']]],
+      ['Hmotnostní index','loadIndex',1,[['Číselník','enum']]],
+      ['Rychlostní index','speedIndex',1,[['Číselník','enum']]],
+      ['Dojezdová / runFlat (RF, EMT)','runFlat',1,[['Číselník','enum']]],
+      ['Zesílená (XL / RF)','reinforced',1,[['Číselník','enum']]],
+      ['Ochrana ráfku (FR, MFS, MFR)','rimProtection'],
+      ['TL (Tubeless vs TubeType)','tubeless',1,[['Číselník','enum']]],
+      ['Poznámka','note'],['Technologie výrobce','technology',1,[['Číselník','enum']]],
+      ['Nízkoprofilová pneumatika','lowProfile'],['Ekologická pneumatika (Green)','green'],
+      ['Samozacelující pneumatika','selfSealing'],['Pozice kola','wheelPosition',1,[['Číselník','enum']]],
+      ['Směs','compound',1,[['Číselník','enum']]],['Pro elektromobily','forEv'],
+      ['Provedení','design',1,[['Číselník','enum']]],['Jiná specifikace','otherSpec'],
+      ['POR','por'],['Stav zboží','goodsState',1,[['Číselník','enum']]]])}
+];
+
+/* Aliases are a flat list — a plain alias row has no twisty. A multialias is the
+   exception: it is a real group title with one child per codebook value.        */
+function multialias(id, label, code, slots){
+  return {id:'g_'+id, kind:'group', coll:'multi', label:label,
+    children: slots.map(s=>({
+      id:id+'_'+s.replace(/\W+/g,'_'), kind:'aliasleaf', label:s,
+      path:'ALIAS.'+code+':TYPE.'+s.replace(/\W+/g,'_').toUpperCase(), cols:1
+    }))};
+}
+const ALIASES = [
+  {id:'a_priceLevel', kind:'aliasleaf', label:'Cenová hladina',   path:'ALIAS.priceLevelCode',          cols:1},
+  {id:'a_ean',        kind:'aliasleaf', label:'EAN',              path:'ALIAS.ean',                     cols:1},
+  {id:'a_eanProd',    kind:'aliasleaf', label:'EAN produktu',     path:'ALIAS.priceLevelProductEan',    cols:1},
+  multialias('a_extIds','Externí kódy','externalSystemCodes',
+    ['Pneu Hlaváček','Disky od Martina','Pneu 24/7','Eshop','Logistika']),
+  {id:'a_vendor',     kind:'aliasleaf', label:'Kód od dodavatele',path:'ALIAS.vendorOrderCode',         cols:1},
+  {id:'a_mfProduct',  kind:'aliasleaf', label:'Kód od výrobce',   path:'ALIAS.manufacturerProductCode', cols:1},
+  {id:'a_rule',       kind:'aliasleaf', label:'Kód pro pravidla', path:'ALIAS.ruleCode',                cols:1},
+  {id:'a_mf',         kind:'aliasleaf', label:'Kód výrobce',      path:'ALIAS.manufacturerCode',        cols:1},
+  {id:'a_carBrand',   kind:'aliasleaf', label:'Kód značky auta',  path:'ALIAS.carBrandCode',            cols:1}
+];
+
+const TABS = [
+  {id:'basic',  label:'Základní údaje', data:BASIC},
+  {id:'params', label:'Parametry',      data:PARAMS},
+  {id:'alias',  label:'Aliasy',         data:ALIASES}
+];
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════════════ */
+const PAGE_SIZE = 100, TOTAL = 3848;
+
+const rowsVisible = [
+  ['Kleber Citilander 235/70 R16 106 H celoroční','TIRE_588612','Kleber','AZPNEU-CZ-D5'],
+  ['Kleber Citilander° 235/55 R18" 100 V celoroční','TIRE_847392','Kleber','AZPNEU-CZ-D5'],
+  ['Kleber Citilander 245/70 R16 111 H celoroční','TIRE_394958','Kleber','AZPNEU-CZ-D5'],
+  ['Kleber Citilander 235/60 R16 104 H celoroční','TIRE_I59030','Kleber',''],
+  ['Kleber Citilander 235/55 R17 99 V celoroční','TIRE_239843','Kleber','Korycany'],
+  ['Kleber Citilander 255/65 R16 113 H celoroční T','TIRE_349530','Kleber','AZPNEU-CZ-D2'],
+  ['Metzeler MC360 100/90 -19 57 M terénní','TIRE_104981','Metzeler','AZPNEU-CZ-D2'],
+  ['Metzeler MC360 100/100 -18 59 M terénní','TIRE_349827','Metzeler','Korycany'],
+  ['Metzeler MC360 90/90 -21 54 M terénní','TIRE_234020','Metzeler','Korycany'],
+  ['Metzeler MC360 90/90 -21 54 M terénní','TIRE_234020','Metzeler','Korycany'],
+  ['Metzeler MC360 120/80 -19 63 M terénní','TIRE_093428','Metzeler','AZPNEU-CZ-D5'],
+  ['Metzeler MC360 120/80 -19 63 M terénní','TIRE_093428','Metzeler','AZPNEU-CZ-D5'],
+  ['Metzeler MC360 120/80 -19 63 M terénní','TIRE_093428','Metzeler','AZPNEU-CZ-D5']
+];
+/* pattern from the screenshot: rows 1–6 and 11–13 ticked */
+const SEEDED_VISIBLE = [1,1,1,1,1,1,0,0,0,0,1,1,1];
+
+/* ── saved exports ─────────────────────────────────────────
+   "Výchozí" is the system one: it can't be renamed, saved over or deleted.
+   The other three are seeded presets; everything the user does to them
+   sticks until the red Restartovat prototyp button is pressed.            */
+const BASE_SETTINGS = ()=>({helpLang:'CZ', dataLangs:['CZ','SK','HU'], units:false,
+                            unitCols:false, compareCol:false, aliasImport:false,
+                            importMode:'upsert', enumMode:'lists', enumMax:'30.000'});
+const LOCKED_IDS = ['b_code','b_type','v_code'];
+
+/* group ids expanded to their leaves, plus loose leaf ids */
+function idsFrom(groupIds, leafIds){
+  const out = [];
+  (groupIds||[]).forEach(gid=>{
+    const g = [].concat(BASIC, PARAMS, ALIASES).find(n=>n.id===gid);
+    if(g && g.children) leavesOf(g).forEach(l=>{ if(!l.disabled) out.push(l.id); });
+    else if(g) out.push(g.id);
+  });
+  (leafIds||[]).forEach(id=>out.push(id));
+  return Array.from(new Set(LOCKED_IDS.concat(out)));
+}
+
+function seedExports(){
+  return [
+    { id:'default', name:'Výchozí', system:true, scope:'admin',
+      selected: LOCKED_IDS.slice(), settings: BASE_SETTINGS() },
+
+    /* ── obecné filtry: defined by an admin, visible to everyone ───────── */
+    { id:'a1', name:'Pneu', scope:'admin',
+      selected: idsFrom(['g_ident','g_vyrobce','g_zarazeni','g_rozmery','g_zaklad','g_eu'],
+                        ['b_state','a_ean']),
+      settings: BASE_SETTINGS() },
+
+    { id:'a2', name:'Disky', scope:'admin',
+      selected: idsFrom(['g_ident','g_vyrobce','g_disk','g_rozmery','g_hmot','g_homol'],
+                        ['b_state','a_ean','a_carBrand']),
+      settings: BASE_SETTINGS() },
+
+    { id:'a3', name:'Logistika', scope:'admin',
+      selected: idsFrom(['g_ident','g_stats','g_priceLevels','g_celni','g_ucto','g_hmot'],
+                        ['b_state','a_ean','a_vendor']),
+      settings: Object.assign(BASE_SETTINGS(),{units:true}) },
+
+    { id:'a4', name:'Marketing', scope:'admin',
+      selected: idsFrom(['g_ident','g_vyrobce','g_salesTextsDezen','g_prilohy'],
+                        ['b_name','b_desc','a_ean']),
+      settings: Object.assign(BASE_SETTINGS(),{compareCol:true}) },
+
+    /* ── vlastní filtry: mine, nobody else sees them ───────────────────── */
+    { id:'e1', name:'Pavel PNEU Jarní', scope:'personal',
+      selected: idsFrom(
+        ['g_ident','g_bv','g_zar','g_vyrobce','g_zarazeni','g_rozmery','g_zaklad','g_eu',
+         'g_hmot','g_dot','g_homol','g_priceLevels','g_stats'],
+        ['b_state','a_ean','a_vendor']),
+      settings: Object.assign(BASE_SETTINGS(),{units:true}) },
+
+    { id:'e2', name:'Pavel PNEU Zimní', scope:'personal',
+      selected: idsFrom(
+        ['g_ident','g_bv','g_vyrobce','g_zarazeni','g_rozmery','g_zaklad','g_eu','g_salesTextsDezen','g_a_extIds'],
+        ['b_state','a_ean']),
+      settings: Object.assign(BASE_SETTINGS(),{dataLangs:['CZ','SK']}) },
+
+    { id:'e3', name:'Pavel disky', scope:'personal',
+      selected: idsFrom(
+        ['g_ident','g_bv','g_vyrobce','g_disk','g_rozmery','g_hmot','g_homol','g_ucto',
+         'g_cenotvorba','g_celni','g_taxRates'],
+        ['b_state','a_ean','a_mfProduct','a_carBrand']),
+      settings: BASE_SETTINGS() }
+  ];
+}
+
+const S = {
+  screen:1,
+  exports: [], currentId:'default',
+  dialogMode:'manage',      /* 'manage' (Správa filtrů) | 'new' (Vytvořit filtr) */
+  newName:'',               /* the mandatory name in 'new' mode */
+  exportMenu:false,         /* the menu under the Export button in the toolbar */
+  selMenu:false,            /* the saved-export picker's drop-down */
+  runAdv:false,             /* "Pokročilá nastavení" in the run dialog */
+  nameEdit:null,            /* null | 'saveas' | 'rename' */
+  menu:null,                /* null | 'exp' | 'green' */
+  modal:null,               /* null | 'confirm' | 'progress' | 'unsaved' | 'delete' */
+  modalName:'',             /* name typed in the export-confirm modal */
+  progress:{pct:0, step:1}, progressTimer:null,
+  afterUnsaved:null,        /* what to do once the unsaved dialog is answered */
+  visSel: rowsVisible.map(()=>false),
+  hiddenSel: 0,          /* selected rows on this page that are not rendered */
+  allPages:false,        /* "Označit všech 3848 položek" */
+  dialog:false,
+  leftTab:'basic',
+  rightTab:'content',
+  adv:false,
+  search:'',
+  collapsed:new Set(),
+  selected:[],           /* ordered list of leaf ids */
+  expanded:new Set(),    /* expanded cards in the right pane */
+  settings:{helpLang:'CZ', dataLangs:['CZ','SK','HU'], units:false,
+            unitCols:false, compareCol:false, aliasImport:false,
+            importMode:'upsert', enumMode:'lists', enumMax:'30.000'}
+};
+
+/* ── index every leaf once ─────────────────────────────── */
+const LEAF = new Map();      /* id -> {leaf, tab, groupLabel, elemLabel} */
+const GROUPOF = new Map();   /* leaf id -> group node */
+function indexTree(nodes, tab, groupLabel, groupNode, elemLabel, elemId){
+  nodes.forEach(n=>{
+    if(n.kind==='group'){ indexTree(n.children, tab, n.label, n, null, null); }
+    else if(n.kind==='elem'){ indexTree(n.children, tab, groupLabel, groupNode, n.label, n.id); }
+    else {
+      LEAF.set(n.id,{leaf:n, tab, groupLabel, elemLabel, elemId});
+      if(groupNode) GROUPOF.set(n.id, groupNode);
+    }
+  });
+}
+TABS.forEach(t=>{ if(t.data) indexTree(t.data, t.id, null, null, null); });
+/* leafgroup nodes are their own leaves */
+BASIC.filter(n=>n.kind==='leafgroup').forEach(n=>LEAF.set(n.id,{leaf:n,tab:'basic',groupLabel:null,elemLabel:null}));
+
+function leavesOf(node){
+  if(!node.children) return [node];
+  return node.children.flatMap(c=>c.kind==='elem'||c.kind==='group'?leavesOf(c):[c]);
+}
+function colsOf(id){ const e=LEAF.get(id); return e?(e.leaf.cols||1):0; }
+
+/* ── counters ──────────────────────────────────────────── */
+function totalColumns(){ return S.selected.reduce((a,id)=>a+colsOf(id),0); }
+function sheetList(){
+  const out = ['Položky'];
+  const listColls = new Set();
+  S.selected.forEach(id=>{
+    const g = GROUPOF.get(id);
+    if(g && g.sheet) listColls.add(g.label);
+    const e = LEAF.get(id);
+    if(e && e.leaf.sheet) listColls.add(e.leaf.label);
+  });
+  listColls.forEach(l=>out.push(l));
+  out.push('Číselníky');
+  return out;
+}
+function tabSelectedCount(tabId){
+  return S.selected.filter(id=>{const e=LEAF.get(id);return e&&e.tab===tabId;})
+                   .reduce((a,id)=>a+colsOf(id),0);
+}
+function groupCounts(node){
+  const ls = leavesOf(node).filter(l=>!l.disabled);
+  const avail = ls.reduce((a,l)=>a+(l.cols||1),0);
+  const sel = ls.filter(l=>S.selected.includes(l.id)).reduce((a,l)=>a+(l.cols||1),0);
+  return {avail, sel};
+}
+function nodeState(node){
+  const ls = leavesOf(node).filter(l=>!l.disabled);
+  if(!ls.length) return 'off';
+  const on = ls.filter(l=>S.selected.includes(l.id)).length;
+  return on===0?'off': on===ls.length?'on':'ind';
+}
+
+/* ── selection ─────────────────────────────────────────── */
+function toggleLeaf(id){
+  const e = LEAF.get(id); if(!e || e.leaf.disabled || e.leaf.locked) return;
+  const i = S.selected.indexOf(id);
+  if(i>=0) S.selected.splice(i,1); else S.selected.push(id);
+}
+function toggleNode(node){
+  const ls = leavesOf(node).filter(l=>!l.disabled && !l.locked);
+  if(nodeState(node)==='on'){
+    const rm = new Set(ls.map(l=>l.id));
+    S.selected = S.selected.filter(id=>!rm.has(id));
+  } else {
+    ls.forEach(l=>{ if(!S.selected.includes(l.id)) S.selected.push(l.id); });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SAVED EXPORTS — load / dirty / save / rename / delete
+   ══════════════════════════════════════════════════════════ */
+const cur = () => S.exports.find(e=>e.id===S.currentId) || S.exports[0];
+const isDefault = () => cur().system === true;
+
+function snapshot(){ return JSON.stringify({s:S.selected.slice().sort(), c:S.settings}); }
+function savedSnapshot(e){ return JSON.stringify({s:e.selected.slice().sort(), c:e.settings}); }
+const isDirty = () => snapshot() !== savedSnapshot(cur());
+
+function loadExport(id){
+  const e = S.exports.find(x=>x.id===id); if(!e) return;
+  S.currentId = id;
+  S.selected = e.selected.filter(x=>LEAF.has(x));
+  S.settings = JSON.parse(JSON.stringify(e.settings));
+  S.nameEdit = null; S.menu = null;
+  render();
+}
+function storeInto(e){
+  e.selected = S.selected.slice();
+  e.settings = JSON.parse(JSON.stringify(S.settings));
+}
+function doSave(){ if(isDefault()) return; storeInto(cur()); }
+function doSaveAs(name){
+  const id = 'e'+Date.now();
+  const e = {id, name:name.trim()||'Bez názvu', scope:'personal', selected:S.selected.slice(),
+             settings:JSON.parse(JSON.stringify(S.settings))};
+  S.exports.push(e); S.currentId = id; S.nameEdit = null;
+}
+function doRename(name){ if(isDefault()) return; cur().name = name.trim() || cur().name; S.nameEdit=null; }
+function doDelete(){
+  if(isDefault()) return;
+  S.exports = S.exports.filter(e=>e.id!==S.currentId);
+  loadExport('default');
+  /* opened for a single filter → that filter no longer exists, close the dialog */
+  if(S.dialogMode==='one'){ S.dialog=false; S.dialogMode='manage'; }
+}
+
+/* ── the three green-bar actions ──────────────────────────── */
+function treeOrderIds(){
+  const out = [];
+  TABS.forEach(t=>{ if(t.data) (function walk(ns){ ns.forEach(n=>{
+    if(n.kind==='group'||n.kind==='elem') walk(n.children); else out.push(n.id);
+  }); })(t.data); });
+  return out;
+}
+function orderByTree(){
+  const set = new Set(S.selected);
+  S.selected = treeOrderIds().filter(id=>set.has(id));
+}
+function startOver(){
+  const e = cur();
+  S.selected = e.selected.filter(x=>LEAF.has(x));
+  S.settings = JSON.parse(JSON.stringify(e.settings));
+}
+function selectAllColumns(){
+  const all = [];
+  TABS.forEach(t=>{ if(t.data) (function walk(ns){ ns.forEach(n=>{
+    if(n.kind==='group'||n.kind==='elem') walk(n.children);
+    else if(!n.disabled) all.push(n.id);
+  }); })(t.data); });
+  S.selected = treeOrderIds().filter(id=>all.includes(id));
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER — list
+   ══════════════════════════════════════════════════════════ */
+function el(tag, cls, txt){ const n=document.createElement(tag); if(cls)n.className=cls; if(txt!=null)n.textContent=txt; return n; }
+function cbEl(state){
+  const b = el('span','cb'+(state==='on'?' on':state==='ind'?' ind':state==='dis'?' dis':state==='off-dis'?' off-dis':''));
+  b.innerHTML = '<svg class="tick" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2"><path d="M5 12.5l4.5 4.5L19 7"/></svg>'
+              + '<svg class="dash" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2"><path d="M6 12h12"/></svg>';
+  return b;
+}
+function selectedCount(){
+  if(S.allPages) return TOTAL;
+  return S.visSel.filter(Boolean).length + S.hiddenSel;
+}
+function pageAllSelected(){ return !S.allPages && selectedCount()>=PAGE_SIZE; }
+
+function renderTable(){
+  const head = document.getElementById('tableHead');
+  head.textContent='';
+  const n = selectedCount();
+
+  if(n===0){
+    const t = el('table','table');
+    t.innerHTML = '<colgroup><col class="col-chk"><col><col class="col-code"><col class="col-brand">'
+      + '<col class="col-store"><col class="col-p1"><col class="col-p2"></colgroup>'
+      + '<thead><tr><th></th><th>Název</th><th>Kód</th><th>Značka</th><th>Sklad</th>'
+      + '<th style="text-align:right">Nákupní cena</th><th style="text-align:right">Min. prodejní cena</th></tr></thead>';
+    const th = t.querySelector('th');
+    const c = cbEl('off'); c.addEventListener('click',()=>{ S.visSel=S.visSel.map(()=>true); S.hiddenSel=PAGE_SIZE-S.visSel.length; render(); });
+    th.appendChild(c);
+    /* sort marker on Název */
+    t.querySelectorAll('th')[1].innerHTML = 'Název <span style="color:var(--text-disabled)">⇅</span>';
+    head.appendChild(t);
+  } else {
+    const bar = el('div','selbar');
+    const state = S.allPages ? 'on' : (n>=PAGE_SIZE ? 'on' : 'ind');
+    const c = cbEl(state);
+    c.addEventListener('click',()=>{ S.allPages=false; S.visSel=S.visSel.map(()=>false); S.hiddenSel=0; render(); });
+    bar.appendChild(c);
+    bar.appendChild(el('span','cnt', n+' označených položek'));
+    const lab = el('label');
+    const c2 = cbEl(S.allPages?'on':'off');
+    c2.addEventListener('click',(ev)=>{ ev.preventDefault(); S.allPages=!S.allPages;
+      if(S.allPages){ S.visSel=S.visSel.map(()=>true); S.hiddenSel=PAGE_SIZE-S.visSel.length; }
+      render(); });
+    lab.appendChild(c2); lab.appendChild(el('span',null,'Označit všech '+TOTAL+' položek'));
+    bar.appendChild(lab);
+    head.appendChild(bar);
+  }
+
+  const tb = document.getElementById('tbody'); tb.textContent='';
+  rowsVisible.forEach((r,i)=>{
+    const tr = el('tr', S.visSel[i]?'selected':'');
+    const td0 = el('td'); const c = cbEl(S.visSel[i]?'on':'off');
+    td0.appendChild(c); tr.appendChild(td0);
+    tr.appendChild(el('td',null,r[0]));
+    tr.appendChild(el('td',null,r[1]));
+    const td3 = el('td'); td3.appendChild(el('span','chipbrand',r[2])); tr.appendChild(td3);
+    tr.appendChild(el('td',null,r[3]));
+    const t5=el('td',null,'10.000,-   CZK'); t5.style.textAlign='right'; tr.appendChild(t5);
+    const t6=el('td',null,'10.000,-   CZK'); t6.style.textAlign='right'; tr.appendChild(t6);
+    tr.addEventListener('click',()=>{
+      S.visSel[i]=!S.visSel[i];
+      if(S.allPages && !S.visSel[i]){ S.allPages=false; S.hiddenSel=PAGE_SIZE-S.visSel.length; }
+      render();
+    });
+    tb.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER — dialog
+   ══════════════════════════════════════════════════════════ */
+function renderLeftTabs(){
+  const host = document.getElementById('leftTabs'); host.textContent='';
+  TABS.forEach(t=>{
+    const b = el('button','tab'+(S.leftTab===t.id?' on':'')+(t.data?'':' dis'), t.label);
+    const n = t.data ? tabSelectedCount(t.id) : 0;
+    if(n>0) b.appendChild(el('span','tabbadge', String(n)));
+    if(t.data) b.addEventListener('click',()=>{ S.leftTab=t.id; render(); });
+    host.appendChild(b);
+  });
+}
+
+function badgeEls(list){
+  const wrap = el('span','tbadges');
+  (list||[]).forEach(([txt,kind])=>{
+    const cls = kind==='coll'?'bdg bdg-coll':kind==='sheet'?'bdg bdg-sheet':kind==='enum'?'bdg bdg-enum':
+                kind==='dis'?'bdg bdg-dis':kind==='sel'?'bdg bdg-sel':'bdg bdg-cols';
+    const b = el('span',cls);
+    if(kind==='sel') b.innerHTML = txt; else b.textContent = txt;
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+/* every collapsible node of a tab, groups and collection elements alike */
+function collapsibleOf(tabId){
+  const tab = TABS.find(t=>t.id===tabId); const out=[];
+  const walk = ns => (ns||[]).forEach(n=>{ if(n.kind==='group'||n.kind==='elem'){ out.push(n); walk(n.children); } });
+  if(tab && tab.data) walk(tab.data);
+  return out;
+}
+
+/* Collapse all / expand all. The pressed button is the one describing the current
+   state — mixed means neither is pressed.                                        */
+function renderExpandBtns(){
+  const host = document.getElementById('expandBtns'); host.textContent='';
+  const nodes = collapsibleOf(S.leftTab);
+  if(!nodes.length){ host.style.display='none'; return; }
+  host.style.display='';
+  const nCollapsed = nodes.filter(n=>S.collapsed.has(n.id)).length;
+  const allCollapsed = nCollapsed===nodes.length;
+  const allExpanded  = nCollapsed===0;
+
+  const mk = (on, title, svg, fn)=>{
+    const b = el('button','segbtn'+(on?' on':''));
+    b.type='button'; b.title=title; b.setAttribute('aria-pressed', String(on));
+    b.innerHTML = svg;
+    b.addEventListener('click',()=>{ fn(); render(); });
+    return b;
+  };
+  host.appendChild(mk(allCollapsed,'Sbalit vše',
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13l6-6 6 6"/><path d="M6 19l6-6 6 6"/></svg>',
+    ()=>{ nodes.forEach(n=>S.collapsed.add(n.id)); }));
+  host.appendChild(mk(allExpanded,'Rozbalit vše',
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 5l6 6 6-6"/><path d="M6 11l6 6 6-6"/></svg>',
+    ()=>{ nodes.forEach(n=>S.collapsed.delete(n.id)); }));
+}
+
+function renderTree(){
+  const host = document.getElementById('tree'); host.textContent='';
+  const tab = TABS.find(t=>t.id===S.leftTab);
+  if(!tab.data){
+    host.appendChild(el('div','emptysel','Záložka Aliasy zatím není připravená.'));
+    return;
+  }
+  const q = S.search.trim().toLowerCase();
+  const match = n => !q || (n.label+' '+(n.path||'')).toLowerCase().includes(q);
+
+  const leafRow = (n, depth, forceCount)=>{
+    if(!match(n)) return null;
+    const row = el('div','tnode'+(n.disabled?' dis':'')+(S.flash===n.id?' flash':''));
+    row.dataset.nid = n.id;
+    /* alias rows carry no twisty column, so a multialias slot needs a deeper
+       indent to sit under its group title */
+    if(depth) row.classList.add('indent-'+(n.kind==='aliasleaf'?2:depth));
+    if(n.kind!=='aliasleaf') row.appendChild(el('span','tw empty'));
+    const state = n.disabled ? 'off-dis' : n.locked ? 'dis' : (S.selected.includes(n.id)?'on':'off');
+    row.appendChild(cbEl(state));
+    const body = el('div','tbody');
+    body.appendChild(el('span','tlabel',n.label));
+    if(S.adv && n.path) body.appendChild(el('span','tpath',n.path));
+    row.appendChild(body);
+    const bl = (n.badges||[]).slice();
+    const c = n.cols||1;
+    if(c>1 || forceCount){
+      const on = S.selected.includes(n.id);
+      bl.unshift(on ? ['<b>'+c+'</b>/'+c+' sl.','sel'] : [c+' sl.','cols']);
+    }
+    if(bl.length) row.appendChild(badgeEls(bl));
+    if(!n.disabled && !n.locked) row.addEventListener('click',()=>{ toggleLeaf(n.id); render(); });
+    return row;
+  };
+
+  const walk = (nodes, depth)=>{
+    nodes.forEach(n=>{
+      if(n.kind==='group' || n.kind==='elem'){
+        const kids = n.children;
+        const anyMatch = q ? leavesOf(n).some(match) || match(n) : true;
+        if(!anyMatch) return;
+        const row = el('div','tnode '+(n.kind==='group'?'group':'elem')+(S.flash===n.id?' flash':''));
+        row.dataset.nid = n.id;
+        if(depth) row.classList.add('indent-'+depth);
+        const collapsed = S.collapsed.has(n.id) && !q;
+        const tw = el('span','tw');
+        tw.innerHTML = collapsed
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>'
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+        tw.addEventListener('click',e=>{ e.stopPropagation();
+          if(S.collapsed.has(n.id)) S.collapsed.delete(n.id); else S.collapsed.add(n.id); render(); });
+        row.appendChild(tw);
+        const st = nodeState(n);
+        row.appendChild(cbEl(st==='on'?'on':st==='ind'?'ind':'off'));
+        const body = el('div','tbody');
+        body.appendChild(el('span','tlabel',n.label));
+        if(S.adv && n.kind==='group'){
+          const p = leavesOf(n)[0]?.path||'';
+          const base = p.split(':ATTRIBUTE.')[0];
+          if(base) body.appendChild(el('span','tpath', base+':ATTRIBUTE.*'));
+        }
+        row.appendChild(body);
+        const gc = groupCounts(n);
+        const bl = [];
+        /* title row: "vybrané / dostupné" outlined when something is picked, plain count otherwise */
+        bl.push(gc.sel>0 ? ['<b>'+gc.sel+'</b>/'+gc.avail+' sl.','sel'] : [gc.avail+' sl.','cols']);
+        if(n.coll==='map') bl.push(['Kolekce mapa','coll']);
+        if(n.coll==='list') bl.push(['Kolekce seznam','coll']);
+        if(n.coll==='multi') bl.push(['Multialias','coll']);
+        if(n.sheet) bl.push(['Vlastní list','sheet']);
+        row.appendChild(badgeEls(bl));
+        row.addEventListener('click',()=>{ toggleNode(n); render(); });
+        host.appendChild(row);
+        if(!collapsed) walk(kids, depth+1);
+      } else if(n.kind==='leafgroup'){
+        const r = leafRow(n,depth,true); if(r){ r.querySelector('.tlabel').style.fontWeight='700';
+          r.querySelector('.tlabel').style.color='var(--text-strong)'; host.appendChild(r); }
+      } else {
+        const r = leafRow(n,depth); if(r) host.appendChild(r);
+      }
+    });
+  };
+  walk(tab.data, 0);
+  if(!host.children.length) host.appendChild(el('div','emptysel','Nic neodpovídá hledání.'));
+}
+
+function renderRight(){
+  const host = document.getElementById('rightBody'); host.textContent='';
+  document.querySelectorAll('#rightTabs .tab').forEach(b=>b.classList.toggle('on', b.dataset.rt===S.rightTab));
+  if(S.rightTab==='settings'){ renderSettings(host); return; }
+
+  /* green summary bar */
+  const bar = el('div','greenbar');
+  const ok = el('span','ok');
+  ok.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>';
+  bar.appendChild(ok);
+  const s1 = el('span','st'); s1.innerHTML = 'Sloupců v exportu: <b>'+totalColumns()+'</b>';
+  bar.appendChild(s1);
+  const sheets = sheetList();
+  const s2 = el('span','st hasTip');
+  s2.innerHTML = 'Záložek v exportu: <b>'+sheets.length+'</b>';
+  const tip = el('span','tip');
+  tip.innerHTML = '<b>Co se počítá jako záložka</b><br>Hlavní list s položkami, jeden list za každou '
+    + 'kolekci typu seznam a list s číselníky pro výběrové seznamy. Kolekce typu mapa zůstávají '
+    + 'sloupci na hlavním listu.<ul>' + sheets.map(x=>'<li>'+x+'</li>').join('') + '</ul>';
+  s2.appendChild(tip);
+  bar.appendChild(s2);
+
+  const gk = el('span','kebab'); gk.id='greenMenuBtn'; gk.style.marginLeft='auto';
+  gk.title = 'Akce nad výběrem';
+  gk.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>';
+  gk.addEventListener('click',ev=>{ ev.stopPropagation();
+    S.menu = S.menu==='green'?null:'green'; render(); });
+  bar.appendChild(gk);
+  host.appendChild(bar);
+
+  if(S.menu==='green'){
+    const m = el('div','menu'); m.style.right='24px'; m.style.top='0';
+    const add=(label,fn)=>{ const b=el('button','menuitem',label);
+      b.addEventListener('click',ev=>{ ev.stopPropagation(); fn(); S.menu=null; render(); }); m.appendChild(b); };
+    add('Seřadit podle stromu', orderByTree);
+    add('Začít znovu', startOver);
+    add('Označit všechny sloupce', selectAllColumns);
+    const wrap = el('div'); wrap.style.position='relative';
+    wrap.appendChild(m); host.appendChild(wrap);
+  }
+
+  if(!S.selected.length){
+    host.appendChild(el('div','emptysel','Zatím nejsou vybrané žádné sloupce. Vyberte je v levém panelu.'));
+    return;
+  }
+
+  const list = el('div','sellist');
+  buildEntries().forEach((ent, idx)=>{
+    const id = ent.key;
+    const n = ent.node;           /* leaf node, or a synthetic node for a whole collection */
+    const e = ent.info;
+    const card = el('div','selcard');
+    card.draggable = true; card.dataset.id = id;
+
+    const grip = el('span','grip');
+    grip.innerHTML='<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">'
+      +'<circle cx="3" cy="3" r="1.4"/><circle cx="9" cy="3" r="1.4"/><circle cx="3" cy="8" r="1.4"/>'
+      +'<circle cx="9" cy="8" r="1.4"/><circle cx="3" cy="13" r="1.4"/><circle cx="9" cy="13" r="1.4"/></svg>';
+    card.appendChild(grip);
+
+    const ord = document.createElement('input');
+    ord.className='ordinput'; ord.value = String(idx+1).padStart(2,'0');
+    ord.addEventListener('click',ev=>ev.stopPropagation());
+    ord.addEventListener('focus',()=>{ ord.value=String(idx+1); ord.select(); });
+    const commit = ()=>{
+      let v = parseInt(ord.value,10);
+      if(isNaN(v)) { render(); return; }
+      const ents = buildEntries();
+      v = Math.max(1, Math.min(ents.length, v));
+      const cur = ents.findIndex(x=>x.key===id);
+      const [moved] = ents.splice(cur,1);
+      ents.splice(v-1,0,moved);
+      commitEntries(ents);
+      render();
+    };
+    ord.addEventListener('blur',commit);
+    ord.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ord.blur(); } });
+    card.appendChild(ord);
+
+    const body = el('div','selbodyc');
+    body.appendChild(el('span','selname', n.label));
+    body.appendChild(el('span','selmeta', ent.where));
+    if(S.adv && n.path) body.appendChild(el('span','selpath', n.path));
+    card.appendChild(body);
+
+    const acts = el('span','selacts');
+    const cols = n.cols||1;
+    /* a collection stays one card even when only part of it is picked */
+    const many = cols>1 || !!ent.grp;
+    /* same visual as a selected count in the left pane — everything here is selected */
+    if(many) acts.appendChild(el('span','bdg bdg-sel', cols+' sl.'));
+    if(many){
+      const eye = el('button','iconbtn');
+      eye.title = 'Ukázat v levém panelu';
+      eye.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        + 'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M2 15 3.8 5.4A1.6 1.6 0 0 1 5.4 4h3A1.6 1.6 0 0 1 10 5.6V15"/>'
+        + '<path d="M22 15 20.2 5.4A1.6 1.6 0 0 0 18.6 4h-3A1.6 1.6 0 0 0 14 5.6V15"/>'
+        + '<path d="M10 8h4M10 12h4"/>'
+        + '<circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/></svg>';
+      eye.addEventListener('click',ev=>{ ev.stopPropagation(); revealInLeft(ent); });
+      acts.appendChild(eye);
+    }
+    if(!n.locked){
+      const del = el('button','iconbtn');
+      del.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>';
+      del.addEventListener('click',ev=>{ ev.stopPropagation();
+        const rm = new Set(ent.ids);
+        S.selected = S.selected.filter(x=>!rm.has(x));
+        S.expanded.delete(id); render(); });
+      acts.appendChild(del);
+    }
+    card.appendChild(acts);
+
+    /* drag & drop */
+    card.addEventListener('dragstart',ev=>{ card.classList.add('dragging');
+      ev.dataTransfer.setData('text/plain', id); ev.dataTransfer.effectAllowed='move'; });
+    card.addEventListener('dragend',()=>{ card.classList.remove('dragging');
+      document.querySelectorAll('.selcard').forEach(c=>c.classList.remove('dragover')); });
+    card.addEventListener('dragover',ev=>{ ev.preventDefault(); card.classList.add('dragover'); });
+    card.addEventListener('dragleave',()=>card.classList.remove('dragover'));
+    card.addEventListener('drop',ev=>{
+      ev.preventDefault(); card.classList.remove('dragover');
+      const from = ev.dataTransfer.getData('text/plain');
+      if(!from || from===id) return;
+      const ents = buildEntries();
+      const fi = ents.findIndex(x=>x.key===from), ti = ents.findIndex(x=>x.key===id);
+      if(fi<0||ti<0) return;
+      const [moved] = ents.splice(fi,1);
+      ents.splice(ti,0,moved);
+      commitEntries(ents);
+      render();
+    });
+
+    list.appendChild(card);
+  });
+  host.appendChild(list);
+}
+
+/* Eye on a multi-column card: jump to where it lives in the left pane and show
+   only that group expanded. Aliases have no groups, so nothing to do there.     */
+function revealInLeft(ent){
+  const first = LEAF.get(ent.ids[0]); if(!first) return;
+  /* a plain alias has no group to open — just take me to the tab if I'm not there.
+     A multialias does have one, so it falls through to the normal reveal below.  */
+  if(first.tab==='alias' && !GROUPOF.get(ent.ids[0])){
+    if(S.leftTab!=='alias'){
+      S.leftTab='alias'; S.search=''; document.getElementById('treeSearch').value='';
+      S.flash = ent.ids[0]; render();
+      const r = document.querySelector('#tree [data-nid="'+ent.ids[0]+'"]');
+      if(r) r.scrollIntoView({block:'nearest'});
+      setTimeout(()=>{ S.flash=null;
+        const x = document.querySelector('#tree .tnode.flash'); if(x) x.classList.remove('flash'); },1400);
+    }
+    return;
+  }
+  const tab = TABS.find(t=>t.id===first.tab); if(!tab || !tab.data) return;
+
+  S.leftTab = first.tab;
+  S.search = ''; document.getElementById('treeSearch').value = '';
+
+  /* collapse everything in this tab, leave the rest of the tabs as they were */
+  const collectIds = nodes => nodes.forEach(n=>{
+    if(n.kind==='group' || n.kind==='elem'){ S.collapsed.add(n.id); collectIds(n.children); }
+  });
+  collectIds(tab.data);
+
+  /* re-open just the branches this card sits in */
+  let focusId = null;
+  ent.ids.forEach(id=>{
+    const e = LEAF.get(id), g = GROUPOF.get(id);
+    if(g){ S.collapsed.delete(g.id); focusId = focusId || g.id; }
+    if(e && e.elemId) S.collapsed.delete(e.elemId);
+    focusId = focusId || id;
+  });
+
+  S.flash = focusId;
+  render();
+  const row = document.querySelector('#tree [data-nid="'+focusId+'"]');
+  if(row) row.scrollIntoView({block:'nearest'});
+  setTimeout(()=>{ S.flash=null;
+    const r = document.querySelector('#tree .tnode.flash'); if(r) r.classList.remove('flash');
+  }, 1400);
+}
+
+/* Build the display entries for the right pane. A collection group whose leaves are
+   all selected shows as ONE card; everything else shows per column.                */
+function buildEntries(){
+  const done = new Set(); const out = [];
+  S.selected.forEach(id=>{
+    if(done.has(id)) return;
+    const g = GROUPOF.get(id);
+    /* a collection / multialias is always ONE card, whether every column
+       of it is picked or only some of them                                */
+    if(g && g.coll){
+      const ls  = leavesOf(g);
+      const sel = ls.filter(l=>S.selected.includes(l.id));
+      sel.forEach(l=>done.add(l.id));
+      const cols = sel.reduce((a,l)=>a+(l.cols||1),0);
+      const all  = sel.length===ls.length;
+      out.push({
+        key:'grp:'+g.id, ids:sel.map(l=>l.id),
+        node:{label:g.label, cols:cols,
+              path: g.coll==='multi'
+                ? (sel[0].path||'').split(':TYPE.')[0]+':TYPE.'+(all?'*':'{'+sel.length+'}')
+                : (sel[0].path||'').split(':ELEMENT.')[0]
+                  +':ELEMENT.'+(all?'*':'{'+sel.length+'}')+':ATTRIBUTE.*'},
+        info:{}, grp:true, where: g.coll==='multi' ? 'Aliasy > Multialias' : 'Parametr > Kolekce',
+        subs: sel.map(l=>{
+          const li = LEAF.get(l.id);
+          return {label:(li.elemLabel?li.elemLabel+' · ':'')+l.label, path:l.path};
+        })
+      });
+      return;
+    }
+    done.add(id);
+    const e = LEAF.get(id); const n = e.leaf;
+    const where = e.tab==='basic'
+      ? 'Základní údaje' + (e.groupLabel?' > '+e.groupLabel:'')
+      : e.tab==='alias'
+        ? 'Aliasy' + (e.groupLabel?' > '+e.groupLabel:'')
+        : (g && g.coll ? 'Parametr > Kolekce' : 'Parametr' + (e.groupLabel?' > '+e.groupLabel:''));
+    const subs = (n.cols||1)>1
+      ? Array.from({length:n.cols},(_,i)=>({label:n.label+' — sloupec '+(i+1), path:n.path})) : [];
+    out.push({
+      key:id, ids:[id], node:n, info:e,
+      where: where + (e.elemLabel?' > '+e.elemLabel:''),
+      subs: subs
+    });
+  });
+  return out;
+}
+function commitEntries(ents){ S.selected = ents.flatMap(e=>e.ids); }
+
+function renderSettings(host){
+  const sec = (t)=>{ const s=el('div','sect'); s.appendChild(el('div','title-md',t)); return s; };
+  const grid = ()=>el('div','setgrid');
+  const help = (tip)=>{ const h=el('span','hlp'); h.title=tip;
+    h.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">'
+      +'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3 2.4v1.4"/><path d="M12.6 16.6h.01"/></svg>';
+    return h; };
+  const cbrow = (label, key, tip)=>{
+    const r = el('label','cbrow');
+    r.appendChild(cbEl(S.settings[key]?'on':'off'));
+    r.appendChild(el('span',null,label));
+    if(tip) r.appendChild(help(tip));
+    r.addEventListener('click',()=>{ S.settings[key]=!S.settings[key]; render(); });
+    return r;
+  };
+  const tglrow = (label, key, tip)=>{
+    const c = el('span','c2');
+    const t = el('button','toggle'+(S.settings[key]?' on':''));
+    c.appendChild(t);
+    if(label) c.appendChild(el('span',null,label));
+    if(tip) c.appendChild(help(tip));
+    c.addEventListener('click',()=>{ S.settings[key]=!S.settings[key]; render(); });
+    return c;
+  };
+  const radios = (pairs, key)=>{
+    const st = el('div','radiostack');
+    pairs.forEach(([v,lab])=>{
+      const r = el('label','radio'+(S.settings[key]===v?' on':''));
+      r.appendChild(el('span','rd')); r.appendChild(el('span',null,lab));
+      r.addEventListener('click',()=>{ S.settings[key]=v; render(); });
+      st.appendChild(r);
+    });
+    return st;
+  };
+
+  /* ── Obecná ─────────────────────────────────────────── */
+  const s1 = sec('Obecná'); const g1 = grid();
+
+  g1.appendChild(el('label',null,'Jazyk nápovědy:'));
+  const c1 = el('span','c2');
+  const sel1 = document.createElement('select'); sel1.className='selfill selfill--sm';
+  ['CZ','EN','SK'].forEach(v=>{const o=document.createElement('option');o.textContent=v;
+    if(v===S.settings.helpLang)o.selected=true;sel1.appendChild(o);});
+  sel1.addEventListener('change',()=>{S.settings.helpLang=sel1.value;});
+  c1.appendChild(sel1); g1.appendChild(c1);
+
+  g1.appendChild(el('label',null,'Jazyk dat:'));
+  const c2 = el('span','c2');
+  const box = el('div','langbox');
+  S.settings.dataLangs.forEach(l=>{
+    const c = el('span','langchip'); c.appendChild(el('span',null,l));
+    const x = el('i',null,'×'); x.addEventListener('click',()=>{
+      S.settings.dataLangs = S.settings.dataLangs.filter(v=>v!==l); render(); });
+    c.appendChild(x); box.appendChild(c);
+  });
+  c2.appendChild(box); g1.appendChild(c2);
+
+  const lv = el('label',null,'Volitelné sloupce:'); lv.style.alignSelf='start'; lv.style.paddingTop='2px';
+  g1.appendChild(lv);
+  const c3 = el('span','c2 col top');
+  c3.appendChild(cbrow('Exportovat jednotky','unitCols'));
+  c3.appendChild(cbrow('Vytvořit sloupec pro porovnávání položek','compareCol',
+    'Do exportu se přidá sloupec, podle kterého se dají porovnat dva exporty mezi sebou.'));
+  g1.appendChild(c3);
+  s1.appendChild(g1); host.appendChild(s1);
+
+  /* ── Pro import zpět ────────────────────────────────── */
+  const s2 = sec('Pro import zpět'); const g2 = grid();
+  const rs2 = radios([['upsert','Změnit existující a doplnit nové'],
+                      ['insert','Doplnit jen nové'],
+                      ['update','Změnit jen existující']], 'importMode');
+  rs2.classList.add('top'); g2.appendChild(rs2);
+  const t2 = tglrow('Importovat podle aliasu místo kódu','aliasImport',
+    'Při zpětném importu se položky páruje podle zvoleného aliasu, ne podle kódu položky.');
+  t2.classList.add('top'); g2.appendChild(t2);
+  s2.appendChild(g2); host.appendChild(s2);
+
+  /* ── Číselníky ──────────────────────────────────────── */
+  const s3 = sec('Číselníky');
+  const note = el('p','note');
+  note.innerHTML = '<b>Pro výběrové seznamy platí:</b> Pokud některý číselník obsahuje více hodnot, '
+    + 'než zvolený maximální počet, budou příslušná data vyexportována jako kódy + názvy '
+    + '(a nikoliv jako výběrový seznam).';
+  s3.appendChild(note);
+  const g3 = grid();
+  const rs3 = radios([['lists','Výběrové seznamy'],['codesNames','Kódy + názvy'],['codes','Kódy']], 'enumMode');
+  rs3.classList.add('top'); g3.appendChild(rs3);
+  const c4 = el('span','c2 top');
+  c4.appendChild(el('span',null,'Maximální počet:'));
+  const num = document.createElement('input'); num.className='numinput'; num.value=S.settings.enumMax;
+  num.addEventListener('change',()=>{S.settings.enumMax=num.value;});
+  c4.appendChild(num); g3.appendChild(c4);
+  s3.appendChild(g3); host.appendChild(s3);
+}
+
+/* ══════════════════════════════════════════════════════════
+   The Export button's menu on the item list
+   ══════════════════════════════════════════════════════════ */
+function renderExportMenu(){
+  const host = document.getElementById('exportMenuHost'); host.textContent='';
+  if(!S.exportMenu) return;
+  const m = el('div','menu menu--exportbtn');
+  m.style.left='0'; m.style.top='36px';
+
+  let first = true;
+  const section = (title, list)=>{
+    if(!list.length) return;
+    m.appendChild(el('div','menuhead'+(first?'':' menuhead--div'),title));
+    first = false;
+    list.forEach(e=>{
+      const b = el('button','menuitem',e.name);
+      b.addEventListener('click',ev=>{ ev.stopPropagation();
+        S.exportMenu=false; openRun(e.id); });
+      m.appendChild(b);
+    });
+  };
+  section('Obecné filtry', S.exports.filter(e=>e.scope==='admin' && !e.system));
+  section('Vlastní filtry', S.exports.filter(e=>e.scope==='personal'));
+
+  m.appendChild(el('div','menusep'));
+  const act = (label, icon, fn)=>{
+    const b = el('button','menuitem'); b.innerHTML=icon; b.appendChild(el('span',null,label));
+    b.addEventListener('click',ev=>{ ev.stopPropagation(); S.exportMenu=false; fn(); });
+    m.appendChild(b);
+  };
+  act('Vytvořit filtr',
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+    openNewFilter);
+  act('Správa filtrů',
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>',
+    openManage);
+  host.appendChild(m);
+}
+
+/* run a saved filter straight from the list */
+function openRun(id){
+  loadExportSilently(id);
+  S.runAdv=false; S.dialog=false; S.modal='run'; render();
+}
+/* Vytvořit filtr — the picker with no selector, just a mandatory name */
+function openNewFilter(){
+  S.dialogMode='new'; S.newName='';
+  S.currentId='default'; loadExportSilently('default');
+  S.dialog=true; S.leftTab='basic'; S.rightTab='content';
+  S.menu=null; S.selMenu=false; S.modal=null; S.nameEdit=null; S.collapsed=new Set();
+  render();
+}
+/* Správa filtrů — the full picker with every saved filter in the selector.
+   'one' is the same screen reached from Upravit: this filter only, still
+   fully manageable, but no way to hop to another one.                       */
+function openManage(mode){
+  S.dialogMode = mode || 'manage';
+  loadExportSilently(S.currentId);
+  S.dialog=true; S.leftTab='basic'; S.rightTab='content';
+  S.menu=null; S.selMenu=false; S.modal=null; S.nameEdit=null;
+  render();
+}
+
+/* the saved-export picker's own drop-down (always opens downward) */
+function renderSelMenu(){
+  const host = document.getElementById('expSelMenuHost'); host.textContent='';
+  if(!S.selMenu) return;
+  const m = el('div','selmenu');
+  const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+  const opt = e=>{
+    const b = el('button','selopt'+(e.id===S.currentId?' on':''));
+    const ck = el('span','ck'); if(e.id===S.currentId) ck.innerHTML = check;
+    b.appendChild(ck); b.appendChild(el('span',null,e.name));
+    b.addEventListener('click',ev=>{ ev.stopPropagation(); S.selMenu=false; chooseExport(e.id); });
+    m.appendChild(b);
+  };
+  const group = (label, list)=>{ if(!list.length) return;
+    m.appendChild(el('div','menuhead',label)); list.forEach(opt); };
+
+  S.exports.filter(e=>e.system).forEach(opt);
+  group('Obecné filtry',  S.exports.filter(e=>e.scope==='admin' && !e.system));
+  group('Vlastní filtry', S.exports.filter(e=>e.scope==='personal'));
+  host.appendChild(m);
+}
+function chooseExport(id){
+  if(id===S.currentId){ render(); return; }
+  if(isDirty()){ S.afterUnsaved = ()=>loadExportSilently(id); S.modal='unsaved'; render(); return; }
+  loadExport(id);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER — dialog header, its menu, and the small modals
+   ══════════════════════════════════════════════════════════ */
+function renderHeader(){
+  const isNew = S.dialogMode==='new', isOne = S.dialogMode==='one';
+  const wrap = document.getElementById('expSelWrap');
+  const sel  = document.getElementById('expSel');
+  const kb   = document.getElementById('expMenuBtn');
+  wrap.style.display = (isNew||isOne) ? 'none' : '';
+  kb.style.display   = isNew ? 'none' : '';
+
+  /* 'one' shows just this filter's name where the selector would be */
+  let one = document.getElementById('oneName');
+  if(isOne){
+    if(!one){ one = el('span'); one.id='oneName';
+      one.style.cssText='font:500 16px/24px Roboto,sans-serif;color:var(--text-strong);white-space:nowrap;';
+      wrap.parentNode.insertBefore(one, wrap); }
+    one.textContent = cur().name; one.style.display='';
+  } else if(one){ one.style.display='none'; }
+
+  document.getElementById('expSelLabel').textContent = cur().name;
+  sel.classList.toggle('open', !!S.selMenu);
+  renderSelMenu();
+
+  const nf = document.getElementById('nameField');
+  const inp = document.getElementById('nameInput');
+  nf.hidden = !(S.nameEdit || isNew);
+  if(isNew){
+    inp.classList.toggle('invalid', !S.newName.trim());
+    if(document.activeElement!==inp) inp.value = S.newName;
+    nf.querySelector('label').innerHTML = 'Název <span class="reqmark">*</span>';
+  } else {
+    nf.querySelector('label').textContent = 'Název';
+    inp.classList.remove('invalid');
+    if(S.nameEdit && document.activeElement!==inp){
+      inp.value = S.nameEdit==='rename' ? cur().name : (isDefault()? '' : cur().name);
+      setTimeout(()=>inp.focus(),0);
+    }
+  }
+
+  /* the ... menu next to the selector */
+  const old = document.getElementById('expMenu'); if(old) old.remove();
+  if(S.menu==='exp' && !isNew){
+    const btn = document.getElementById('expMenuBtn');
+    const m = el('div','menu'); m.id='expMenu';
+    const r = btn.getBoundingClientRect(), d = document.getElementById('dialog').getBoundingClientRect();
+    m.style.left = (r.left - d.left) + 'px';
+    m.style.top  = (r.bottom - d.top + 4) + 'px';
+    const dirty = isDirty(), def = isDefault();
+    const add=(label, on, icon, fn)=>{
+      const b = el('button','menuitem'+(on?'':' dis'));
+      b.innerHTML = icon; b.appendChild(el('span',null,label));
+      if(on) b.addEventListener('click',ev=>{ ev.stopPropagation(); fn(); render(); });
+      m.appendChild(b);
+    };
+    const iSave='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7V3"/><rect x="8" y="13" width="8" height="6"/></svg>';
+    const iPen ='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+    const iBin ='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>';
+    add('Uložit',              !def && dirty, iSave, ()=>{ doSave(); S.menu=null; });
+    add('Změnit název',        !def,          iPen,  ()=>{ S.nameEdit='rename'; S.menu=null; });
+    add('Uložit jako',         true,          iSave, ()=>{ S.nameEdit='saveas'; S.menu=null; });
+    add('Smazat uložený export', !def,        iBin,  ()=>{ S.menu=null; S.modal='delete'; });
+    document.getElementById('dialog').appendChild(m);
+  }
+
+  /* footer */
+  const se = document.getElementById('dlgSaveExport'), ex = document.getElementById('dlgExport');
+  if(isNew){
+    const ok = !!S.newName.trim();
+    se.textContent = 'Uložit a exportovat'; se.disabled = !ok; ex.disabled = !ok;
+  } else {
+    se.disabled = !isDirty() && !isDefault(); ex.disabled = false;
+  }
+}
+
+function renderModal(){
+  const host = document.getElementById('modal');
+  const scr  = document.getElementById('mscrim');
+  scr.classList.toggle('show', !!S.modal);
+  host.classList.toggle('show', !!S.modal);
+  host.textContent=''; host.classList.remove('wide');
+  if(!S.modal) return;
+
+  const head = (title, onX)=>{
+    const h = el('div','mhead'); const t=el('h3',null,title); h.appendChild(t);
+    const x = el('span','x'); x.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    x.addEventListener('click',onX); h.appendChild(x); return h;
+  };
+  const body = ()=>el('div','mbody');
+  const foot = ()=>el('div','mfoot');
+  const plural = (n,one,few,many)=> n===1?one : (n>=2&&n<=4?few:many);
+  const summary = ()=>{ const p=el('p');
+    const c = totalColumns(), s = sheetList().length;
+    p.innerHTML = 'Export bude obsahovat <b>'+c+' '+plural(c,'sloupec','sloupce','sloupců')+'</b>'
+      +' a <b>'+s+' '+plural(s,'záložku','záložky','záložek')+'</b>.';
+    return p; };
+
+  /* ── running a saved filter straight from the list ────── */
+  if(S.modal==='run'){
+    host.classList.add('wide');
+    host.appendChild(head('Export “'+cur().name+'”', ()=>{ S.modal=null; render(); }));
+    const b = body();
+    const lead = el('p'); lead.innerHTML = '<b>Spouštíte akci, která poběží na pozadí.</b>';
+    b.appendChild(lead);
+    b.appendChild(el('p',null,'Podle počtu zpracovaných položek a spuštěných akcí může '
+      +'její provedení trvat delší dobu.'));
+
+    const n = selectedCount();
+    const info = el('div','infobox');
+    const ic = el('span','ic');
+    ic.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>';
+    info.appendChild(ic);
+    info.appendChild(el('span',null, n===0 || n>=TOTAL
+      ? 'Exportujete '+TOTAL+' položek. Pokud chcete vlastní výběr, zavřete dialog, '
+        +'vyberte položky a až pak klikněte na export.'
+      : 'Exportujete '+n+' vybraných položek z možných '+TOTAL+'.'));
+    b.appendChild(info);
+
+    /* placeholder only — the detail is not part of this flow yet */
+    const tr = el('span','togglelbl dis');
+    tr.appendChild(el('button','toggle dis'));
+    tr.appendChild(el('span',null,'Pokročilá nastavení'));
+    b.appendChild(tr);
+
+    host.appendChild(b);
+
+    const f = foot();
+    const edit = el('button','btn-outline'); edit.textContent='Upravit';
+    edit.addEventListener('click',()=>{ S.modal=null; openManage('one'); });
+    f.appendChild(edit);
+    const right = el('div','right');
+    const cancel = el('button','btn-secondary'); cancel.textContent='Zrušit';
+    cancel.addEventListener('click',()=>{ S.modal=null; render(); });
+    const go = el('button','btn-primary'); go.textContent='Exportovat';
+    go.addEventListener('click',startProgress);
+    right.appendChild(cancel); right.appendChild(go); f.appendChild(right);
+    host.appendChild(f); return;
+  }
+
+  /* ── leaving with unsaved changes ─────────────────────── */
+  if(S.modal==='unsaved'){
+    host.appendChild(head('Máte neuložené změny', ()=>{ S.modal=null; render(); }));
+    const b = body();
+    b.appendChild(el('p',null,'Opouštíte detail exportu bez uložení. Chcete změny uložit nebo zahodit?'));
+    host.appendChild(b);
+    const f = foot();
+    const discard = el('button','btn-danger',null); discard.textContent='Zahodit změny';
+    discard.addEventListener('click',()=>{ startOver(); S.modal=null; (S.afterUnsaved||function(){})(); S.afterUnsaved=null; render(); });
+    f.appendChild(discard);
+    const right = el('div','right');
+    const cancel = el('button','btn-secondary'); cancel.textContent='Zrušit';
+    cancel.addEventListener('click',()=>{ S.modal=null; S.afterUnsaved=null; render(); });
+    const save = el('button','btn-primary'); save.textContent='Uložit';
+    save.addEventListener('click',()=>{
+      if(isDefault()){ S.modal=null; S.nameEdit='saveas'; S.afterUnsaved=null; render(); return; }
+      doSave(); S.modal=null; (S.afterUnsaved||function(){})(); S.afterUnsaved=null; render(); });
+    right.appendChild(cancel); right.appendChild(save); f.appendChild(right);
+    host.appendChild(f); return;
+  }
+
+  /* ── delete a saved export ────────────────────────────── */
+  if(S.modal==='delete'){
+    host.appendChild(head('Smazat uložený export', ()=>{ S.modal=null; render(); }));
+    const b = body();
+    b.appendChild(el('p',null,'Smazání exportu “'+cur().name+'” je nevratná akce. Chcete ho přesto smazat?'));
+    host.appendChild(b);
+    const f = foot(); const right = el('div','right');
+    const cancel = el('button','btn-secondary'); cancel.textContent='Zrušit';
+    cancel.addEventListener('click',()=>{ S.modal=null; render(); });
+    const del = el('button','btn-danger'); del.textContent='Smazat';
+    del.addEventListener('click',()=>{ doDelete(); S.modal=null; render(); });
+    right.appendChild(cancel); right.appendChild(del); f.appendChild(right);
+    host.appendChild(f); return;
+  }
+
+  /* ── confirm the export ───────────────────────────────── */
+  if(S.modal==='confirm'){
+    const def = isDefault(), dirty = isDirty();
+    host.appendChild(head('Export “'+cur().name+'”', ()=>{ S.modal=null; render(); }));
+    const b = body(); b.appendChild(summary());
+    if(def){
+      b.appendChild(el('p',null,'Nastavení exportu není uložené, můžete ho uložit zde když vyplníte '
+        +'jeho název. Výsledný export najdete zde až dojde k jeho zpracování.'));
+      const row = el('div','mrow'); row.appendChild(el('label',null,'Název'));
+      const inp = document.createElement('input'); inp.type='text'; inp.value=S.modalName;
+      inp.addEventListener('input',()=>{ S.modalName=inp.value;
+        host.querySelector('.js-saveexp').disabled = !inp.value.trim(); });
+      row.appendChild(inp); b.appendChild(row);
+    } else if(dirty){
+      b.appendChild(el('p',null,'Nastavení exportu není uložené, můžete ho uložit zde. '
+        +'Výsledný export najdete zde až dojde k jeho zpracování.'));
+    } else {
+      b.appendChild(el('p',null,'Výsledný export najdete zde až dojde k jeho zpracování.'));
+    }
+    host.appendChild(b);
+    const f = foot();
+    const back = el('button','btn-secondary'); back.textContent='Zpět';
+    back.addEventListener('click',()=>{ S.modal=null; render(); });
+    f.appendChild(back);
+    const right = el('div','right');
+    if(def || dirty){
+      const se = el('button','btn-outline js-saveexp'); se.textContent='Uložit a exportovat';
+      if(def) se.disabled = !S.modalName.trim();
+      se.addEventListener('click',()=>{
+        if(def) doSaveAs(S.modalName); else doSave();
+        S.modalName=''; startProgress(); });
+      right.appendChild(se);
+    }
+    const ex = el('button','btn-primary'); ex.textContent='Exportovat';
+    ex.addEventListener('click',()=>{ S.modalName=''; startProgress(); });
+    right.appendChild(ex); f.appendChild(right);
+    host.appendChild(f); return;
+  }
+
+  /* ── running ──────────────────────────────────────────── */
+  if(S.modal==='progress'){
+    host.classList.add('wide');
+    host.appendChild(head('Export “'+cur().name+'”', closeEverything));
+    const b = body(); b.appendChild(summary());
+    const st = el('div','statusline');
+    st.appendChild(el('span',null,'Příprava exportu'));
+    st.appendChild(el('span','pill','Probíhá'));
+    b.appendChild(st);
+    b.appendChild(el('p',null,'Zpracováno '+S.progress.pct+'% v kroku '+S.progress.step+'/5'));
+    const info = el('div','infobox');
+    const ic = el('span','ic');
+    ic.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>';
+    info.appendChild(ic);
+    info.appendChild(el('span',null,'Dialog můžete opustit a pokračovat v práci. Později najdete stažený '
+      +'soubor na stejném místě jako když kliknete na tlačítko „Sledovat“.'));
+    b.appendChild(info);
+    host.appendChild(b);
+    const f = foot();
+    const cancel = el('button','btn-warn'); cancel.textContent='Zrušit';
+    cancel.addEventListener('click',closeEverything);
+    f.appendChild(cancel);
+    const right = el('div','right');
+    const close = el('button','btn-secondary'); close.textContent='Zavřít';
+    close.addEventListener('click',closeEverything);
+    const watch = el('button','btn-primary');
+    watch.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+    watch.appendChild(el('span',null,'Sledovat'));
+    watch.addEventListener('click',closeEverything);
+    right.appendChild(close); right.appendChild(watch); f.appendChild(right);
+    host.appendChild(f); return;
+  }
+}
+
+function startProgress(){
+  S.modal='progress'; S.progress={pct:0, step:1};
+  clearInterval(S.progressTimer);
+  S.progressTimer = setInterval(()=>{
+    if(S.modal!=='progress'){ clearInterval(S.progressTimer); return; }
+    S.progress.pct = Math.min(100, S.progress.pct + 4 + Math.floor(Math.random()*5));
+    S.progress.step = Math.min(5, 1 + Math.floor(S.progress.pct/20));
+    if(S.progress.pct>=100) clearInterval(S.progressTimer);
+    renderModal();
+  }, 450);
+  render();
+}
+function closeEverything(){
+  clearInterval(S.progressTimer);
+  S.modal=null; S.dialog=false; S.menu=null; S.nameEdit=null; render();
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER — root
+   ══════════════════════════════════════════════════════════ */
+function render(){
+  renderTable();
+  renderExportMenu();
+  document.getElementById('scrim').classList.toggle('show', S.dialog);
+  document.getElementById('dialog').classList.toggle('show', S.dialog);
+  if(S.dialog){
+    const n = selectedCount();
+    document.getElementById('dlgCount').innerHTML =
+      'Exportujete <b>'+n+'</b> položek z možných <b>'+TOTAL+'</b>';
+    document.getElementById('allItemsTgl').classList.toggle('on', S.allPages);
+    document.getElementById('advTgl').classList.toggle('on', S.adv);
+    renderHeader(); renderLeftTabs(); renderExpandBtns(); renderTree(); renderRight();
+  }
+  renderModal();
+  document.querySelectorAll('#switcher button').forEach(b=>b.classList.toggle('on', +b.dataset.s===S.screen));
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCREENS
+   ══════════════════════════════════════════════════════════ */
+function loadExportSilently(id){
+  const e = S.exports.find(x=>x.id===id); if(!e) return;
+  S.currentId = id;
+  S.selected = e.selected.filter(x=>LEAF.has(x));
+  S.settings = JSON.parse(JSON.stringify(e.settings));
+}
+
+function applyScreen(n){
+  S.screen = n;
+  S.expanded.clear();
+  if(n===1){
+    S.visSel = rowsVisible.map(()=>false); S.hiddenSel=0; S.allPages=false; S.dialog=false;
+  }
+  if(n>=2){
+    S.visSel = SEEDED_VISIBLE.map(v=>!!v);
+    S.hiddenSel = 87 - S.visSel.filter(Boolean).length;   /* 87 selected on this page */
+    S.allPages=false;
+  }
+  if(n===2){ S.dialog=false; }
+  if(n>=3){
+    S.dialog=true; S.adv=false; S.search=''; document.getElementById('treeSearch').value='';
+    S.collapsed = new Set(); S.menu=null; S.modal=null; S.nameEdit=null;
+    loadExportSilently('default');
+  }
+  if(n===3){ S.leftTab='basic'; S.rightTab='content'; }
+  if(n===4){ S.leftTab='basic'; S.rightTab='settings'; }
+  if(n===5){
+    S.leftTab='params'; S.rightTab='content';
+    /* collapse every parameter group except Daňové sazby, which is fully selected */
+    PARAMS.forEach(g=>{ if(g.id!=='g_taxRates') S.collapsed.add(g.id); });
+    leavesOf(PARAMS.find(g=>g.id==='g_taxRates')).forEach(l=>{
+      if(!S.selected.includes(l.id)) S.selected.push(l.id);
+    });
+  }
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════
+   WIRING
+   ══════════════════════════════════════════════════════════ */
+document.querySelectorAll('#switcher button').forEach(b=>{
+  b.addEventListener('click',()=>applyScreen(+b.dataset.s));
+});
+document.getElementById('btnExport').addEventListener('click',ev=>{
+  ev.stopPropagation(); S.exportMenu = !S.exportMenu; render();
+});
+
+/* leaving the picker — ask first when there is something unsaved */
+function tryClose(){
+  if(S.dialogMode==='new'){ S.dialog=false; S.dialogMode='manage'; S.newName=''; render(); return; }
+  if(isDirty()){ S.afterUnsaved = ()=>{ S.dialog=false; S.dialogMode='manage'; }; S.modal='unsaved'; render(); return; }
+  S.dialog=false; S.dialogMode='manage'; S.menu=null; S.nameEdit=null; render();
+}
+document.getElementById('dlgClose').addEventListener('click',tryClose);
+document.getElementById('dlgCancel').addEventListener('click',tryClose);
+document.getElementById('scrim').addEventListener('click',tryClose);
+
+document.getElementById('dlgExport').addEventListener('click',()=>{
+  if(S.dialogMode==='new'){
+    if(!S.newName.trim()) return;
+    doSaveAs(S.newName); S.newName=''; S.dialogMode='manage'; startProgress(); return;
+  }
+  S.modalName=''; S.modal='confirm'; render(); });
+document.getElementById('dlgSaveExport').addEventListener('click',()=>{
+  if(S.dialogMode==='new'){
+    if(!S.newName.trim()) return;
+    doSaveAs(S.newName); S.newName=''; S.dialogMode='manage'; startProgress(); return;
+  }
+  if(isDefault()){ S.modalName=''; S.modal='confirm'; render(); return; }
+  doSave(); S.modal='confirm'; render(); });
+
+/* saved-export selector + its menu */
+document.getElementById('expSel').addEventListener('click',ev=>{
+  ev.stopPropagation(); S.selMenu = !S.selMenu; S.menu = null; render(); });
+document.getElementById('expMenuBtn').addEventListener('click',ev=>{
+  ev.stopPropagation(); S.selMenu=false; S.menu = S.menu==='exp'?null:'exp'; render(); });
+document.getElementById('nameInput').addEventListener('input',ev=>{
+  if(S.dialogMode==='new'){ S.newName = ev.target.value; renderHeader(); }
+});
+document.getElementById('nameInput').addEventListener('keydown',ev=>{
+  if(S.dialogMode==='new') return;
+  if(ev.key==='Enter'){ commitName(); }
+  if(ev.key==='Escape'){ S.nameEdit=null; render(); }
+});
+document.getElementById('nameInput').addEventListener('blur',()=>{
+  if(S.dialogMode!=='new' && S.nameEdit) commitName(); });
+function commitName(){
+  const v = document.getElementById('nameInput').value;
+  if(!v.trim()){ S.nameEdit=null; render(); return; }
+  if(S.nameEdit==='rename') doRename(v); else doSaveAs(v);
+  render();
+}
+
+/* click anywhere closes an open menu */
+document.addEventListener('click',()=>{
+  if(S.menu || S.exportMenu || S.selMenu){ S.menu=null; S.exportMenu=false; S.selMenu=false; render(); }
+});
+
+/* restart the prototype back to the seeded three exports */
+function restartPrototype(){
+  clearInterval(S.progressTimer);
+  S.exports = seedExports();
+  S.currentId='default'; S.menu=null; S.modal=null; S.nameEdit=null; S.modalName='';
+  applyScreen(1);
+}
+document.getElementById('restartBtn1').addEventListener('click',restartPrototype);
+document.getElementById('restartBtn2').addEventListener('click',restartPrototype);
+
+S.exports = seedExports();
+document.getElementById('allItemsTgl').addEventListener('click',()=>{
+  S.allPages=!S.allPages;
+  if(S.allPages){ S.visSel=S.visSel.map(()=>true); S.hiddenSel=PAGE_SIZE-S.visSel.length; }
+  render();
+});
+document.getElementById('advTgl').addEventListener('click',()=>{ S.adv=!S.adv; render(); });
+document.getElementById('treeSearch').addEventListener('input',e=>{ S.search=e.target.value; renderTree(); });
+document.querySelectorAll('#rightTabs .tab').forEach(b=>{
+  b.addEventListener('click',()=>{ S.rightTab=b.dataset.rt; render(); });
+});
+
+applyScreen(1);
+</script>
+</body>
+</html>
